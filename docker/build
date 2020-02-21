@@ -1,14 +1,70 @@
 #!/usr/bin/env bash
-CUR_PATH="$SCRIPTS_PATH"
+CUR_PATH="$DOCKER_BUILD_PATH"
 : ${CUR_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
 
-source "$CUR_PATH/envs"
+source "$CUR_PATH/scripts/common.sh"
 
-BUILD_NAME="lamaani/zairflow"
+help_text="
+Build the zairflow image
+Usage: build
+Flags:
+    --no-push   Do not push to docker hub
+    -h | --help Show this help menu.
+"
+DO_PUSH=1
+while [ "$#" -gt 0 ]; do
+    case $1 in
+    --help | -h)
+        echo
+        ;;
+    --no-push)
+        DO_PUSH=0
+        ;;
+    *)
+        echo "Error: unknown argument $1"
+        exit 2
+        ;;
+    esac
+    shift
+done
 
-docker build "$CUR_PATH" -t $BUILD_NAME:local || exit $?
-docker tag "$BUILD_NAME:local" "$BUILD_NAME:$ZAIRFLOW_VERSION" || exit $?
-docker tag "$BUILD_NAME:local" "$BUILD_NAME:latest" || exit $?
+CALLING_FOLDER="$PWD"
+function change_to_build_path() {
+    log:info "Going into build folder @ $CUR_PATH"
+    cd "$CUR_PATH"
+    assert $? "Failed to change docker build folder @ $CUR_PATH" || exit $?
+    return "$@"
+}
+function change_back_to_CALLING_FOLDER() {
+    log:info "Going back to the calling folder @ $CALLING_FOLDER"
+    cd "$CALLING_FOLDER"
+    assert $? "Failed to change back to source folder @ $CALLING_FOLDER" || exit $?
+    return "$@"
+}
 
-docker push "$BUILD_NAME:$ZAIRFLOW_VERSION"
-docker push "$BUILD_NAME:latest"
+function build_image() {
+    source "$CUR_PATH/envs"
+    assert $? "Failed to load envs" || return $?
+
+    log:sep "Building"
+    docker build "$CUR_PATH" -t $BUILD_NAME:local
+    assert $? "Docker build failed" || return $?
+
+    if [ $DO_PUSH -eq 1 ]; then
+        log:sep "Pushing"
+        docker tag "$BUILD_NAME:local" "$BUILD_NAME:$ZAIRFLOW_VERSION"
+        assert $? "Docker tag failed" || return $?
+        docker tag "$BUILD_NAME:local" "$BUILD_NAME:latest"
+        assert $? "Docker tag failed" || return $?
+
+        docker push "$BUILD_NAME:$ZAIRFLOW_VERSION"
+        assert $? "Docker push failed" || return $?
+        docker push "$BUILD_NAME:latest"
+        assert $? "Docker push failed" || return $?
+    fi
+}
+
+change_to_build_path || exit $?
+build_image
+change_back_to_CALLING_FOLDER $?
+assert $? "Could not build docker image" || exit $?

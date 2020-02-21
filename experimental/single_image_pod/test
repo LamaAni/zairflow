@@ -3,12 +3,13 @@
 # shellcheck disable=SC1091
 CUR_PATH="$SCRIPTS_PATH"
 : ${CUR_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source $(realpath $CUR_PATH/../../docker/scripts/common.sh)
 
 POD_NAME="zaf-tester"
 
 log:sep "Docker build.."
-docker build "$CUR_PATH" -t lamaani/zairflow:local
-assert $? "Failed to build image"
+$(realpath $CUR_PATH/../../docker/build) --no-push
+assert $? "Failed to build image" || exit $?
 
 source "$CUR_PATH/scripts/common.sh"
 

@@ -24,6 +24,7 @@ RUN apt-get install -yqq --no-install-recommends\
    # Core tools (for use in image)
    curl\
    git\
+   openssh-client\
    apt-utils\
    build-essential\
    gnupg2\
@@ -103,11 +104,10 @@ WORKDIR /scripts
 
 # copy bash scripts.
 COPY ./scripts /scripts
-COPY ./git_autosync/git_autosync /usr/bin/git_autosync
-RUN chmod +x -R /scripts && chmod +x /usr/bin/git_autosync
-
-# override the airflow command to allow hooks.
-RUN ln -sf /scripts/invoke_airflow /usr/bin/airflow
+RUN git clone https://github.com/LamaAni/git_autosync.git --branch 1.1.0 /scripts/git_autosync && \
+   ln -sf /scripts/git_autosync/git_autosync /usr/bin/git_autosync && \
+   ln -sf /scripts/invoke_airflow /usr/bin/airflow && \
+   chmod +x -R /scripts && chmod +x /usr/bin/git_autosync
 
 ##########################
 # Cleanup
