@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+# shellcheck disable=SC1091
+CUR_PATH="$SCRIPTS_PATH"
+: ${CUR_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+
+POD_NAME="zaf-tester"
+
+log:sep "Docker build.."
+docker build "$CUR_PATH" -t lamaani/zairflow:local
+assert $? "Failed to build image"
+
+source "$CUR_PATH/scripts/common.sh"
+
+function create() {
+    log:info "Creating the pod..."
+    kubectl apply -f $CUR_PATH/testpod.yaml --wait=true
+    assert $? "Faild to create the pod" || return $?
+    kubectl wait --for=condition=Ready "pods/$POD_NAME"
+    assert $? "Failed to wait for pod $POD_NAME to start"
+}
+
+function delete() {
+    local passthrough=$?
+    log:info "Deleting the pod..."
+    kubectl delete -f $CUR_PATH/testpod.yaml --wait=true
+    assert $? "Failed to delete the pod" || return $?
+    return $passthrough
+}
+
+function attach() {
+    log:info "Attaching to the pod"
+    kubectl exec -it $POD_NAME bash
+    assert $? "Faild to attach to pod" || return $?
+}
+
+function forward() {
+    kubectl port-forward "$POD_NAME" 3030:8080
+}
+
+delete
+assert $? "Old pod was not deleted"
+
+create || exit $?
+assert $? "Failed pod execution" || exit $?
+forward
+delete $?
+

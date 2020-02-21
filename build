@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+CUR_PATH="$SCRIPTS_PATH"
+: ${CUR_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+
+source "$CUR_PATH/envs"
+
+BUILD_NAME="lamaani/zairflow"
+
+docker build "$CUR_PATH" -t $BUILD_NAME:local || exit $?
+docker tag "$BUILD_NAME:local" "$BUILD_NAME:$ZAIRFLOW_VERSION" || exit $?
+docker tag "$BUILD_NAME:local" "$BUILD_NAME:latest" || exit $?
+
+docker push "$BUILD_NAME:$ZAIRFLOW_VERSION"
+docker push "$BUILD_NAME:latest"
