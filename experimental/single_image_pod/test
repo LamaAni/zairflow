@@ -45,4 +45,3 @@ create || exit $?
 assert $? "Failed pod execution" || exit $?
 forward
 delete $?
-
