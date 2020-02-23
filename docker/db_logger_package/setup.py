@@ -18,7 +18,7 @@ from setuptools import setup
 
 setup(
     name="airflow_db_logger",
-    version="1.0.1",
+    version="0.1.0",
     description="Airflow DB logger",
     long_description="An internal package to allow airflow db logs to be written/read to/from the airflow database",
     classifiers=[],

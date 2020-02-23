@@ -36,10 +36,8 @@ DEFAULT_LOGGING_CONFIG = {
             "stream": "sys.stdout",
         },
         "task": {
-            "class": "airflow.utils.log.file_task_handler.FileTaskHandler",
+            "class": "airflow_db_logger.db_log_handler.DBTaskLogHandler",
             "formatter": "airflow",
-            "base_log_folder": os.path.expanduser(BASE_LOG_FOLDER),
-            "filename_template": FILENAME_TEMPLATE,
         },
         "processor": {
             "class": "airflow.utils.log.file_processor_handler.FileProcessorHandler",
