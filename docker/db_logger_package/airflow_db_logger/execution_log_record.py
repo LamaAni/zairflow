@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Index, DateTime
+from sqlalchemy import Column, Integer, String, Text, Index
 from datetime import datetime
 from airflow import settings
 from airflow.models.base import Base, ID_LEN
@@ -18,7 +18,7 @@ class ExecutionLogRecord(Base):
     id = Column(Integer, primary_key=True)
     dag_id = Column(String)
     task_id = Column(String)
-    execution_date = Column(DateTime)
+    execution_date = Column(UtcDateTime)
     try_number = Column(Integer)
     text = Column(Text)
 

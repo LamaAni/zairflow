@@ -1,8 +1,10 @@
 import os
 import six
 from airflow.configuration import conf
+import logging
 
 # initialize the execution log record table loader. Dose this work?
+logging.warning("Adding tables for db logger")
 from .execution_log_record import ExecutionLogRecord
 
 # logging core params.
@@ -29,7 +31,9 @@ LOGGING_CONFIG = {
         "airflow": {"format": LOG_FORMAT},
         "airflow_coloured": {
             "format": COLORED_LOG_FORMAT if COLORED_LOG else LOG_FORMAT,
-            FORMATTER_CLASS_KEY: COLORED_FORMATTER_CLASS if COLORED_LOG else "logging.Formatter",
+            FORMATTER_CLASS_KEY: COLORED_FORMATTER_CLASS
+            if COLORED_LOG
+            else "logging.Formatter",
         },
     },
     "handlers": {
@@ -50,9 +54,17 @@ LOGGING_CONFIG = {
         },
     },
     "loggers": {
-        "airflow.processor": {"handlers": ["processor"], "level": LOG_LEVEL, "propagate": False,},
+        "airflow.processor": {
+            "handlers": ["processor"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
         "airflow.task": {"handlers": ["task"], "level": LOG_LEVEL, "propagate": False,},
-        "flask_appbuilder": {"handler": ["console"], "level": FAB_LOG_LEVEL, "propagate": True,},
+        "flask_appbuilder": {
+            "handler": ["console"],
+            "level": FAB_LOG_LEVEL,
+            "propagate": True,
+        },
     },
     "root": {"handlers": ["console"], "level": LOG_LEVEL,},
 }
