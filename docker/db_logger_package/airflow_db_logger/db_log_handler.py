@@ -3,10 +3,11 @@ import logging
 import yaml
 from airflow.utils.helpers import parse_template_string
 from airflow.models import TaskInstance
-from airflow.utils.db import provide_session
+from airflow import settings
 from sqlalchemy.orm import Session
 from sqlalchemy import Column, Integer, String, Text, Index, DateTime
 from airflow.models.base import Base
+from .execution_log_record import ExecutionLogRecord
 from typing import Dict, List
 
 
@@ -19,38 +20,6 @@ class ExecutionLogTaskContextInfo:
         self.try_number = task_instance.tr
 
 
-class ExecutionLogRecord(Base):
-    # FIXME: Not the base name for this table,
-    # but since log was taken, it will have to do.
-    # NOTE: This class is very similar to airflow.models.log,
-    # but differs in purpose. Since we want
-    # indexing to allow for fast log retrival, airflow.models.log
-    # was not used.
-    __tablename__ = "execution_log"
-
-    id = Column(Integer, primary_key=True)
-    dag_id = Column(String)
-    task_id = Column(String)
-    execution_date = Column(DateTime)
-    try_number = Column(Integer)
-    text = Column(Text)
-
-    __table_args__ = (
-        Index("dag_id_idx", dag_id),
-        Index("task_id_idx", task_id),
-        Index("execution_date_idx", execution_date),
-        Index("try_number_idx", try_number),
-    )
-
-    def __init__(self, task_context_info: ExecutionLogTaskContextInfo, text: str):
-        super().__init__()
-
-        self.dag_id = task_context_info.dag_id
-        self.task_id = task_context_info.task_id
-        self.execution_date = task_context_info.execution_date
-        self.try_number = task_context_info.tr
-
-
 class DBTaskLogHandler(logging.Handler):
     """
     DB Task log handler writes and reads task logs from the logging database
@@ -58,10 +27,12 @@ class DBTaskLogHandler(logging.Handler):
     """
 
     _task_context_info: TaskInstance = None
+    _db_session: Session = None
 
     def __init__(self):
         super().__init__()
         self._task_context_info = None
+        self._db_session = None
 
     @property
     def task_context_info(self):
@@ -70,52 +41,67 @@ class DBTaskLogHandler(logging.Handler):
         ), "Task instance was not defined while attempting to write task log"
         return self._task_context_info
 
+    @property
+    def has_context(self):
+        return self._task_context_info is not None
+
+    @property
+    def db_session(self) -> Session:
+        return self._db_session
+
     def set_context(self, task_instance):
         """Initialize the db log configuration.
         
         Arguments:
-            task_instance {task instance objecct} -- The task instace to write for.
+            task_instance {task instance object} -- The task instace to write for.
         """
+        ExecutionLogRecord.validate_table()
         self._task_context_info = ExecutionLogTaskContextInfo(task_instance)
+        self._db_session = settings.Session()
 
-    @provide_session
-    def emit(self, record, session: Session):
+    def emit(self, record):
         """Emits a log record.
         
         Arguments:
             record {any} -- The logging record.
         """
+        if not self.has_context:
+            return
 
         db_record = ExecutionLogRecord(
-            self.task_context_info, record if isinstance(record, str) else yaml.safe_dump(record)
+            self.task_context_info.dag_id,
+            self.task_context_info.dag_id,
+            self.task_context_info.execution_date,
+            self.task_context_info.try_number,
+            record if isinstance(record, str) else yaml.safe_dump(record),
         )
-        session.add(db_record)
 
-    @provide_session
-    def flush(self, session):
+        self.db_session.add(db_record)
+        self.db_session.commit()
+
+    def flush(self):
         """Waits for any unwritten logs to write to the db.
         """
-        session.flush()
+        if not self.has_context:
+            return
+        if self.db_session is not None:
+            self.db_session.flush()
 
     def close(self):
+        if not self.has_context:
+            return
         """Stops and finalizes the log writing.
         """
-        # nothing to, the session is handled by the reader.
-        pass
+        if self.db_session is not None:
+            self.db_session.close()
 
-    @provide_session
     def read(
-        self,
-        task_instance: TaskInstance,
-        session: Session,
-        try_number: int = None,
-        metadata: dict = None,
+        self, task_instance: TaskInstance, try_number: int = None, metadata: dict = None,
     ):
         """Read logs of given task instance from the database.
         
         Arguments:
             task_instance {TaskInstance} -- The task instance object
-            session {Session} -- The db session object.
         
         Keyword Arguments:
             try_number {int} -- The run try number (default: {None})
@@ -146,14 +132,15 @@ class DBTaskLogHandler(logging.Handler):
         logs = [""] * len(try_numbers)
         logs_by_try_number = Dict[int, List[ExecutionLogRecord]]
 
-        log_records = (
-            session.query(ExecutionLogRecord)
-            .filter(ExecutionLogRecord.dag_id == self.task_context_info.dag_id)
-            .filter(ExecutionLogRecord.task_id == self.task_context_info.task_id)
-            .filter(ExecutionLogRecord.execution_date == self.task_context_info.execution_date)
-            .filter(ExecutionLogRecord.try_number.in_(try_numbers))
-            .all()
-        )
+        with settings.Session() as db_session:
+            log_records = (
+                db_session.query(ExecutionLogRecord)
+                .filter(ExecutionLogRecord.dag_id == task_instance.dag_id)
+                .filter(ExecutionLogRecord.task_id == task_instance.task_id)
+                .filter(ExecutionLogRecord.execution_date == task_instance.execution_date)
+                .filter(ExecutionLogRecord.try_number.in_(try_numbers))
+                .all()
+            )
 
         for log_record in log_records:
             try_number = int(log_record.try_number)

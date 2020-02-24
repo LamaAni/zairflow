@@ -97,6 +97,10 @@ RUN yes | pip install --user\
 # wrong versions. Should be : Werkzeug>=0.15.0,Jinja2>=2.10.0]
 RUN yes | pip install --user --upgrade Flask
 
+COPY db_logger_package /db_logger_package
+
+RUN yes | pip install --user /db_logger_package
+
 ##########################
 # Scripts
 USER root

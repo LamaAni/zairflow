@@ -1,6 +1,9 @@
 import os
 import six
-from airflow import configuration as conf
+from airflow.configuration import conf
+
+# initialize the execution log record table loader. Dose this work?
+from .execution_log_record import ExecutionLogRecord
 
 # logging core params.
 LOG_LEVEL = conf.get("core", "LOGGING_LEVEL").upper()
@@ -19,7 +22,7 @@ COLORED_LOG = conf.getboolean("core", "COLORED_CONSOLE_LOG")
 COLORED_FORMATTER_CLASS = conf.get("core", "COLORED_FORMATTER_CLASS")
 FORMATTER_CLASS_KEY = "()" if six.PY2 else "class"
 
-DEFAULT_LOGGING_CONFIG = {
+LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
