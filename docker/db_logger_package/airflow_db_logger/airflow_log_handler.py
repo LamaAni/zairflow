@@ -1,5 +1,5 @@
 import logging
-
+import traceback
 import sys
 import yaml
 from airflow.utils.helpers import parse_template_string
@@ -76,7 +76,7 @@ class DBTaskLogHandler(logging.Handler):
 
         db_record = ExecutionLogRecord(
             self.task_context_info.dag_id,
-            self.task_context_info.dag_id,
+            self.task_context_info.task_id,
             self.task_context_info.execution_date,
             self.task_context_info.try_number,
             self.format(record),
@@ -141,22 +141,23 @@ class DBTaskLogHandler(logging.Handler):
             else:
                 try_numbers = [try_number]
 
-            logs = [""] * len(try_numbers)
-            metadata_array = [{}] * len(try_numbers)
-            logs_by_try_number = Dict[int, List[ExecutionLogRecord]]
+            logs_by_try_number = dict()
 
-            with Session() as db_session:
-                log_records = (
-                    db_session.query(ExecutionLogRecord)
-                    .filter(ExecutionLogRecord.dag_id == task_instance.dag_id)
-                    .filter(ExecutionLogRecord.task_id == task_instance.task_id)
-                    .filter(
-                        ExecutionLogRecord.execution_date
-                        == task_instance.execution_date
-                    )
-                    .filter(ExecutionLogRecord.try_number.in_(try_numbers))
-                    .all()
+            logging.warning(
+                f"Retriving records for: {task_instance.dag_id}/{task_instance.task_id}/{task_instance.execution_date}/{task_instance.try_number} "
+            )
+            db_session = Session()
+            log_records = (
+                db_session.query(ExecutionLogRecord)
+                .filter(ExecutionLogRecord.dag_id == task_instance.dag_id)
+                .filter(ExecutionLogRecord.task_id == task_instance.task_id)
+                .filter(
+                    ExecutionLogRecord.execution_date == task_instance.execution_date
                 )
+                .filter(ExecutionLogRecord.try_number.in_(try_numbers))
+                .all()
+            )
+            db_session.close()
 
             logging.warning("Log records found: " + str(len(log_records)))
 
@@ -164,19 +165,25 @@ class DBTaskLogHandler(logging.Handler):
                 try_number = int(log_record.try_number)
                 if try_number not in logs_by_try_number:
                     logs_by_try_number[try_number] = []
-                logs_by_try_number[try_number].append(log_record)
+                logs_by_try_number[try_number].append(str(log_record.text))
 
             for try_number in logs_by_try_number.keys():
-                try_records = logs_by_try_number[try_numbers]
-                if try_number < 0 or try_number >= len(try_numbers):
-                    continue
-                try_log_lines = [str(record.text) for record in try_records]
-                string_log = "\n".join(try_log_lines)
-                logs[try_number] = string_log
-                metadata_array[try_number] = {"end_of_log": True}
+                logs_by_try_number[try_number] = "\n".join(
+                    logs_by_try_number[try_number]
+                )
 
+            try_numbers.sort()
+            logs = []
+            metadata_array = []
+            for try_number in try_numbers:
+                logs.append(logs_by_try_number[try_number])
+                metadata_array.append({"end_of_log": True})
+
+            logging.warning("Returning logs: " + str(len(logs)))
+            logging.warning("First log: " + yaml.dump(logs))
             return logs, metadata_array
         except Exception as err:
-            logging.error(err)
+            traceback.print_exc(yaml.dump(err))
             logging.error("Failed to read log from db")
+            raise err
 
