@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+SCRIPTS_PATH="$SCRIPTS_PATH"
+: ${SCRIPTS_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+: ${ZAIRFLOW_RUN_INITDB:="false"}
+
 ####################################
 # Logger
 
@@ -117,7 +121,7 @@ function wait_for_connection() {
     if [ $? -ne 0 ]; then
       if [ $WAIT_INDEX -gt $CONNECTION_WAIT_TRIES ]; then
         log:error "Timed out while waiting for port $port on $host"
-        exit 3
+        return 3
       fi
       log:info "Port $port not available on $host, retry in $CONNECTION_WAIT_INTERVAL"
     else
@@ -126,5 +130,27 @@ function wait_for_connection() {
     fi
     WAIT_INDEX=$((WAIT_INDEX + 1))
     sleep "$CONNECTION_WAIT_INTERVAL"
+  done
+}
+
+function wait_for_airflow_db_ready() {
+  local count=0
+
+  : ${DB_WAIT_TRIES:="60"}
+  : ${DB_WAIT_TIMEOUT:="1"}
+
+  while true; do
+    last_print=$(python3 "$SCRIPTS_PATH/check_airflow_db.py" 2>&1)
+    last_error=$?
+    if [ $last_error -eq 0 ]; then
+      printf "%s\n" "$last_print"
+      break
+    fi
+    count=$((count + 1))
+    if [ "$count" -ge "$DB_WAIT_TRIES" ]; then
+      assert $last_error "$last_print"$'\n'"Timed out while waiting for db to initialize." || return $?
+    fi
+    log:info "Airflow db not ready ($count/$DB_WAIT_TRIES), retry in $DB_WAIT_TIMEOUT [s].."
+    sleep "$DB_WAIT_TIMEOUT"
   done
 }

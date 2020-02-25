@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zaf-tester-cm-env
+data:
+  ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/KubernetesJobOperator.git'
+  ZAIRFLOW_DAGS_SUBFOLDER: 'examples/dags'
+  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG

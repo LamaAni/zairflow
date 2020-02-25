@@ -8,7 +8,8 @@ source $(realpath $CUR_PATH/../../docker/scripts/common.sh)
 POD_NAME="zaf-tester"
 
 log:sep "Docker build.."
-$(realpath $CUR_PATH/../../docker/build) --no-push
+BUILDER_PATH=$(realpath $CUR_PATH/../../docker/build)
+$BUILDER_PATH --no-push
 assert $? "Failed to build image" || exit $?
 
 source "$CUR_PATH/scripts/common.sh"

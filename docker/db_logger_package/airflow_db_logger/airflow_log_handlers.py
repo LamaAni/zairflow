@@ -1,6 +1,6 @@
 import logging
 import traceback
-import sys
+import os
 import yaml
 from airflow.utils.helpers import parse_template_string
 from airflow.models import TaskInstance
@@ -8,8 +8,8 @@ from sqlalchemy import Column, Integer, String, Text, Index, DateTime
 from airflow.models.base import Base
 from typing import Dict, List
 
-from .execution_log_record import ExecutionLogRecord
-from .logger_config import Session
+from .log_records import TaskExecutionLogRecord, DagFileProcessingLogRecord
+from .logger_config import Session, DAGS_FOLDER
 import logging
 
 
@@ -57,7 +57,6 @@ class DBTaskLogHandler(logging.Handler):
         Arguments:
             task_instance {task instance object} -- The task instace to write for.
         """
-        logging.warn("Setting session context")
 
         try:
             self._task_context_info = ExecutionLogTaskContextInfo(task_instance)
@@ -74,7 +73,7 @@ class DBTaskLogHandler(logging.Handler):
         if not self.has_context:
             return
 
-        db_record = ExecutionLogRecord(
+        db_record = TaskExecutionLogRecord(
             self.task_context_info.dag_id,
             self.task_context_info.task_id,
             self.task_context_info.execution_date,
@@ -100,6 +99,7 @@ class DBTaskLogHandler(logging.Handler):
         """
         if self.db_session is not None:
             self.db_session.close()
+            self._db_session = None
 
     def read(
         self,
@@ -144,13 +144,14 @@ class DBTaskLogHandler(logging.Handler):
 
             logs_by_try_number = dict()
             log_records = (
-                db_session.query(ExecutionLogRecord)
-                .filter(ExecutionLogRecord.dag_id == task_instance.dag_id)
-                .filter(ExecutionLogRecord.task_id == task_instance.task_id)
+                db_session.query(TaskExecutionLogRecord)
+                .filter(TaskExecutionLogRecord.dag_id == task_instance.dag_id)
+                .filter(TaskExecutionLogRecord.task_id == task_instance.task_id)
                 .filter(
-                    ExecutionLogRecord.execution_date == task_instance.execution_date
+                    TaskExecutionLogRecord.execution_date
+                    == task_instance.execution_date
                 )
-                .filter(ExecutionLogRecord.try_number.in_(try_numbers))
+                .filter(TaskExecutionLogRecord.try_number.in_(try_numbers))
                 .all()
             )
             db_session.close()
@@ -182,4 +183,103 @@ class DBTaskLogHandler(logging.Handler):
         finally:
             if db_session:
                 db_session.close()
+
+
+class DBProcessLogHandler(logging.Handler):
+    """
+    FileProcessorHandler is a python log handler that handles
+    dag processor logs. It creates and delegates log handling
+    to a database
+    """
+
+    _dag_filename: str = None
+    _db_session: Session = None
+
+    def __init__(self, base_log_folder, filename_template):
+        """
+        :param base_log_folder: Base log folder to place logs.
+        :param filename_template: template filename string
+        """
+
+        super().__init__()
+
+        self.base_log_folder = base_log_folder
+        self.dag_dir = os.path.expanduser(DAGS_FOLDER)
+        self.filename_template, self.filename_jinja_template = parse_template_string(
+            filename_template
+        )
+
+        self._dag_filename = None
+        self._db_session = None
+
+    @property
+    def has_context(self):
+        return self._dag_filename is not None
+
+    @property
+    def db_session(self) -> Session:
+        return self._db_session
+
+    def _render_filename(self, filename):
+        """Renders a display filename for the specific dag.
+        
+        Arguments:
+            filename {str} -- The original filename
+        
+        Returns:
+            str -- The display filename.
+        """
+        filename = os.path.relpath(filename, self.dag_dir)
+        ctx = dict()
+        ctx["filename"] = filename
+
+        if self.filename_jinja_template:
+            return self.filename_jinja_template.render(**ctx)
+
+        return self.filename_template.format(filename=ctx["filename"])
+
+    def set_context(self, dag_filename):
+        """Initialize the db log configuration.
+        
+        Arguments:
+            dag_filename {str} -- The dag filename context
+        """
+
+        try:
+            self._dag_filename = self._render_filename(dag_filename)
+            self._db_session = Session()
+        except Exception as err:
+            logging.error(err)
+
+    def emit(self, record):
+        """Emits a log record.
+        
+        Arguments:
+            record {any} -- The logging record.
+        """
+        if not self.has_context:
+            return
+
+        db_record = DagFileProcessingLogRecord(self._dag_filename, self.format(record))
+
+        self.db_session.add(db_record)
+        self.db_session.commit()
+
+    def flush(self):
+        """Waits for any unwritten logs to write to the db.
+        """
+        if not self.has_context:
+            return
+        if self.db_session is not None:
+            self.db_session.flush()
+
+    def close(self):
+        if not self.has_context:
+            return
+
+        """Stops and finalizes the log writing.
+        """
+        if self.db_session is not None:
+            self.db_session.close()
+            self._db_session = None
 

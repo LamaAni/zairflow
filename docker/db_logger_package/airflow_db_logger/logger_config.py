@@ -1,15 +1,27 @@
 import sys
+import os
 import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool, QueuePool
 from airflow.configuration import conf
 
+# Loading airflow parameters
+LOG_LEVEL = conf.get("core", "LOGGING_LEVEL").upper()
+FAB_LOG_LEVEL = conf.get("core", "FAB_LOGGING_LEVEL").upper()
+LOG_FORMAT = conf.get("core", "log_format")
+
 SQL_ALCHEMY_CONN = conf.get("core", "SQL_ALCHEMY_CONN")
 DB_LOGGER_SQL_ALCHEMY_CONNECTION = conf.get(
     "db_logger", "SQL_ALCHEMY_CONN", fallback=SQL_ALCHEMY_CONN
 )
 
+DAGS_FOLDER = os.path.expanduser(conf.get("core", "DAGS_FOLDER"))
+
+# Setting the default logger log level.
+logging.basicConfig(level=LOG_LEVEL)
+
+# Configuring the db_logger sql engine.
 engine_args = {}
 pool_enabled = conf.getboolean("db_logger", "SQL_ALCHEMY_POOL_ENABLED", fallback=True)
 if pool_enabled:
@@ -70,17 +82,22 @@ Session = scoped_session(
 
 
 def init_logger(reset=False):
-    from .execution_log_record import ExecutionLogRecord
-    from airflow import settings
+    from .log_records import LoggerModelBase
+
+    logging.info("Initialzing db_logger tables...")
 
     if reset:
         # NOTE: There is no promp for logs, when you reset, everything will reset always.
-        ExecutionLogRecord.metadata.drop_all(engine)
-    ExecutionLogRecord.metadata.create_all(engine)
+        logging.info("Resetting db_logger tables...")
+        LoggerModelBase.metadata.drop_all(engine)
+    else:
+        logging.info("Initialzing db_logger tables...")
+    LoggerModelBase.metadata.create_all(engine)
+
+    logging.info("db_logger tables initialized.")
 
 
 def check_cli_for_init_db():
     if "initdb" in sys.argv or "upgradedb" in sys.argv or "resetdb" in sys.argv:
-        logging.info("Initializing db_logger tables")
         init_logger("resetdb" in sys.argv)
 

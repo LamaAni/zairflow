@@ -57,8 +57,6 @@ spec:
       env:
         - name: ZAIRFLOW_CONTAINER_TYPE
           value: 'scheduler'
-        - name: ZAIRFLOW_WAIT_FOR
-          value: 'localhost:8080'
       envFrom:
         - configMapRef:
             name: zaf-tester-cm-env

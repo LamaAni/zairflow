@@ -43,11 +43,11 @@ function change_back_to_CALLING_FOLDER() {
 }
 
 function build_image() {
-    source "$CUR_PATH/envs"
+    source "./envs"
     assert $? "Failed to load envs" || return $?
 
     log:sep "Building"
-    docker build "$CUR_PATH" -t $BUILD_NAME:local
+    docker build . -t $BUILD_NAME:local
     assert $? "Docker build failed" || return $?
 
     if [ $DO_PUSH -eq 1 ]; then

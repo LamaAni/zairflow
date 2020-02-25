@@ -40,12 +40,12 @@ function prepare_airflow_env() {
   log:sep "Checking dependencies..."
   # postgres validate
   log:info "Waiting for the database to be ready @ $DB_HOST:$DB_PORT..."
-  wait_for_connection "$DB_HOST:$DB_PORT"
+  wait_for_connection "$DB_HOST:$DB_PORT" || return $?
   assert $? "Failed to find database. Exiting." || return $?
 
   for wait_for_url in "${ZAIRFLOW_WAIT_FOR[@]}"; do
     log:info "Waiting for $wait_for_url to be ready..."
-    wait_for_connection "$wait_for_url"
+    wait_for_connection "$wait_for_url" || return $?
     assert $? "Failed connecting to $wait_for_url"
   done
 
@@ -57,7 +57,7 @@ function prepare_airflow_env() {
     export AIRFLOW__CORE__DAGS_FOLDER
 
     log:sep "Starting git auto-sync to $ZAIRFLOW_GIT_AUTOSYNC_URI"
-    source "$CUR_PATH/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$sync_folder" "$ZAIRFLOW_DAGS_SUBFOLDER"
+    "$CUR_PATH/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$sync_folder" "$ZAIRFLOW_DAGS_SUBFOLDER"
     assert $? "Failed to initialize git autosync" || return $?
   fi
 }
