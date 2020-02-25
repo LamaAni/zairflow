@@ -20,7 +20,7 @@ dag = DAG(
 bash_script = """
 #/usr/bin/env bash
 echo "Starting"
-TIC_COUNT=0
+TIC_COUNT=60
 cur_count=0
 while true; do
     cur_count=$((cur_count + 1))
