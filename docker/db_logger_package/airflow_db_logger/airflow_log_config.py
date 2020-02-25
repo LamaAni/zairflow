@@ -4,8 +4,10 @@ from airflow.configuration import conf
 import logging
 
 # initialize the execution log record table loader. Dose this work?
-logging.warning("Adding tables for db logger")
-from .execution_log_record import ExecutionLogRecord
+from .logger_config import check_cli_for_init_db
+
+# Checking for database initialization
+check_cli_for_init_db()
 
 # logging core params.
 LOG_LEVEL = conf.get("core", "LOGGING_LEVEL").upper()
@@ -43,7 +45,7 @@ LOGGING_CONFIG = {
             "stream": "sys.stdout",
         },
         "task": {
-            "class": "airflow_db_logger.db_log_handler.DBTaskLogHandler",
+            "class": "airflow_db_logger.airflow_log_handler.DBTaskLogHandler",
             "formatter": "airflow",
         },
         "processor": {
