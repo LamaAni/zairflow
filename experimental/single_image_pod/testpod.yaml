@@ -5,7 +5,7 @@ metadata:
 data:
   ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/KubernetesJobOperator.git'
   ZAIRFLOW_DAGS_SUBFOLDER: 'examples/dags'
-  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.db_log_config.LOGGING_CONFIG
+  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG
 ---
 apiVersion: v1
 kind: Pod

@@ -126,8 +126,9 @@ class DBTaskLogHandler(logging.Handler):
         # So the log for a particular task try will only show up when
         # try number gets incremented in DB, i.e logs produced the time
         # after cli run and before try_number + 1 in DB will not be displayed.
-
+        db_session = None
         try:
+            db_session = Session()
             if try_number is None:
                 next_try = task_instance.next_try_number
                 try_numbers = list(range(1, next_try))
@@ -142,11 +143,6 @@ class DBTaskLogHandler(logging.Handler):
                 try_numbers = [try_number]
 
             logs_by_try_number = dict()
-
-            logging.warning(
-                f"Retriving records for: {task_instance.dag_id}/{task_instance.task_id}/{task_instance.execution_date}/{task_instance.try_number} "
-            )
-            db_session = Session()
             log_records = (
                 db_session.query(ExecutionLogRecord)
                 .filter(ExecutionLogRecord.dag_id == task_instance.dag_id)
@@ -158,9 +154,7 @@ class DBTaskLogHandler(logging.Handler):
                 .all()
             )
             db_session.close()
-
-            logging.warning("Log records found: " + str(len(log_records)))
-
+            db_session = None
             for log_record in log_records:
                 try_number = int(log_record.try_number)
                 if try_number not in logs_by_try_number:
@@ -179,11 +173,13 @@ class DBTaskLogHandler(logging.Handler):
                 logs.append(logs_by_try_number[try_number])
                 metadata_array.append({"end_of_log": True})
 
-            logging.warning("Returning logs: " + str(len(logs)))
-            logging.warning("First log: " + yaml.dump(logs))
             return logs, metadata_array
+
         except Exception as err:
             traceback.print_exc(yaml.dump(err))
             logging.error("Failed to read log from db")
             raise err
+        finally:
+            if db_session:
+                db_session.close()
 
