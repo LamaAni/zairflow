@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zairflow-helm.fullname" . }}-web-svc
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{- .Values.webserver.port -}}
+      targetPort: {{- .Values.webserver.port -}}
+  clusterIP: None
+  selector:
+    deployment-target: {{ include "zairflow-helm.fullname" . }}-web
+---
+# the webserver
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zairflow-helm.fullname" . }}-web
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+spec:
+  replicas: {{- .Values.webserver.replicas -}}
+  selector:
+    matchLabels:
+      deployment-target: {{ include "zairflow-helm.fullname" . }}-web
+  template:
+    metadata:
+      labels:
+        deployment-target: {{ include "zairflow-helm.fullname" . }}-web
+        {{- include "zairflow-helm.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: main
+          image: {{- include "zairflow-helm.image" }}
+          imagePullPolicy: {{- .Values.image.pullPolicy -}}
+          ports:
+            - containerPort: {{- .Values.webserver.port -}}
+          env:
+            - name: ZAIRFLOW_CONTAINER_TYPE
+              value: 'webserver'
+          envFrom:
+            - configMapRef:
+                name: {{ include "zairflow-helm.fullname" . }}-config
+          resources:
+            {{- .Values.webserver.resources | nindent 12 }}
+          {{- .Values.webserver.injectContainerYaml | nindent 10 }}
+        {{- .Values.webserver.addedContainers | nindent 8 }}
+      {{- .Values.webserver.injectTemplateSpecYaml | nindent 6 }}
+  {{- .Values.webserver.injectSpecYaml | nindent 6 }}

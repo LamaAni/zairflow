@@ -2,11 +2,24 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+webserver:
+  replicas: 1
+  port: 8080
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+
+scheduler:
+  replicas: 1
+  resources:
+    requests:
+      memory: "1.5Gi"
+      cpu: "1"
 
 image:
-  repository: lamaani/zirflow
-  version: "0.1.1"
+  # considere, repository, tag
+  uri: "lamaani/zirflow:latest"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []

@@ -61,3 +61,10 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "zairflow-helm.image" -}}
+{{- default .Values.image.repository "lamaani/zairflow:latest" }}
+{{- end -}}
