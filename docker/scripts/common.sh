@@ -91,6 +91,14 @@ function value_in_array() {
 }
 
 ########################################
+# Airflow
+
+function get_airflow_config_vals() {
+  export PYTHONWARNINGS="ignore"
+  python3 $SCRIPTS_PATH/get_airflow_config_vals.py "$@"
+}
+
+########################################
 # Connection
 
 # methods for general purpose use.
@@ -123,7 +131,7 @@ function wait_for_connection() {
         log:error "Timed out while waiting for port $port on $host"
         return 3
       fi
-      log:info "Port $port not available on $host, retry in $CONNECTION_WAIT_INTERVAL"
+      log:info "Attempt $WAIT_INDEX/$CONNECTION_WAIT_TRIES, port $port not available on $host, retry in $CONNECTION_WAIT_INTERVAL"
     else
       log:info "Port $port is open on $host"
       break

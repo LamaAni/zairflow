@@ -14,6 +14,7 @@ function prepare_airflow_env() {
   : ${ZAIRFLOW_CONTAINER_TYPE:="worker"}
   : ${ZAIRFLOW_WAIT_FOR:=""}
   : ${ZAIRFLOW_DAGS_FOLDER:="/app"}
+  : ${ZAIRFLOW_AUTO_DETECT_CLUSTER:="true"}
 
   ZAIRFLOW_WAIT_FOR=($ZAIRFLOW_WAIT_FOR)
 
@@ -34,7 +35,26 @@ function prepare_airflow_env() {
   # kubernetes
   export IS_KUBERNETES=1
   kubectl cluster-info
-  assert $? "Could not retrieve cluster info. Continue assuming not kubernetes." || IS_KUBERNETES=0
+  assert $? "Could not retrieve cluster info. Continue assuming not running in kuberntes." || IS_KUBERNETES=0
+
+  if [ $IS_KUBERNETES -eq 1 ]; then
+    if [ "$ZAIRFLOW_AUTO_DETECT_CLUSTER" == "true" ] && [ -n "$KUBERNETES_SERVICE_HOST" ]; then
+      log:info "Autodetected airflow kubernetes in cluster"
+      : ${AIRFLOW__KUBERNETES__IN_CLUSTER:="True"}
+      export AIRFLOW__KUBERNETES__IN_CLUSTER
+
+      AIRFLOW__KUBERNETES__NAMESPACE=$(get_airflow_config_vals kubernetes.namespace)
+      assert $? "Failed to load kuberntes namespace from config: $AIRFLOW__KUBERNETES__NAMESPACE" || exit $?
+
+      if [ -z "$AIRFLOW__KUBERNETES__NAMESPACE" ] && [ -f '/var/run/secrets/kubernetes.io/serviceaccount/namespace' ]; then
+        AIRFLOW__KUBERNETES__NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+        log:info "Autodetected current namesace @ $AIRFLOW__KUBERNETES__NAMESPACE"
+        export AIRFLOW__KUBERNETES__NAMESPACE
+      fi
+      log:info "Running executor worker pods in namespace $AIRFLOW__KUBERNETES__NAMESPACE"
+    fi
+    export AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY
+  fi
 
   log:sep "Checking dependencies..."
   # postgres validate
