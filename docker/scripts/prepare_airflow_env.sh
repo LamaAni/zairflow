@@ -14,6 +14,7 @@ function prepare_airflow_env() {
   : ${ZAIRFLOW_CONTAINER_TYPE:="worker"}
   : ${ZAIRFLOW_WAIT_FOR:=""}
   : ${ZAIRFLOW_DAGS_FOLDER:="/app"}
+  : ${ZAIRFLOW_AUTO_DETECT_CLUSTER:="true"}
 
   ZAIRFLOW_WAIT_FOR=($ZAIRFLOW_WAIT_FOR)
 
@@ -27,7 +28,6 @@ function prepare_airflow_env() {
   : "${DB_PORT:="5432"}"
 
   # default connections.
-  : ${AIRFLOW__CORE__SQL_ALCHEMY_CONN:="postgresql+psycopg2://airflow:airflow@$DBHOST:$DB_PORT/airflow"}
   : ${AIRFLOW__CLI__ENDPOINT_URL:="$MAIN_HOST:8080"}
   : ${AIRFLOW__WEBSERVER__BASE_URL:="$MAIN_HOST:8080"}
   : ${AIRFLOW__CORE__DAGS_FOLDER:="/app"}
@@ -35,17 +35,36 @@ function prepare_airflow_env() {
   # kubernetes
   export IS_KUBERNETES=1
   kubectl cluster-info
-  assert $? "Could not retrieve cluster info. Continue assuming not kubernetes." || IS_KUBERNETES=0
+  assert $? "Could not retrieve cluster info. Continue assuming not running in kuberntes." || IS_KUBERNETES=0
+
+  if [ $IS_KUBERNETES -eq 1 ]; then
+    if [ "$ZAIRFLOW_AUTO_DETECT_CLUSTER" == "true" ] && [ -n "$KUBERNETES_SERVICE_HOST" ]; then
+      log:info "Autodetected airflow kubernetes in cluster"
+      : ${AIRFLOW__KUBERNETES__IN_CLUSTER:="True"}
+      export AIRFLOW__KUBERNETES__IN_CLUSTER
+
+      AIRFLOW__KUBERNETES__NAMESPACE=$(get_airflow_config_vals kubernetes.namespace)
+      assert $? "Failed to load kuberntes namespace from config: $AIRFLOW__KUBERNETES__NAMESPACE" || exit $?
+
+      if [ -z "$AIRFLOW__KUBERNETES__NAMESPACE" ] && [ -f '/var/run/secrets/kubernetes.io/serviceaccount/namespace' ]; then
+        AIRFLOW__KUBERNETES__NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+        log:info "Autodetected current namesace @ $AIRFLOW__KUBERNETES__NAMESPACE"
+        export AIRFLOW__KUBERNETES__NAMESPACE
+      fi
+      log:info "Running executor worker pods in namespace $AIRFLOW__KUBERNETES__NAMESPACE"
+    fi
+    export AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY
+  fi
 
   log:sep "Checking dependencies..."
   # postgres validate
   log:info "Waiting for the database to be ready @ $DB_HOST:$DB_PORT..."
-  wait_for_connection "$DB_HOST:$DB_PORT"
+  wait_for_connection "$DB_HOST:$DB_PORT" || return $?
   assert $? "Failed to find database. Exiting." || return $?
 
   for wait_for_url in "${ZAIRFLOW_WAIT_FOR[@]}"; do
     log:info "Waiting for $wait_for_url to be ready..."
-    wait_for_connection "$wait_for_url"
+    wait_for_connection "$wait_for_url" || return $?
     assert $? "Failed connecting to $wait_for_url"
   done
 
@@ -57,7 +76,7 @@ function prepare_airflow_env() {
     export AIRFLOW__CORE__DAGS_FOLDER
 
     log:sep "Starting git auto-sync to $ZAIRFLOW_GIT_AUTOSYNC_URI"
-    source "$CUR_PATH/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$sync_folder" "$ZAIRFLOW_DAGS_SUBFOLDER"
+    "$CUR_PATH/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$sync_folder" "$ZAIRFLOW_DAGS_SUBFOLDER"
     assert $? "Failed to initialize git autosync" || return $?
   fi
 }

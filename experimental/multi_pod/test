@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+# shellcheck disable=SC1091
+CUR_PATH="$SCRIPTS_PATH"
+: ${CUR_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source $(realpath $CUR_PATH/../../docker/scripts/common.sh)
+
+function build() {
+    log:sep "Docker build.."
+    BUILDER_PATH=$(realpath $CUR_PATH/../../docker/build)
+    $BUILDER_PATH --no-push
+    assert $? "Failed to build image" || return $?
+}
+
+function create() {
+    log:info "Creating the pod..."
+    kubectl apply -f $CUR_PATH/test.yaml --wait=true
+    assert $? "Faild to deploy" || return $?
+}
+
+function delete() {
+    local passthrough=$?
+    log:info "Deleting the deployment..."
+    kubectl delete -f $CUR_PATH/test.yaml --wait=true
+    assert $? "Failed to delete the pod" || return $?
+    return $passthrough
+}
+
+function forward() {
+    kubectl port-forward svc/zairflow-test-webserver-svc 3030:8080
+}
+
+if [ $# -eq 0 ]; then
+    build || exit $?
+    create || exit $?
+else
+    case "$1" in
+    "build")
+        build || exit $?
+        ;;
+    "delete")
+        delete || exit $?
+        ;;
+    "forward")
+        forward || exit $?
+        ;;
+    "create")
+        create || exit $?
+        ;;
+    *)
+        assert 2 "Invalid argument $1"
+        ;;
+    esac
+fi

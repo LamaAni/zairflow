@@ -3,6 +3,7 @@ FROM python:3.7.4-slim
 USER root
 WORKDIR /image_install
 
+
 # set the terminal type.
 ENV TERM linux
 ARG DEBIAN_FRONTEND=noninteractive
@@ -37,7 +38,9 @@ RUN apt-get install -yqq --no-install-recommends\
    # redis cli tools
    redis-tools\
    # postgres cli tools
-   postgresql-client
+   postgresql-client\
+   # mysql
+   default-libmysqlclient-dev
 
 ##########################
 # google keyring & kubectl
@@ -53,6 +56,14 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
 ##########################
 # Python enviroment
 RUN yes | pip install -U\
+   # airflow install requirements
+   setuptools\
+   wheel\
+   pytz\
+   pyOpenSSL\
+   ndg-httpsclient\
+   pyasn1\
+   argcomplete\
    # communication between main pod, scheduler and workers
    redis\
    # postgres python binaries
@@ -83,30 +94,35 @@ ENV PATH="/scripts:${PATH}:/home/airflow/.local/bin"
 ##########################
 # Main version
 
-ENV ZAIRFLOW_VERSION=0.1.2
+ARG AIRFLOW_VERSION=1.10.9
+ARG AIRFLOW_DEPS=""
+ARG PYTHON_DEPS=""
+ENV ZAIRFLOW_VERSION=0.1.2-${AIRFLOW_VERSION}
 
 ##########################
 # Install airflow 
-USER airflow
-
-RUN yes | pip install --user\
-   apache-airflow==1.10.9\
+RUN yes | pip install\
+   apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,kubernets${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
    git+https://github.com/LamaAni/KubernetesJobOperator.git@master
 
 # this update is required since the airflow is installing the 
 # wrong versions. Should be : Werkzeug>=0.15.0,Jinja2>=2.10.0]
-RUN yes | pip install --user --upgrade Flask
+RUN yes | pip install --upgrade Flask
+
+COPY db_logger_package /db_logger_package
+
+RUN yes | pip install /db_logger_package
 
 ##########################
 # Scripts
-USER root
 WORKDIR /scripts
 
 # copy bash scripts.
 COPY ./scripts /scripts
 RUN git clone https://github.com/LamaAni/git_autosync.git --branch 1.1.0 /scripts/git_autosync && \
    ln -sf /scripts/git_autosync/git_autosync /usr/bin/git_autosync && \
-   ln -sf /scripts/invoke_airflow /usr/bin/airflow && \
+   mv /usr/local/bin/airflow /usr/local/bin/call_airflow && \
+   ln -sf /scripts/invoke_airflow /usr/local/bin/airflow && \
    chmod +x -R /scripts && chmod +x /usr/bin/git_autosync
 
 ##########################

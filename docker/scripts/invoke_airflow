@@ -8,10 +8,10 @@ source "$CUR_PATH/common.sh"
 DO_LOAD_ENV=0
 
 case "$1" in
-webserver | scheduler | worker | initdb | flower)
+webserver | scheduler | worker | initdb | flower | run)
     # requires prep.
     source "$CUR_PATH/prepare_airflow_env.sh" || exit $?
     ;;
 esac
 
-/home/airflow/.local/bin/airflow "$@" || exit $?
+call_airflow "$@" || exit $?
