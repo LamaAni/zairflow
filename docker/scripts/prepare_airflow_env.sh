@@ -27,7 +27,6 @@ function prepare_airflow_env() {
   : "${DB_PORT:="5432"}"
 
   # default connections.
-  : ${AIRFLOW__CORE__SQL_ALCHEMY_CONN:="postgresql+psycopg2://airflow:airflow@$DBHOST:$DB_PORT/airflow"}
   : ${AIRFLOW__CLI__ENDPOINT_URL:="$MAIN_HOST:8080"}
   : ${AIRFLOW__WEBSERVER__BASE_URL:="$MAIN_HOST:8080"}
   : ${AIRFLOW__CORE__DAGS_FOLDER:="/app"}

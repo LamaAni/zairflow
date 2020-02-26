@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# shellcheck disable=SC1091
+CUR_PATH="$SCRIPTS_PATH"
+: ${CUR_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source $(realpath $CUR_PATH/../../docker/scripts/common.sh)
+
+log:sep "Docker build.."
+BUILDER_PATH=$(realpath $CUR_PATH/../../docker/build)
+$BUILDER_PATH --no-push
+assert $? "Failed to build image" || exit $?
+
+source "$CUR_PATH/scripts/common.sh"
+
+function create() {
+    log:info "Creating the pod..."
+    kubectl apply -f $CUR_PATH/test.yaml --wait=true
+    assert $? "Faild to deploy" || return $?
+}
+
+function delete() {
+    local passthrough=$?
+    log:info "Deleting the deployment..."
+    kubectl delete -f $CUR_PATH/test.yaml --wait=true
+    assert $? "Failed to delete the pod" || return $?
+    return $passthrough
+}
+
+function forward() {
+    kubectl port-forward svc/zairflow-test-webserver-svc 3030:8080
+}
+if [ "$1" == "delete" ]; then
+    delete
+else
+    create || exit $?
+    assert $? "Failed pod execution" || exit $?
+    forward
+    log:info "Deleting in 5 [s], Press ctrl-c to abort delete"
+    sleep 5
+    delete
+fi
