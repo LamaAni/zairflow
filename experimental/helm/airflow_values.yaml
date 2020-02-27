@@ -7,6 +7,7 @@ envs:
   ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
   ZAIRFLOW_DAGS_SUBFOLDER: 'experimental/dags'
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
-
+  AIRFLOW__CORE__LOG_FORMAT: "[%(asctime)s] %(levelname)7s - %(message)s"
+  AIRFLOW__CORE__COLORED_LOG_FORMAT: "[%(blue)s%(asctime)s%(reset)s] %(log_color)s%(levelname)7s%(reset)s - %(log_color)s%(message)s%(reset)s"
 serviceAccount:
   enabled: true

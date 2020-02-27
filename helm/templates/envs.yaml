@@ -12,7 +12,6 @@ data:
   {{- if .Values.logging.useDbLogger }}
   AIRFLOW__CORE__LOGGING_CONFIG_CLASS: "airflow_db_logger.airflow_log_config.LOGGING_CONFIG"
   {{- end }}
-  AIRFLOW__CORE__LOG_FORMAT: "{{ .Values.loggingFormat }}"
 
   {{- if .Values.kubeExecutor.enabled }}
   # Configure kubernetes
