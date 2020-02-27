@@ -14,6 +14,9 @@ spec:
         deployment-target: {{ $full_name }}-initdb
         {{- include "zairflow-helm.labels" . | nindent 8 }}
     spec:
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
+      {{- end}}
       terminationGracePeriodSeconds: {{ default .Values.initdb.terminationGracePeriodSeconds 10 }}
       restartPolicy: Never
       containers:

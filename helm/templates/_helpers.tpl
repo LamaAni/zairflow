@@ -66,7 +66,7 @@ Create the name of the service account to use
 Create image name
 */}}
 {{- define "zairflow-helm.image" -}}
-{{- default .Values.image.repository "lamaani/zairflow:latest" }}
+{{- .Values.image.repository }}:{{ .Values.image.tag }}
 {{- end -}}
 
 {{/*

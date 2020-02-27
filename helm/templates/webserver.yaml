@@ -31,6 +31,9 @@ spec:
         deployment-target: {{ $full_name }}-web
         {{- include "zairflow-helm.labels" . | nindent 8 }}
     spec:
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
+      {{- end}}
       terminationGracePeriodSeconds: {{ default .Values.webserver.terminationGracePeriodSeconds 10 }}
       containers:
         - name: airflow-webserver

@@ -16,6 +16,9 @@ spec:
         deployment-target: {{ include "zairflow-helm.fullname" . }}-sch
         {{- include "zairflow-helm.labels" . | nindent 8 }}
     spec:
+      {{- if .Values.serviceAccount.enabled }}
+      serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
+      {{- end}}
       terminationGracePeriodSeconds: {{ default .Values.scheduler.terminationGracePeriodSeconds 10 }}
       containers:
         - name: airflow-scheduler
@@ -23,7 +26,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: ZAIRFLOW_CONTAINER_TYPE
-              value: 'webserver'
+              value: 'scheduler'
             {{- tuple .Values.postgres.envs | include "inject-yaml" | nindent 12 }}
           envFrom:
             - configMapRef:
