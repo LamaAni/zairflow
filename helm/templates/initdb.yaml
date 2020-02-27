@@ -1,0 +1,36 @@
+{{- if .Values.initdb.enabled }}
+{{ $full_name := include "zairflow-helm.fullname" . }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $full_name }}-initdb
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        deployment-target: {{ $full_name }}-initdb
+        {{- include "zairflow-helm.labels" . | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: {{ default .Values.initdb.terminationGracePeriodSeconds 10 }}
+      restartPolicy: Never
+      containers:
+        - name: airflow-initdb
+          image: {{ include "zairflow-helm.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: ZAIRFLOW_CONTAINER_TYPE
+              value: 'initdb'
+            {{- tuple .Values.initdb.envs | include "inject-yaml" | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ $full_name }}-envs
+          resources:
+          {{- tuple .Values.initdb.resources | include "inject-yaml" | nindent 12 }}
+        {{- tuple .Values.initdb.injectContainerYaml | include "inject-yaml" | nindent 10 }}
+      {{- tuple .Values.initdb.containers | include "inject-yaml" | nindent 8 }}
+    {{- tuple .Values.initdb.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
+  {{- tuple .Values.initdb.injectSpecYaml | include "inject-yaml" | nindent 4 }}
+{{- end }}

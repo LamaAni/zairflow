@@ -1,0 +1,9 @@
+# generate a transient postgres-xl db with username and password. This db will
+# NOT be able to withstand restarts.
+releases:
+  - name: test-zairflow
+    # Use of a specific release.
+    # chart: https://github.com/[....]/version.tar.gz
+    chart: ../../helm
+    values:
+      - ./airflow_values.yaml

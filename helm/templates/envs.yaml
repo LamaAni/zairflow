@@ -1,0 +1,32 @@
+{{ $full_name := include "zairflow-helm.fullname" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $full_name }}-envs
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+data:
+  # Added envs. These will not affect the db operation.
+  {{- tuple .Values.envs | include "inject-yaml" | nindent 2 }}
+  
+  {{- if .Values.logging.useDbLogger }}
+  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: "airflow_db_logger.airflow_log_config.LOGGING_CONFIG"
+  {{- end }}
+  AIRFLOW__CORE__LOG_FORMAT: "{{ .Values.loggingFormat }}"
+
+  {{- if .Values.postgres.enabled }}
+  AIRFLOW__CORE__EXECUTOR: "KubernetesExecutor"
+  {{- else }}
+  AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
+  {{- end }}
+
+  {{- if .Values.postgres.enabled }}
+  DB_HOST: {{ $full_name }}-pg-db-svc
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://{{- .Values.postgres.creds.user }}:{{- .Values.postgres.creds.password }}@{{ $full_name }}-pg-db-svc:{{- .Values.postgres.port }}/{{- .Values.postgres.db }}"
+  {{- end }}
+
+  {{- if .Values.kubeExecutor.enabled }}
+  AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: {{ $full_name }}-envs
+  {{- end }}
+
+  {{- tuple .Values.overrideEnvs | include "inject-yaml" | nindent 2 }}

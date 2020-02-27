@@ -1,0 +1,74 @@
+{{ $full_name := include "zairflow-helm.fullname" . }}
+{{- if .Values.postgres.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $full_name }}-pg-db-svc
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.postgres.port }}
+      targetPort: {{ .Values.postgres.port }}
+      name: db
+  clusterIP: None
+  selector:
+    deployment-target: {{ $full_name }}-pg-db
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $full_name }}-pg-db
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      deployment-target: {{ $full_name }}-pg-db
+  serviceName: {{ $full_name }}-pg-db-svc
+  {{- if .Values.postgres.persist }}
+  volumeClaimTemplates:
+    - metadata:
+        name: datastore
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          {{- tuple .Values.postgres.pvc | include "inject-yaml" | nindent 10}}
+  {{- end }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        deployment-target: {{ $full_name }}-pg-db
+    spec:
+      terminationGracePeriodSeconds: {{ default .Values.postgres.terminationGracePeriodSeconds 10 }}
+      containers:
+        - name: airflow-database
+          image: {{ .Values.postgres.image }}
+          ports:
+            - containerPort: {{ .Values.postgres.port }}
+          {{- if .Values.postgres.persist }}
+          volumeMounts:
+            - name: datastore
+              mountPath: /var/lib/postgresql/data
+          {{- end }}
+          env:
+            - name: POSTGRES_USER
+              value: "{{ .Values.postgres.creds.user }}"
+            - name: POSTGRES_DB
+              value: "{{ .Values.postgres.db }}"
+            - name: POSTGRES_PASSWORD
+              value: "{{ .Values.postgres.creds.password }}"
+            - name: MAX_CONNECTIONS
+              value: "{{ .Values.postgres.maxConnections }}"
+            {{- tuple .Values.postgres.envs | include "inject-yaml" | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ $full_name }}-envs
+          resources:
+          {{- tuple .Values.postgres.resources | include "inject-yaml" | nindent 12 }}
+        {{- tuple .Values.postgres.injectContainerYaml | include "inject-yaml" | nindent 10 }}
+      {{- tuple .Values.postgres.containers | include "inject-yaml" | nindent 8 }}
+    {{- tuple .Values.postgres.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
+  {{- tuple .Values.postgres.injectSpecYaml | include "inject-yaml" | nindent 4 }}
+{{- end }}

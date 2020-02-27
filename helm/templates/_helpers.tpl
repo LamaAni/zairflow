@@ -63,8 +63,20 @@ Create the name of the service account to use
 {{- end -}}
 
 {{/*
-Create chart name and version as used by the chart label.
+Create image name
 */}}
 {{- define "zairflow-helm.image" -}}
 {{- default .Values.image.repository "lamaani/zairflow:latest" }}
+{{- end -}}
+
+{{/*
+Create image name
+*/}}
+{{- define "inject-yaml" -}}
+  {{- $value := index . 0 }}
+  {{- if $value }}
+    {{- toYaml $value }}
+  {{- else }}
+
+  {{- end }}
 {{- end -}}

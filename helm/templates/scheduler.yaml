@@ -1,0 +1,36 @@
+{{ $full_name := include "zairflow-helm.fullname" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zairflow-helm.fullname" . }}-sch
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.scheduler.replicas }}
+  selector:
+    matchLabels:
+      deployment-target: {{ include "zairflow-helm.fullname" . }}-sch
+  template:
+    metadata:
+      labels:
+        deployment-target: {{ include "zairflow-helm.fullname" . }}-sch
+        {{- include "zairflow-helm.labels" . | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: {{ default .Values.scheduler.terminationGracePeriodSeconds 10 }}
+      containers:
+        - name: airflow-scheduler
+          image: {{ include "zairflow-helm.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: ZAIRFLOW_CONTAINER_TYPE
+              value: 'webserver'
+            {{- tuple .Values.postgres.envs | include "inject-yaml" | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "zairflow-helm.fullname" . }}-envs
+          resources:
+          {{- tuple .Values.postgres.resources | include "inject-yaml" | nindent 12 }}
+        {{- tuple .Values.postgres.injectContainerYaml | include "inject-yaml" | nindent 10 }}
+      {{- tuple .Values.postgres.containers | include "inject-yaml" | nindent 8 }}
+    {{- tuple .Values.postgres.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
+  {{- tuple .Values.postgres.injectSpecYaml | include "inject-yaml" | nindent 4 }}

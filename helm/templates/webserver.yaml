@@ -1,0 +1,53 @@
+{{ $full_name := include "zairflow-helm.fullname" . }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $full_name }}-web-svc
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.webserver.port }}
+      targetPort: {{ .Values.webserver.port }}
+  clusterIP: None
+  selector:
+    deployment-target: {{ $full_name }}-web
+---
+# the webserver
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $full_name }}-web
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.webserver.replicas }}
+  selector:
+    matchLabels:
+      deployment-target: {{ $full_name }}-web
+  template:
+    metadata:
+      labels:
+        deployment-target: {{ $full_name }}-web
+        {{- include "zairflow-helm.labels" . | nindent 8 }}
+    spec:
+      terminationGracePeriodSeconds: {{ default .Values.webserver.terminationGracePeriodSeconds 10 }}
+      containers:
+        - name: airflow-webserver
+          image: {{ include "zairflow-helm.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.webserver.port }}
+          env:
+            - name: ZAIRFLOW_CONTAINER_TYPE
+              value: 'webserver'
+            {{- tuple .Values.postgres.envs | include "inject-yaml" | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ $full_name }}-envs
+          resources:
+          {{- tuple .Values.postgres.resources | include "inject-yaml" | nindent 12 }}
+        {{- tuple .Values.postgres.injectContainerYaml | include "inject-yaml" | nindent 10 }}
+      {{- tuple .Values.postgres.containers | include "inject-yaml" | nindent 8 }}
+    {{- tuple .Values.postgres.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
+  {{- tuple .Values.postgres.injectSpecYaml | include "inject-yaml" | nindent 4 }}

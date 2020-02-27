@@ -1,0 +1,46 @@
+# Source: zairflow-helm/templates/webserver.yaml
+# the webserver
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-zairflow-helm-web
+  labels:
+    helm.sh/chart: zairflow-helm-0.1.1
+    app.kubernetes.io/name: zairflow-helm
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment-target: RELEASE-NAME-zairflow-helm-web
+  template:
+    metadata:
+      labels:
+        deployment-target: RELEASE-NAME-zairflow-helm-web
+        helm.sh/chart: zairflow-helm-0.1.1
+        app.kubernetes.io/name: zairflow-helm
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/version: "1.10.9"
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: airflow-webserver
+          image: lamaani/zairflow:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ZAIRFLOW_CONTAINER_TYPE
+              value: 'webserver'
+            - name: Lama
+              value: 1
+          envFrom:
+            - configMapRef:
+                name: RELEASE-NAME-zairflow-helm-envs
+          resources:
+            requests:
+              cpu: 150m
+              memory: 200Mi
