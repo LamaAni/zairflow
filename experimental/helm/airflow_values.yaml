@@ -7,3 +7,6 @@ envs:
   ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
   ZAIRFLOW_DAGS_SUBFOLDER: 'experimental/dags'
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+
+serviceAccount:
+  enabled: true
