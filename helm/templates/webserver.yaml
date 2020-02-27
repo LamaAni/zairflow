@@ -36,6 +36,18 @@ spec:
         - name: airflow-webserver
           image: {{ include "zairflow-helm.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 20
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 5
+            initialDelaySeconds: 5
+            periodSeconds: 5
           ports:
             - containerPort: {{ .Values.webserver.port }}
           env:

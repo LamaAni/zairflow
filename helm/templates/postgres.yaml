@@ -52,6 +52,18 @@ spec:
             - name: datastore
               mountPath: /var/lib/postgresql/data
           {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+            initialDelaySeconds: 5
+            periodSeconds: 5
           env:
             - name: POSTGRES_USER
               value: "{{ .Values.postgres.creds.user }}"
