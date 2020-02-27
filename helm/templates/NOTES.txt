@@ -1,8 +1,24 @@
-Get the application URL by running these commands:
+{{ $full_name := include "zairflow-helm.fullname" . }}
+----------------------------------------------------------
+> Config:
+
+Airflow database service: {{ $full_name }}-pg-db-svc
+Airflow web-server service: {{ $full_name }}-web-svc
+
+Using kubectl:
+  webservice: 
+    kubectl port-forward svc/{{ $full_name }}-web-svc 3030:8080
+  database:
+    kubectl port-forward svc/{{ $full_name }}-web-svc 5432:5432
+
 {{- if .Values.ingress.enabled }}
+External links:
 {{- range $host := .Values.ingress.hosts }}
   {{- range .paths }}
   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ . }}
   {{- end }}
 {{- end }}
-{{- end -}}
+Warning: Ingress has been enabled!
+{{- end }}
+
+----------------------------------------------------------

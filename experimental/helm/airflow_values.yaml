@@ -1,4 +1,9 @@
 # used limited resources to allow this
 # deployment to be tested on local systems.
-# Recommended values can be found in README and 
+# Recommended values can be found in README and
 # in the values file in this chart.
+
+envs:
+  ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
+  ZAIRFLOW_DAGS_SUBFOLDER: 'experimental/dags'
+  AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
