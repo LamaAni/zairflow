@@ -9,7 +9,7 @@ logging:
 
 image:
   # considere, repository, tag
-  repository: "lamaani/zirflow"
+  repository: "lamaani/zairflow"
   tag: "latest"
   pullPolicy: IfNotPresent
 
@@ -60,6 +60,8 @@ postgres:
       memory: "200Mi"
       cpu: "150m"
 
+lama: 3242
+
 kubeExecutor:
   enabled: true
   workerImagePullPolicy: 
@@ -70,7 +72,7 @@ config:
 
 serviceAccount:
   # Specifies whether a service account should be created
-  enabled: true
+  enabled: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.

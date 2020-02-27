@@ -19,7 +19,7 @@ spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
       {{- end}}
-      terminationGracePeriodSeconds: {{ default .Values.scheduler.terminationGracePeriodSeconds 10 }}
+      terminationGracePeriodSeconds: {{ default 10 .Values.scheduler.terminationGracePeriodSeconds }}
       containers:
         - name: airflow-scheduler
           image: {{ include "zairflow-helm.image" . }}

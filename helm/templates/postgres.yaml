@@ -44,7 +44,7 @@ spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
       {{- end}}
-      terminationGracePeriodSeconds: {{ default .Values.postgres.terminationGracePeriodSeconds 10 }}
+      terminationGracePeriodSeconds: {{ default 10 .Values.postgres.terminationGracePeriodSeconds }}
       containers:
         - name: airflow-database
           image: {{ .Values.postgres.image }}

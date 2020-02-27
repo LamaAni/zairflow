@@ -17,11 +17,13 @@ data:
   {{- if .Values.kubeExecutor.enabled }}
   # Configure kubernetes
   AIRFLOW__CORE__EXECUTOR: "KubernetesExecutor"
-  AIRFLOW__KUBERNETES__WORKER_SERVICE_ACCOUNT_NAME: "{{ include "zairflow-helm.serviceAccountName" . }}"
-  AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: {{ default .Values.kubeExecutor.workerImageRepository .Values.image.repository }}
-  AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: {{ default .Values.kubeExecutor.workerImageTag .Values.image.tag }}
-  AIRFLOW__KUBERNETES__WORKER_CONTAINER_IMAGE_PULL_POLICY: {{ default .Values.kubeExecutor.workerImagePullPolicy .Values.image.pullPolicy }}
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: {{ default .Values.image.repository .Values.kubeExecutor.workerImageRepository }}
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: {{ default .Values.image.tag .Values.kubeExecutor.workerImageTag }}
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_IMAGE_PULL_POLICY: {{ default .Values.image.pullPolicy .Values.kubeExecutor.workerImagePullPolicy }}
   AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: '{{ $full_name }}-envs'
+  {{- if .Values.serviceAccount.enabled }}
+  AIRFLOW__KUBERNETES__WORKER_SERVICE_ACCOUNT_NAME: "{{ include "zairflow-helm.serviceAccountName" . }}"
+  {{- end }}
   {{- else }}
   # Configure local executor
   AIRFLOW__CORE__EXECUTOR: "LocalExecutor"

@@ -17,7 +17,7 @@ spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
       {{- end}}
-      terminationGracePeriodSeconds: {{ default .Values.initdb.terminationGracePeriodSeconds 10 }}
+      terminationGracePeriodSeconds: {{ default 10 .Values.initdb.terminationGracePeriodSeconds }}
       restartPolicy: Never
       containers:
         - name: airflow-initdb

@@ -55,11 +55,17 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use
 */}}
 {{- define "zairflow-helm.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-    {{ default (include "zairflow-helm.fullname" .) .Values.serviceAccount.name }}
-{{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
-{{- end -}}
+  {{- if .Values.serviceAccount.enabled -}}
+
+    {{- if .Values.serviceAccount.name -}}
+      {{- .Values.serviceAccount.name }}
+    {{- else -}}
+      {{- include "zairflow-helm.fullname" . }}-svc-account
+    {{- end -}}
+
+  {{- else -}}
+    {{- default "default" .Values.serviceAccount.defaultServiceAccount }}
+  {{- end -}}
 {{- end -}}
 
 {{/*
