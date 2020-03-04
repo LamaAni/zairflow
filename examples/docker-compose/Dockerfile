@@ -11,7 +11,7 @@ RUN apt-get install -yqq\
 USER airflow
 # We are currently using the airflow user. So pip should install to user.
 RUN yes | pip install --user \
-    apache-airflow[slack,password,login] \
+    apache-airflow[slack] \
     bcrypt\
     flask-bcrypt\
     boto3\
