@@ -25,6 +25,9 @@ The zairflow image is built and published to dockerhub at,
 1. ZAIRFLOW_WAIT_FOR - a list of uri, including port (example: localhost:8888) to wait until open on TCP.
 1. ZAIRFLOW_GIT_AUTOSYNC_URI - a uri to the git repo to sync. If a git repo already exists on the image at the location of the dags folder, use "internal"
 1. ZAIRFLOW_DAGS_SUBFOLDER - a subfolder path in the dags dir, where the dags can be found.
+1. ZAIRFLOW_ENTRYPOINT_INIT_HOOK - A hook that runs before the airflow environment starts (including built in initdb, ZAIRFLOW_RUN_INITDB)
+1. ZAIRFLOW_ENTRYPOINT_RUN_HOOK - A hook that runs after the airflow environment starts (including built in initdb, ZAIRFLOW_RUN_INITDB)
+1. ZAIRFLOW_ENTRYPOINT_DESTROY_HOOK - A hook that runs after the airflow environment exists (mostly applies to initdb)
 
 # Helm
 

@@ -21,6 +21,7 @@ RUN yes | pip install --user \
 
 COPY ./dags /app/dags
 COPY ./plugins /app/plugins
+COPY ./scripts/init_connections /scripts/init_connections
 
 # ENV ZAIRFLOW_DAGS_SUBFOLDER="dags" # The same as the line below
 ENV AIRFLOW__CORE__DAGS_FOLDER=/app/dags

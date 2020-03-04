@@ -47,7 +47,7 @@ function build_image() {
     assert $? "Failed to load envs" || return $?
 
     log:sep "Building"
-    docker build . -t $BUILD_NAME:local
+    docker build . -t $BUILD_NAME:local --build-arg "ZAIRFLOW_VERSION=$ZAIRFLOW_VERSION"
     assert $? "Docker build failed" || return $?
 
     if [ $DO_PUSH -eq 1 ]; then

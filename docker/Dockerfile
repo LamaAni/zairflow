@@ -98,7 +98,6 @@ ENV PATH="/scripts:${PATH}:/home/airflow/.local/bin"
 ARG AIRFLOW_VERSION=1.10.9
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
-ENV ZAIRFLOW_VERSION=0.1.3-${AIRFLOW_VERSION}
 
 ##########################
 # Install airflow 
@@ -145,11 +144,13 @@ EXPOSE 8080 5555 8793
 COPY airflow.cfg ./airflow.cfg
 
 # airflow envs
+ARG ZAIRFLOW_VERSION="debug"
 ENV AIRFLOW_HOME /airflow
 ENV FERNET_KEY "abcd"
 ENV PGHOST localhost
 ENV PGUSER airflow
 ENV AIRFLOW_CONFIG /airflow/airflow.cfg
+ENV ZAIRFLOW_VERSION=${ZAIRFLOW_VERSION}
 
 # create the empty logs folder.
 WORKDIR /airflow/logs
