@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+: ${REPO_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+
+if [ -z "$ZAIRFLOW_BUILD_ENV_STARTED" ]; then
+    ZAIRFLOW_BUILD_ENV_STARTED="true"
+    export ZAIRFLOW_BUILD_ENV_STARTED
+
+    ZAIRFLOW_SHORT_VERSION="0.2"
+
+    ZAIRFLOW_VERSION_PATCH=0
+    if [ -f "$REPO_PATH/patch_number" ]; then
+        ZAIRFLOW_VERSION_PATCH=$(cat "$REPO_PATH/patch_number")
+        ZAIRFLOW_VERSION_PATCH=$((ZAIRFLOW_VERSION_PATCH + 1))
+    fi
+
+    echo "$ZAIRFLOW_VERSION_PATCH" >"$REPO_PATH/patch_number"
+
+    ZAIRFLOW_VERSION="$ZAIRFLOW_SHORT_VERSION.$ZAIRFLOW_VERSION_PATCH"
+    BUILD_NAME="lamaani/zairflow"
+fi

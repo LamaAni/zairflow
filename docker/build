@@ -42,25 +42,26 @@ function change_back_to_CALLING_FOLDER() {
     return "$@"
 }
 
+function push_tag() {
+    log:sep "Tagging and pushing: $1"
+    docker tag "$BUILD_NAME:local" "$BUILD_NAME:$1"
+    assert $? "Docker tag failed" || return $?
+    docker push "$BUILD_NAME:$1"
+    assert $? "Docker push failed" || return $?
+}
+
 function build_image() {
-    source "./envs"
+    source "../envs"
     assert $? "Failed to load envs" || return $?
 
-    log:sep "Building"
+    log:sep "Building zairflow $ZAIRFLOW_VERSION"
     docker build . -t $BUILD_NAME:local --build-arg "ZAIRFLOW_VERSION=$ZAIRFLOW_VERSION"
     assert $? "Docker build failed" || return $?
 
     if [ $DO_PUSH -eq 1 ]; then
-        log:sep "Pushing"
-        docker tag "$BUILD_NAME:local" "$BUILD_NAME:$ZAIRFLOW_VERSION"
-        assert $? "Docker tag failed" || return $?
-        docker tag "$BUILD_NAME:local" "$BUILD_NAME:latest"
-        assert $? "Docker tag failed" || return $?
-
-        docker push "$BUILD_NAME:$ZAIRFLOW_VERSION"
-        assert $? "Docker push failed" || return $?
-        docker push "$BUILD_NAME:latest"
-        assert $? "Docker push failed" || return $?
+        push_tag "$ZAIRFLOW_VERSION" || return $?
+        push_tag "$ZAIRFLOW_SHORT_VERSION" || return $?
+        push_tag "latest" || return $?
     fi
 }
 
