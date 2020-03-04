@@ -62,7 +62,7 @@ spec:
         - configMapRef:
             name: zaf-tester-cm-env
     - name: airflow-postgres
-      image: postgres
+      image: 'postgres:12.2'
       ports:
         - containerPort: 5432
       env:

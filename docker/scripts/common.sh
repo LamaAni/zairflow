@@ -43,6 +43,15 @@ function assert() {
   fi
 }
 
+function assert_warning() {
+  local err="$1"
+  : ${err:=0}
+  if [ "$err" -ne 0 ]; then
+    log_core "${yellow}WARNING${end_color}" "$2" >>/dev/stderr
+    return $err
+  fi
+}
+
 function log:info() {
   log_core "${green}INFO${end_color}" "$@"
 }

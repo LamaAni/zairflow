@@ -85,8 +85,9 @@ RUN useradd -m airflow
 
 # set python to use unicode.
 ENV SLUGIFY_USES_TEXT_UNIDECODE=yes
+# FIXME: Is this still needed?
 ENV AIRFLOW_GPL_UNIDECODE yes
-
+# FIXME: Is this still needed?
 ENV C_FORCE_ROOT=true
 
 ENV PATH="/scripts:${PATH}:/home/airflow/.local/bin"
@@ -97,7 +98,7 @@ ENV PATH="/scripts:${PATH}:/home/airflow/.local/bin"
 ARG AIRFLOW_VERSION=1.10.9
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
-ENV ZAIRFLOW_VERSION=0.1.2-${AIRFLOW_VERSION}
+ENV ZAIRFLOW_VERSION=0.1.3-${AIRFLOW_VERSION}
 
 ##########################
 # Install airflow 
@@ -109,8 +110,8 @@ RUN yes | pip install\
 # wrong versions. Should be : Werkzeug>=0.15.0,Jinja2>=2.10.0]
 RUN yes | pip install --upgrade Flask
 
+# Added specialized logger.
 COPY db_logger_package /db_logger_package
-
 RUN yes | pip install /db_logger_package
 
 ##########################
@@ -145,6 +146,7 @@ COPY airflow.cfg ./airflow.cfg
 
 # airflow envs
 ENV AIRFLOW_HOME /airflow
+ENV FERNET_KEY "abcd"
 ENV PGHOST localhost
 ENV PGUSER airflow
 ENV AIRFLOW_CONFIG /airflow/airflow.cfg

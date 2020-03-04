@@ -1,0 +1,42 @@
+version: '3.4'
+x-globalenvs: &globalenvs
+  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://airflow:airflow@postgres:5432/airflow"
+  DB_HOST: 'postgres'
+  AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+
+networks:
+  airflow-backend:
+    driver: bridge
+
+services:
+  airflow-web:
+    build: .
+    networks:
+      - airflow-backend
+    ports:
+      - '3030:8080'
+    environment:
+      ZAIRFLOW_CONTAINER_TYPE: 'webserver'
+      ZAIRFLOW_RUN_INITDB: 'true'
+      <<: *globalenvs
+      
+  airflow-scheduler:
+    build: .
+    networks:
+      - airflow-backend
+    environment:
+      ZAIRFLOW_CONTAINER_TYPE: 'scheduler'
+      <<: *globalenvs
+
+  postgres:
+    image: 'postgres:12.2'
+    networks:
+      - airflow-backend
+    environment:
+      POSTGRES_USER: 'airflow'
+      POSTGRES_PASSWORD: 'airflow'
+      POSTGRES_DB: 'airflow'
+      MAX_CONNECTIONS: '10000'
+    ports:
+      - '5432:5432'

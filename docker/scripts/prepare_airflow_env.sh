@@ -35,7 +35,7 @@ function prepare_airflow_env() {
   # kubernetes
   export IS_KUBERNETES=1
   kubectl cluster-info
-  assert $? "Could not retrieve cluster info. Continue assuming not running in kuberntes." || IS_KUBERNETES=0
+  assert_warning $? "Could not retrieve cluster info. Continue assuming not running in kuberntes." || IS_KUBERNETES=0
 
   if [ $IS_KUBERNETES -eq 1 ]; then
     if [ "$ZAIRFLOW_AUTO_DETECT_CLUSTER" == "true" ] && [ -n "$KUBERNETES_SERVICE_HOST" ]; then
