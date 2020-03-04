@@ -1,4 +1,7 @@
 {{ $full_name := include "zairflow-helm.fullname" . }}
+{{- if .Values.postgres.enabled }}
+{{ $pg_connection:= "postgresql+psycopg2://{{- .Values.postgres.credentials.user }}:{{- .Values.postgres.credentials.password }}@{{ $full_name }}-pg-db-svc:{{- .Values.postgres.port }}/{{- .Values.postgres.db }}" }}
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,27 +16,26 @@ data:
   AIRFLOW__CORE__LOGGING_CONFIG_CLASS: "airflow_db_logger.airflow_log_config.LOGGING_CONFIG"
   {{- end }}
 
-  {{- if .Values.kubeExecutor.enabled }}
-  # Configure kubernetes
-  AIRFLOW__CORE__EXECUTOR: "KubernetesExecutor"
-  AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: {{ default .Values.image.repository .Values.kubeExecutor.workerImageRepository }}
-  AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: {{ default .Values.image.tag .Values.kubeExecutor.workerImageTag }}
-  AIRFLOW__KUBERNETES__WORKER_CONTAINER_IMAGE_PULL_POLICY: {{ default .Values.image.pullPolicy .Values.kubeExecutor.workerImagePullPolicy }}
+  AIRFLOW__CORE__EXECUTOR: "{{ .Values.executor.type }}"
+
+  # Configure if the kubernetes executor
+  {{- if .Values.executor.type=="KubernetesExecutor" }}
+  
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: {{ default .Values.image.repository .Values.executor.workerImageRepository }}
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: {{ default .Values.image.tag .Values.executor.workerImageTag }}
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_IMAGE_PULL_POLICY: {{ default .Values.image.pullPolicy .Values.executor.workerImagePullPolicy }}
   AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: '{{ $full_name }}-envs'
   {{- if .Values.serviceAccount.enabled }}
   AIRFLOW__KUBERNETES__WORKER_SERVICE_ACCOUNT_NAME: "{{ include "zairflow-helm.serviceAccountName" . }}"
   {{- end }}
-  {{- else }}
-  # Configure local executor
-  AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
   {{- end }}
 
   {{- if .Values.postgres.enabled }}
-  DB_HOST: {{ $full_name }}-pg-db-svc
-  AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://{{- .Values.postgres.creds.user }}:{{- .Values.postgres.creds.password }}@{{ $full_name }}-pg-db-svc:{{- .Values.postgres.port }}/{{- .Values.postgres.db }}"
+  DB_HOST: "{{ $full_name }}-pg-db-svc"
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: "{{ $pg_connection }}"
   {{- end }}
 
-  {{- if .Values.kubeExecutor.enabled }}
+  {{- if .Values.executor.type="KubeExecutor" }}
   AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: {{ $full_name }}-envs
   {{- end }}
 

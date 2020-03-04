@@ -69,11 +69,11 @@ spec:
             periodSeconds: 5
           env:
             - name: POSTGRES_USER
-              value: "{{ .Values.postgres.creds.user }}"
+              value: "{{ .Values.postgres.credentials.user }}"
             - name: POSTGRES_DB
               value: "{{ .Values.postgres.db }}"
             - name: POSTGRES_PASSWORD
-              value: "{{ .Values.postgres.creds.password }}"
+              value: "{{ .Values.postgres.credentials.password }}"
             - name: MAX_CONNECTIONS
               value: "{{ .Values.postgres.maxConnections }}"
             {{- tuple .Values.postgres.envs | include "inject-yaml" | nindent 12 }}

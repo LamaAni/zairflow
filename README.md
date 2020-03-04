@@ -1,6 +1,6 @@
 # ZAirflow
 
-A docker image and helm chart for a simple Kubernetes airflow deploy
+An opinionated docker image and helm chart for a simple Kubernetes airflow deploy.
 
 # Alpha version
 

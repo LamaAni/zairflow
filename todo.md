@@ -10,3 +10,4 @@
 ## Helm chart
 1. Readme for helm chart.
 1. Check airflow values against the stable chart and make sure all are captured.
+1. Security configurations (Postgres, redis, airflow).

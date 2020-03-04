@@ -42,7 +42,7 @@ if pool_enabled:
     # max_overflow can be set to -1 to indicate no overflow limit;
     # no limit will be placed on the total number
     # of concurrent connections. Defaults to 10.
-    max_overflow = conf.getint("db_logger", "SQL_ALCHEMY_MAX_OVERFLOW", fallback=6)
+    max_overflow = conf.getint("db_logger", "SQL_ALCHEMY_MAX_OVERFLOW", fallback=1)
 
     # The DB server already has a value for wait_timeout (number of seconds after
     # which an idle sleeping connection should be killed). Since other DBs may

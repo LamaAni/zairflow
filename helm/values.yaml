@@ -1,22 +1,44 @@
 # Default values for zairflow-helm.
 # This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+
+# -------------------------------------
+# Chart general values
+
 nameOverride: ""
 fullnameOverride: ""
-logging:
-  useDbLogger: true
+
+
+# -------------------------------------
+# Airflow settings
+
+executor:
+  # Can be any of: SequentialExecutor, LocalExecutor, KubernetesExecutor
+  # NOTE: The celery executor is not yet implemented. 
+  type: "LocalExecutor"
+  # Applies when workers are created (only KubernetesExecutor since celery is not implemented)
+  workerImagePullPolicy: 
+  workerImageRepository:
+  workerImageTag:
 
 image:
-  # considere, repository, tag
   repository: "lamaani/zairflow"
   tag: "latest"
   pullPolicy: IfNotPresent
 
-# global env collection
+logging:
+  # If true, uses the zairflow internal logging manager that
+  # writes the logs to the postgres database.
+  useDbLogger: true
+
 envs:
+  # global env collection
 overrideEnvs:
+  # Global override envs collection, allows overriding the envs
+  # produced by the chart. Use with caution.
 
 initdb:
+  # If enabled will create an initdb job, that will run when
+  # the chart is deployed.
   enabled: true
 
 webserver:
@@ -44,24 +66,25 @@ postgres:
   image: "postgres:12.2"
   port: 5432
   maxConnections: 10000
+  # if true adds the pvc.
   persist: true
   pvc:
     requests:
       storage: 100Mi
-  creds:
+  credentials:
+    # Database credentials.
     user: airflow
     password: airflow
+  # The database name
   db: airflow
+  # defaults.
   resources:
     requests:
       memory: "200Mi"
       cpu: "150m"
 
-kubeExecutor:
-  enabled: true
-  workerImagePullPolicy: 
-  workerImageRepository:
-  workerImageTag:
+# -------------------------------------
+# Kubernetes settings
 
 serviceAccount:
   # Specifies whether a service account should be created
