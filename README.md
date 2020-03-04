@@ -7,7 +7,7 @@ A docker image and helm chart for a simple Kubernetes airflow deploy
 ## Envs
 
 1. ZAIRFLOW_CONTAINER_TYPE - array, space separated of the pod types. applies only to the entrypoint script. Can be
-   1. schedulerF
+   1. scheduler
    1. worker
    1. webserver
    1. flower
