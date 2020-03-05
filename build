@@ -4,10 +4,21 @@
 
 source "$REPO_PATH/docker/scripts/common.sh"
 
-log:sep "Preparing build"
 
 source "$REPO_PATH/envs"
 assert $? "Failed to load core enviroment"
+
+
+log:sep "Updating repo"
+
+git add "$REPO_PATH" &&
+git commit -m "Build $ZAIRFLOW_VERSION"
+assert_warning $? "Add failed, nothing to add?"
+
+git push
+assert $? "Failed to buld version" || exit $?
+
+log:sep "Preparing build"
 
 log:sep "IMAGE"
 source "$REPO_PATH/docker/build" --push
