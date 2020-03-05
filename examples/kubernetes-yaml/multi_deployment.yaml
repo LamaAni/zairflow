@@ -14,9 +14,9 @@ data:
 
   # uncomment to define the kubernetes executor
   AIRFLOW__CORE__EXECUTOR: KubernetesExecutor
-  AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: 'latest'
-  AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: 'lamaani/zairflow'
-  AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: 'zairflow-test-cm'
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: latest
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: lamaani/zairflow
+  AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: zairflow-test-cm
 ---
 # Define the database initialization job.
 apiVersion: batch/v1

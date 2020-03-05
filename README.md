@@ -36,6 +36,8 @@ The zairflow image is built and published to dockerhub at,
 
 # Helm
 
+if using kubernetes executor dags in image is true.
+
 ## Available executors
 
 1. LocalExecutor
