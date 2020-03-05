@@ -1,27 +1,25 @@
 
 FROM python:3.7.4-slim
+ENV TERM linux
+
+#########################################
+# Prepare envrioment
+
 USER root
 WORKDIR /image_install
-
-
-# set the terminal type.
-ENV TERM linux
-ARG DEBIAN_FRONTEND=noninteractive
 
 # prepare ubuntu version.
 RUN apt-get update -yqq &&\
    apt-get upgrade -yqq &&\
    apt-get install -yqq --no-install-recommends\
-   apt-utils
-
-# prepare enviroment (utf-8, english)
-RUN apt-get install -yqq --no-install-recommends locales\
+   apt-utils \
+   # prepare enviroment (utf-8, english)
+   && apt-get install -yqq --no-install-recommends locales\
    && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
    && locale-gen \
-   && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
-
-# Install core packages
-RUN apt-get install -yqq --no-install-recommends\
+   && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+   # Install core packages
+   && apt-get install -yqq --no-install-recommends\
    # Core tools (for use in image)
    curl\
    git\
@@ -33,13 +31,9 @@ RUN apt-get install -yqq --no-install-recommends\
    htop\
    sudo\
    netcat\
-   # airflow dependencies. 
    libssl-dev\
-   # redis cli tools
    redis-tools\
-   # postgres cli tools
    postgresql-client\
-   # mysql
    default-libmysqlclient-dev
 
 ##########################
@@ -51,11 +45,11 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
    apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - &&\
    apt-get update -y &&\
    apt-get install --no-install-recommends -yqq\
-   kubectl
+      kubectl
 
 ##########################
 # Python enviroment
-RUN yes | pip install -U\
+RUN yes | pip install --no-cache-dir -U\
    # airflow install requirements
    setuptools\
    wheel\
@@ -64,17 +58,11 @@ RUN yes | pip install -U\
    ndg-httpsclient\
    pyasn1\
    argcomplete\
-   # communication between main pod, scheduler and workers
    redis\
-   # postgres python binaries
    psycopg2-binary\
-   # airflow dependencies.
    crypto\
-   # postgres package
    postgres\
-   # kubernets package
    kubernetes\
-   # gcloud libs
    google-cloud-storage\
    google-cloud-bigquery
 
@@ -89,7 +77,6 @@ ENV SLUGIFY_USES_TEXT_UNIDECODE=yes
 ENV AIRFLOW_GPL_UNIDECODE yes
 # FIXME: Is this still needed?
 ENV C_FORCE_ROOT=true
-
 ENV PATH="/scripts:${PATH}:/home/airflow/.local/bin"
 
 ##########################
@@ -100,45 +87,44 @@ ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 
 ##########################
-# Install airflow 
-RUN yes | pip install\
-   apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,kubernets${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
-   git+https://github.com/LamaAni/KubernetesJobOperator.git@master
-
-# this update is required since the airflow is installing the 
-# wrong versions. Should be : Werkzeug>=0.15.0,Jinja2>=2.10.0]
-RUN yes | pip install --upgrade Flask
-
-# Added specialized logger.
+# Copy dependencies
 COPY db_logger_package /db_logger_package
-RUN yes | pip install /db_logger_package
+COPY ./scripts /scripts
+
+##########################
+# Install airflow 
+WORKDIR /airflow
+RUN yes | pip install --no-cache-dir --upgrade \
+      apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,kubernets${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
+      git+https://github.com/LamaAni/KubernetesJobOperator.git@master \
+      # Falsk sometimes comes in the wrong version.
+      # Flask \
+      # Specialized db logger.
+      /db_logger_package
 
 ##########################
 # Scripts
 WORKDIR /scripts
 
 # copy bash scripts.
-COPY ./scripts /scripts
 RUN git clone https://github.com/LamaAni/git_autosync.git --branch 1.1.0 /scripts/git_autosync && \
    ln -sf /scripts/git_autosync/git_autosync /usr/bin/git_autosync && \
    mv /usr/local/bin/airflow /usr/local/bin/call_airflow && \
    ln -sf /scripts/invoke_airflow /usr/local/bin/airflow && \
    chmod +x -R /scripts && chmod +x /usr/bin/git_autosync
 
-##########################
-# Cleanup
+# ##########################
+# # Cleanup
 
 WORKDIR /
 RUN apt-get autoremove -yqq --purge &&\
-   apt-get clean
+   apt-get clean && \
+   rm -R /db_logger_package
 
 ################################################
 # Airflow directories
 WORKDIR /airflow
 USER airflow
-
-# expose appropriate ports to the outside world.
-EXPOSE 8080 5555 8793
 
 # copy the config.
 COPY airflow.cfg ./airflow.cfg
@@ -156,14 +142,14 @@ ENV ZAIRFLOW_VERSION=${ZAIRFLOW_VERSION}
 WORKDIR /airflow/logs
 
 ######################################
-# change permissions to allow everything...
+# setup permissions
 USER root
 WORKDIR /app
 RUN chown -R airflow /airflow /app && chmod -R 0777 /airflow
 
-########### set entrypoint and start values.
+######################################
+# Image entry config.
 USER airflow
 WORKDIR /app
-
-# set the entry point.
+EXPOSE 8080 5555 8793
 ENTRYPOINT ["/scripts/entrypoint.sh"]

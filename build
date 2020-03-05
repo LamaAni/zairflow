@@ -10,6 +10,6 @@ source "$REPO_PATH/envs"
 assert $? "Failed to load core enviroment"
 
 log:sep "IMAGE"
-source "$REPO_PATH/docker/build"
+source "$REPO_PATH/docker/build" --push
 
 log:sep "Build compleated successfully"

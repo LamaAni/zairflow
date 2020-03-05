@@ -3,19 +3,24 @@ kind: ConfigMap
 metadata:
   name: zairflow-test-config
 data:
+  # define airflow sync uri
   ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
-  ZAIRFLOW_DAGS_SUBFOLDER: 'experimental/dags'
-  AIRFLOW__CORE__EXECUTOR: KubernetesExecutor
+  ZAIRFLOW_DB_HOST: zairflow-test-pg-svc
+
+  # define airflow
+  AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
   AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG
-  DB_HOST: zairflow-test-pg-svc
+  AIRFLOW__CORE__LOG_FORMAT: '[%(asctime)s] %(levelname)7s - %(message)s'
+  AIRFLOW__CORE__COLORED_LOG_FORMAT: "[%(blue)s%(asctime)s%(reset)s] %(log_color)s%(levelname)7s%(reset)s - %(log_color)s%(message)s%(reset)s"
+  AIRFLOW__CORE__EXECUTOR: KubernetesExecutor
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@zairflow-test-pg-svc:5432/airflow
+  AIRFLOW__WEBSERVER__WORKERS: '2'
   
+  # define kubernetes access
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: local
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_IMAGE_PULL_POLICY: 'Never'
   AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: 'zairflow-test-config'
 
-  AIRFLOW__WEBSERVER__WORKERS: '2'
-  AIRFLOW__CORE__LOG_FORMAT: '[%(asctime)s] %(levelname)7s - %(message)s'
 ---
 # The main scheduler, runs the init db command
 apiVersion: apps/v1

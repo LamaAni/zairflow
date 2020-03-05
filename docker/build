@@ -8,17 +8,18 @@ help_text="
 Build the zairflow image
 Usage: build
 Flags:
-    --no-push   Do not push to docker hub
+    --push   Push to repository.
     -h | --help Show this help menu.
 "
-DO_PUSH=1
+DO_PUSH=0
 while [ "$#" -gt 0 ]; do
     case $1 in
     --help | -h)
-        echo
+        echo "$help_text"
+        exit 0
         ;;
-    --no-push)
-        DO_PUSH=0
+    --push)
+        DO_PUSH=1
         ;;
     *)
         echo "Error: unknown argument $1"
@@ -35,7 +36,7 @@ function change_to_build_path() {
     assert $? "Failed to change docker build folder @ $CUR_PATH" || exit $?
     return "$@"
 }
-function change_back_to_CALLING_FOLDER() {
+function change_back_to_calling_folder() {
     log:info "Going back to the calling folder @ $CALLING_FOLDER"
     cd "$CALLING_FOLDER"
     assert $? "Failed to change back to source folder @ $CALLING_FOLDER" || exit $?
@@ -67,5 +68,5 @@ function build_image() {
 
 change_to_build_path || exit $?
 build_image
-change_back_to_CALLING_FOLDER $?
+change_back_to_calling_folder $?
 assert $? "Could not build docker image" || exit $?

@@ -1,13 +1,16 @@
 version: '3.4'
 x-globalenvs: &globalenvs 
   # As an example, initializing without the user code.
-  ZAIRFLOW_DB_HOST: 'postgres'
   ZAIRFLOW_POST_LOAD_USER_CODE: 'true'
+  ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
+  ZAIRFLOW_DB_HOST: 'postgres'
 
   # Airflow args
   AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@postgres:5432/airflow'
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+  AIRFLOW__CORE__DAGS_FOLDER: /app/examples/docker-compose/dags
+  AIRFLOW__CORE__PLUGINS_FOLDER: /app/examples/docker-compose/plugins
 
 networks:
   airflow-backend:
@@ -15,7 +18,7 @@ networks:
 
 services:
   airflow-web:
-    build: .
+    image: lamaani/zairflow:latest
     networks:
       - airflow-backend
     ports:
@@ -23,11 +26,10 @@ services:
     environment:
       ZAIRFLOW_CONTAINER_TYPE: 'webserver'
       ZAIRFLOW_RUN_INITDB: 'true'
-      ZAIRFLOW_ENTRYPOINT_RUN_HOOK: '/scripts/init_connections'
       <<: *globalenvs
 
   airflow-scheduler:
-    build: .
+    image: lamaani/zairflow:latest
     networks:
       - airflow-backend
     environment:

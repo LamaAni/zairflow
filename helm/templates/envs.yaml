@@ -31,7 +31,7 @@ data:
   {{- end }}
 
   {{- if .Values.postgres.enabled }}
-  DB_HOST: "{{ $full_name }}-pg-db-svc"
+  ZAIRFLOW_DB_HOST: "{{ $full_name }}-pg-db-svc"
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: "{{ $pg_connection }}"
   {{- end }}
 

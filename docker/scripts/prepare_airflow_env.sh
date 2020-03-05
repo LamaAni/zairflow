@@ -13,24 +13,19 @@ function prepare_airflow_env() {
   # zairflow execution
   : ${ZAIRFLOW_CONTAINER_TYPE:="worker"}
   : ${ZAIRFLOW_WAIT_FOR:=""}
-  : ${ZAIRFLOW_DAGS_FOLDER:="/app"}
   : ${ZAIRFLOW_AUTO_DETECT_CLUSTER:="true"}
   : ${ZAIRFLOW_POST_LOAD_USER_CODE:="false"}
+  : ${ZAIRFLOW_GIT_AUTOSYNC_PATH="/app"}
 
   ZAIRFLOW_WAIT_FOR=($ZAIRFLOW_WAIT_FOR)
 
-  if [ -z "$MAIN_HOST" ]; then
-    # This is the main container.
-    MAIN_HOST="localhost"
-  fi
-
   # Default postgres
-  : "${DB_HOST:="$MAIN_HOST"}"
-  : "${DB_PORT:="5432"}"
+  : "${ZAIRFLOW_DB_HOST:="localhost"}"
+  : "${ZAIRFLOW_DB_PORT:="5432"}"
 
   # default connections.
-  : ${AIRFLOW__CLI__ENDPOINT_URL:="$MAIN_HOST:8080"}
-  : ${AIRFLOW__WEBSERVER__BASE_URL:="$MAIN_HOST:8080"}
+  : ${AIRFLOW__CLI__ENDPOINT_URL:="localhost:8080"}
+  : ${AIRFLOW__WEBSERVER__BASE_URL:="localhost:8080"}
   : ${AIRFLOW__CORE__DAGS_FOLDER:="/app"}
 
   # kubernetes
@@ -59,8 +54,8 @@ function prepare_airflow_env() {
 
   log:sep "Checking dependencies..."
   # postgres validate
-  log:info "Waiting for the database to be ready @ $DB_HOST:$DB_PORT..."
-  wait_for_connection "$DB_HOST:$DB_PORT" || return $?
+  log:info "Waiting for the database to be ready @ $ZAIRFLOW_DB_HOST:$ZAIRFLOW_DB_PORT..."
+  wait_for_connection "$ZAIRFLOW_DB_HOST:$ZAIRFLOW_DB_PORT" || return $?
   assert $? "Failed to find database. Exiting." || return $?
 
   for wait_for_url in "${ZAIRFLOW_WAIT_FOR[@]}"; do
@@ -70,14 +65,8 @@ function prepare_airflow_env() {
   done
 
   if [ -n "$ZAIRFLOW_GIT_AUTOSYNC_URI" ]; then
-    local sync_folder="$AIRFLOW__CORE__DAGS_FOLDER"
-    if [ -n "$ZAIRFLOW_DAGS_SUBFOLDER" ]; then
-      AIRFLOW__CORE__DAGS_FOLDER="$AIRFLOW__CORE__DAGS_FOLDER/$ZAIRFLOW_DAGS_SUBFOLDER"
-    fi
-    export AIRFLOW__CORE__DAGS_FOLDER
-
-    log:sep "Starting git auto-sync to $ZAIRFLOW_GIT_AUTOSYNC_URI"
-    "$CUR_PATH/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$sync_folder" "$ZAIRFLOW_DAGS_SUBFOLDER"
+    log:sep "Starting git auto-sync to $ZAIRFLOW_GIT_AUTOSYNC_PATH"
+    "$CUR_PATH/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$ZAIRFLOW_GIT_AUTOSYNC_PATH"
     assert $? "Failed to initialize git autosync" || return $?
   fi
 }

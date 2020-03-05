@@ -6,9 +6,6 @@ source "$CUR_PATH/common.sh"
 function init_git_autosync() {
     local uri="$1"
     local sync_path="$2"
-    local dags_subpath="$3"
-
-    : ${dags_subpath:=""}
 
     [ -n "$uri" ]
     assert $? "The git repo url must be defined (if the repo already exists use 'internal')"
