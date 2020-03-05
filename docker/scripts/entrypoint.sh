@@ -21,11 +21,40 @@ function invoke_airflow() {
   assert $? "Failed: airflow $@" || exit $?
 }
 
+# post loading of dags and plugins.
+ZAIRFLOW_POST_LOAD_USER_CODE_REVERT_AIRFLOW_DAGS_FOLDER=""
+ZAIRFLOW_POST_LOAD_USER_CODE_REVERT_AIRFLOW_PLUGINS_FOLDER=""
+
+function prepare_post_load_user_code() {
+  if [ "$ZAIRFLOW_POST_LOAD_USER_CODE" == "true" ]; then
+    log:sep "Initializing airflow without user code (dags and plugins)"
+    export ZAIRFLOW_POST_LOAD_USER_CODE_REVERT_AIRFLOW_DAGS_FOLDER="$AIRFLOW__CORE__DAGS_FOLDER"
+    export ZAIRFLOW_POST_LOAD_USER_CODE_REVERT_AIRFLOW_PLUGINS_FOLDER="$AIRFLOW__CORE__PLUGINS_FOLDER"
+    mkdir -p /tmp/not_a_dags_folder &&
+      mkdir -p /tmp/not_a_plugins_folder
+    assert $? "Failed to create post_load temp folders"
+    export AIRFLOW__CORE__DAGS_FOLDER="/tmp/not_a_dags_folder"
+    export AIRFLOW__CORE__PLUGINS_FOLDER="/tmp/not_a_plugins_folder"
+  fi
+}
+
+function attach_post_load_user_code() {
+  if [ "$ZAIRFLOW_POST_LOAD_USER_CODE" == "true" ]; then
+    log:sep "Adding back user code after initialization"
+    export AIRFLOW__CORE__DAGS_FOLDER="$ZAIRFLOW_POST_LOAD_USER_CODE_REVERT_AIRFLOW_DAGS_FOLDER"
+    export AIRFLOW__CORE__PLUGINS_FOLDER="$ZAIRFLOW_POST_LOAD_USER_CODE_REVERT_AIRFLOW_PLUGINS_FOLDER"
+  fi
+}
+
+function invoke_init_db() {
+  log:sep "Initializing airflow db.."
+  invoke_airflow initdb
+  assert $? "Failed to perform init db" || return $?
+}
+
 function check_for_db() {
   if [ "$ZAIRFLOW_RUN_INITDB" == "true" ]; then
-    log:sep "Initializing airflow db.."
-    invoke_airflow initdb
-    assert $? "Failed to perform init db" || return $?
+    invoke_init_db || return $?
   else
     log:sep "Waiting for airflow db initialization"
     wait_for_airflow_db_ready
@@ -41,40 +70,49 @@ function check_for_run_hooks() {
   fi
 }
 
+# for the case where user code is loaded after the init.
+prepare_post_load_user_code || exit $?
+
 case "$ZAIRFLOW_CONTAINER_TYPE" in
 worker)
   # a worker
-  log:sep "Starting worker"
   check_for_db || exit $?
   check_for_run_hooks || exit $?
+  attach_post_load_user_code || exit $?
+  log:sep "Starting worker"
   invoke_airflow worker
   ;;
 scheduler)
-  log:sep "Starting scheduler"
+  
   check_for_db || exit $?
   check_for_run_hooks || exit $?
+  attach_post_load_user_code || exit $?
+  log:sep "Starting scheduler"
   invoke_airflow scheduler
   ;;
 webserver)
-  log:sep "Starting webserver"
   check_for_db || exit $?
   check_for_run_hooks || exit $?
+  attach_post_load_user_code || exit $?
+  log:sep "Starting webserver"
   invoke_airflow webserver
   ;;
 flower)
-  log:sep "Starting flower"
   check_for_run_hooks || exit $?
+  attach_post_load_user_code || exit $?
+  log:sep "Starting flower"
   invoke_airflow flower
   ;;
 initdb)
-  log:sep "Preparing the database"
-  invoke_airflow initdb
   check_for_run_hooks || exit $?
+  attach_post_load_user_code || exit $?
+  invoke_init_db
   ;;
 *)
-  log:sep "Starting external command:"
   check_for_db || exit $?
   check_for_run_hooks || exit $?
+  log:sep "Starting external command:"
+  attach_post_load_user_code || exit $?
   "$@"
   ;;
 esac

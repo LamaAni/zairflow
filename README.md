@@ -3,6 +3,7 @@
 An opinionated docker image and helm chart for a simple Kubernetes airflow deploy.
 
 The repo includes,
+
 1. A docker image for airflow.
 1. A helm chart for airflow.
 
@@ -28,6 +29,8 @@ The zairflow image is built and published to dockerhub at,
 1. ZAIRFLOW_ENTRYPOINT_INIT_HOOK - A hook that runs before the airflow environment starts (including built in initdb, ZAIRFLOW_RUN_INITDB)
 1. ZAIRFLOW_ENTRYPOINT_RUN_HOOK - A hook that runs after the airflow environment starts (including built in initdb, ZAIRFLOW_RUN_INITDB)
 1. ZAIRFLOW_ENTRYPOINT_DESTROY_HOOK - A hook that runs after the airflow environment exists (mostly applies to initdb)
+1. ZAIRFLOW_POST_LOAD_USER_CODE - If true, user code in `dags` and `plugins` will be loaded only when
+   service is started, and will be ignored while initializing (initdb or init hooks).
 
 # Helm
 
@@ -39,7 +42,6 @@ The zairflow image is built and published to dockerhub at,
 
 The celery executor was has not been implemented. Currently, it is under consideration,
 and may not be implemented in future releases.
-
 
 Note: ZAirflow overrides the default dags folder. You must set `AIRFLOW__CORE__DAGS_FOLDER` env
 in order to change the dags folder. airflow.cfg will be ignored.

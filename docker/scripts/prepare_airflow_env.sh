@@ -15,6 +15,7 @@ function prepare_airflow_env() {
   : ${ZAIRFLOW_WAIT_FOR:=""}
   : ${ZAIRFLOW_DAGS_FOLDER:="/app"}
   : ${ZAIRFLOW_AUTO_DETECT_CLUSTER:="true"}
+  : ${ZAIRFLOW_POST_LOAD_USER_CODE:="false"}
 
   ZAIRFLOW_WAIT_FOR=($ZAIRFLOW_WAIT_FOR)
 

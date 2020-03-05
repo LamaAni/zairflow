@@ -27,5 +27,5 @@ if __name__ == "__main__":
     values = []
     for combined_name in combined_names:
         values.append(get_config_value(combined_name))
-    sys.__stdout__.writelines(values)
+    sys.__stdout__.write("\n".join(values))
 
