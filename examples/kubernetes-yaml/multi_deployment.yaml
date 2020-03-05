@@ -9,14 +9,14 @@ data:
 
   # Airflow args
   AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG
-  AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@zairflow-test-pg-svc:5432/airflow'
-  AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://airflow:airflow@zairflow-test-pg-svc:5432/airflow"
+  AIRFLOW__CORE__LOAD_EXAMPLES: "False"
 
-  # # uncomment to define the kubernetes executor
-  # AIRFLOW__CORE__EXECUTOR: KubernetesExecutor
-  # AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: 'latest'
-  # AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: 'lamaani/zairflow'
-  # AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: 'zairflow-test-cm'
+  # uncomment to define the kubernetes executor
+  AIRFLOW__CORE__EXECUTOR: KubernetesExecutor
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: 'latest'
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: 'lamaani/zairflow'
+  AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: 'zairflow-test-cm'
 ---
 # Define the database initialization job.
 apiVersion: batch/v1

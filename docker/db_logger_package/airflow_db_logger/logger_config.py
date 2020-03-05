@@ -83,9 +83,7 @@ Session = scoped_session(
 
 def init_logger(reset=False):
     from .log_records import LoggerModelBase
-
-    logging.info("Initialzing db_logger tables...")
-
+    logging.info(f"Using {DB_LOGGER_SQL_ALCHEMY_CONNECTION}")
     if reset:
         # NOTE: There is no promp for logs, when you reset, everything will reset always.
         logging.info("Resetting db_logger tables...")

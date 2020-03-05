@@ -104,7 +104,6 @@ flower)
   ;;
 initdb)
   check_for_run_hooks || exit $?
-  attach_post_load_user_code || exit $?
   invoke_init_db
   ;;
 *)
