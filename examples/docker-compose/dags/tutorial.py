@@ -31,7 +31,7 @@ default_args = {
     # 'trigger_rule': 'all_success'
 }
 dag = DAG(
-    'tutorial',
+    'tutorial-test-starter',
     default_args=default_args,
     description='A simple tutorial DAG',
     schedule_interval=timedelta(days=1),
