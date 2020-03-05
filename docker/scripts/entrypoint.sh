@@ -83,7 +83,6 @@ worker)
   invoke_airflow worker
   ;;
 scheduler)
-  
   check_for_db || exit $?
   check_for_run_hooks || exit $?
   attach_post_load_user_code || exit $?
