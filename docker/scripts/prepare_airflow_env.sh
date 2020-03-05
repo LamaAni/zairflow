@@ -40,12 +40,16 @@ function prepare_airflow_env() {
       export AIRFLOW__KUBERNETES__IN_CLUSTER
 
       AIRFLOW__KUBERNETES__NAMESPACE=$(get_airflow_config_vals kubernetes.namespace)
-      assert $? "Failed to load kuberntes namespace from config: $AIRFLOW__KUBERNETES__NAMESPACE" || exit $?
+      assert_warning $? "Failed to load kuberntes namespace from config, trying to use current" || AIRFLOW__KUBERNETES__NAMESPACE=""
 
-      if [ -z "$AIRFLOW__KUBERNETES__NAMESPACE" ] && [ -f '/var/run/secrets/kubernetes.io/serviceaccount/namespace' ]; then
-        AIRFLOW__KUBERNETES__NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
-        log:info "Autodetected current namesace @ $AIRFLOW__KUBERNETES__NAMESPACE"
-        export AIRFLOW__KUBERNETES__NAMESPACE
+      if [ -z "$AIRFLOW__KUBERNETES__NAMESPACE" ]; then
+        if [ -f '/var/run/secrets/kubernetes.io/serviceaccount/namespace' ]; then
+          AIRFLOW__KUBERNETES__NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+          log:info "Autodetected current namesace @ $AIRFLOW__KUBERNETES__NAMESPACE"
+          export AIRFLOW__KUBERNETES__NAMESPACE
+        else
+          assert 5 "Failed to find a kubernetes namespace to run in. " || exit $?
+        fi
       fi
       log:info "Running executor worker pods in namespace $AIRFLOW__KUBERNETES__NAMESPACE"
     fi

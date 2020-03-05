@@ -1,7 +1,4 @@
 {{ $full_name := include "zairflow-helm.fullname" . }}
-{{- if .Values.postgres.enabled }}
-{{ $pg_connection:= "postgresql+psycopg2://{{- .Values.postgres.credentials.user }}:{{- .Values.postgres.credentials.password }}@{{ $full_name }}-pg-db-svc:{{- .Values.postgres.port }}/{{- .Values.postgres.db }}" }}
-{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -19,7 +16,7 @@ data:
   AIRFLOW__CORE__EXECUTOR: "{{ .Values.executor.type }}"
 
   # Configure if the kubernetes executor
-  {{- if .Values.executor.type=="KubernetesExecutor" }}
+  {{- if eq .Values.executor.type "KubernetesExecutor" }}
   
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: {{ default .Values.image.repository .Values.executor.workerImageRepository }}
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: {{ default .Values.image.tag .Values.executor.workerImageTag }}
@@ -31,12 +28,9 @@ data:
   {{- end }}
 
   {{- if .Values.postgres.enabled }}
+  {{ $pg_connection:= "postgresql+psycopg2://{{- .Values.postgres.credentials.user }}:{{- .Values.postgres.credentials.password }}@{{ $full_name }}-pg-db-svc:{{- .Values.postgres.port }}/{{- .Values.postgres.db }}" }}
   ZAIRFLOW_DB_HOST: "{{ $full_name }}-pg-db-svc"
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: "{{ $pg_connection }}"
-  {{- end }}
-
-  {{- if .Values.executor.type="KubeExecutor" }}
-  AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: {{ $full_name }}-envs
   {{- end }}
 
   {{- tuple .Values.overrideEnvs | include "inject-yaml" | nindent 2 }}

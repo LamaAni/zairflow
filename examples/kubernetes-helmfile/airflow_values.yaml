@@ -1,0 +1,19 @@
+# used limited resources to allow this
+# deployment to be tested on local systems.
+# Recommended values can be found in README and
+# in the values file in this chart.
+
+envs:
+  # As an example, initializing without the user code.
+  ZAIRFLOW_POST_LOAD_USER_CODE: 'true'
+
+  # Airflow args
+  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: 'airflow_db_logger.airflow_log_config.LOGGING_CONFIG'
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@zairflow-test-pg-svc:5432/airflow'
+  AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+
+serviceAccount:
+  enabled: true
+
+executor:
+  type: KubernetesExecutor
