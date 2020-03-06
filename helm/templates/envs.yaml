@@ -9,10 +9,6 @@ data:
   # Added envs. These will not affect the db operation.
   {{- tuple .Values.envs | include "inject-yaml" | nindent 2 }}
   
-  {{- if .Values.logging.useDbLogger }}
-  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: "airflow_db_logger.airflow_log_config.LOGGING_CONFIG"
-  {{- end }}
-
   AIRFLOW__CORE__EXECUTOR: "{{ .Values.executor.type }}"
 
   # Configure if the kubernetes executor

@@ -25,9 +25,9 @@ for each build the patch number is updated. The minor version will be updated fo
 ## Airflow config
 
 Changes to the default config:
-1. [Core].`logging_config_class` = airflow_db_logger.airflow_log_config.LOGGING_CONFIG
-1. [Kubernetes].`dags_in_image`= True
-1. [Kubernetes].`kube_client_request_args` = "", this was changed due to a `bug` in the core airflow
+1. [Core].`logging_config_class` = airflow_db_logger.airflow_log_config.LOGGING_CONFIG - log to database instead of files.
+1. [Kubernetes].`dags_in_image`= True - Expect kubernetes worker dags in the image.
+1. [Kubernetes].`kube_client_request_args` = "" - a changed due to a `bug` in the core airflow
 config; the json is not parsed properly.
 
 #### Note
@@ -113,7 +113,7 @@ See [helmfile example](/examples/docker-compose/dkubernetes-helmfile)
 
 ## `Chart values`
 
-#### Note: 
+#### Note:
 The definition `[a].[b]=value` should be translated in the yaml values file as,
 ```yaml
 a:
@@ -124,18 +124,60 @@ a:
 
 name | description | type/values | default
 ---|---|---|---
-
+`nameOverride` | Override the name of the chart | `string` | None
+`fullnameOverride` | Override the name of the chart and the suffixes | `string` | None
+`envs` | global env collection, added to config map | `yaml` | None
+`overrideEnvs` | global env collection, added to config map, that will override any internal env values that were produced by the chart | `yaml` | None
+|||
+`image.pullPolicy` | The pull policy | IfNotPresent, Never, Always | IfNotPresent
+`image.repository` | The image repo | `string` | lamaani/zairflow
+`image.tag` | The image tag | `string` | latest
+|||
+`executor.type` | The executor to be used by airflow | SequentialExecutor, LocalExecutor, KubernetesExecutor | LocalExecutor
+`executor.workerImagePullPolicy` | The pull policy | IfNotPresent, Never, Always | `image.pullPolicy`
+`executor.workerImageRepository` | The image repo | `string` | `image.repository`
+`executor.workerImageTag` | The image tag | `string` | `image.tag`
+|||
+`initdb.enabled` | Enabled the initdb job | `boolean` | true
+|||
+`webserver.port` | The webserver port to use |`int` | 8080
+`webserver.terminationGracePeriodSeconds` | The number of seconds before forced pod termination | `int` | 10
+`webserver.replicas` | The number of webserver replicas | `int` | 1
+`webserver.envs` | Environment variables to add to the webserver pods | `yaml` | None
+`webserver.resources` | Pod resources | `yaml` | None
+|||
+`scheduler.terminationGracePeriodSeconds` | The number of seconds before forced pod termination | `int` | 10
+`scheduler.replicas` | The number of webserver replicas | `int` | 1
+`scheduler.envs` | Environment variables to add to the webserver pods | `yaml` | None
+`scheduler.resources` | Pod resources | `yaml` | None
+|||
+`postgres.enabled` | If true, create a postgres database | `boolean` | true
+`postgres.image` | The postgres image, with tag | `string` | postgres:12.2
+`postgres.port` | The database port to use |`int` | 5432
+`postgres.terminationGracePeriodSeconds` | The number of seconds before forced pod termination | `int` | 10
+`postgres.envs` | Environment variables to add to the webserver pods | `yaml` | None
+`postgres.resources` | Pod resources | `yaml` | None
+`postgres.maxConnections` | The maximal number of database connections | `int` | 10000
+`postgres.persist` | The maximal number of database connections | `bool` | true
+`postgres.pvc` | Add a kubernetes PVC to the database, allowing it to persist through db pod restarts | `yaml ` | see [here](/helm/values)
+`postgres.db` | The default db | `string` | airflow
+`postgres.credentials.user` | The db username | `string` | airflow
+`postgres.credentials.password` | the db password | `string` | airflow
+|||
+`serviceAccount.enabled` | If true creates a service account | `boolean` | false
+`serviceAccount.name` | The name of the service account to use. | `string` | `chart full name`
+`serviceAccount.annotations` | More service account info | `yaml` | None
 
 #### Advanced
 
 Yaml injection, use with care,
 name | description | type/values | applies to types
 ---|---|---|---
-[type].injectContainerYaml | yaml inject | yaml | webserver, scheduler, postgres, initdb
-[type].injectTemplateSpecYaml | yaml inject | yaml | webserver, scheduler, postgres, initdb
-[type].injectSpecYaml | yaml inject | yaml | webserver, scheduler, postgres, initdb
-[type].injectYamlMetadata | yaml inject | yaml | serviceAccount
-[type].injectYaml | yaml inject | yaml | serviceAccount
+`[type].injectContainerYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, initdb
+`[type].injectTemplateSpecYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, initdb
+`[type].injectSpecYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, initdb
+`[type].injectYamlMetadata` | yaml inject | `yaml` | serviceAccount
+`[type].injectYaml` | yaml inject | `yaml` | serviceAccount
 
 # Licence
 
