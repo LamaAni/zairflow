@@ -103,7 +103,6 @@ function value_in_array() {
 # Airflow
 
 function get_airflow_config_vals() {
-  export PYTHONWARNINGS="ignore"
   python3 $SCRIPTS_PATH/get_airflow_config_vals.py "$@"
 }
 
@@ -111,9 +110,9 @@ function get_airflow_config_vals() {
 # Connection
 
 # methods for general purpose use.
-: ${CONNECTION_WAIT_TRIES:="60"}
-: ${CONNECTION_WAIT_TIMEOUT:="1"}
-: ${CONNECTION_WAIT_INTERVAL:="1"}
+: ${ZARIFLOW_CONNECTION_WAIT_TRIES:="60"}
+: ${ZARIFLOW_CONNECTION_WAIT_TIMEOUT:="1"}
+: ${ZARIFLOW_CONNECTION_WAIT_INTERVAL:="1"}
 
 function wait_for_connection() {
   local host=$1
@@ -131,30 +130,30 @@ function wait_for_connection() {
   [ -n "$host" ]
   assert $? "wait_for_connection: You must provide a host" || return $?
 
-  log:info "Checking $host:$port is open with an interval of $CONNECTION_WAIT_INTERVAL, max $CONNECTION_WAIT_TRIES times.."
+  log:info "Checking $host:$port is open with an interval of $ZARIFLOW_CONNECTION_WAIT_INTERVAL, max $ZARIFLOW_CONNECTION_WAIT_TRIES times.."
   WAIT_INDEX=0
   while true; do
-    nc -w $CONNECTION_WAIT_TIMEOUT -zv "$host" "$port" &>/dev/null
+    nc -w $ZARIFLOW_CONNECTION_WAIT_TIMEOUT -zv "$host" "$port" &>/dev/null
     if [ $? -ne 0 ]; then
-      if [ $WAIT_INDEX -gt $CONNECTION_WAIT_TRIES ]; then
+      if [ $WAIT_INDEX -gt $ZARIFLOW_CONNECTION_WAIT_TRIES ]; then
         log:error "Timed out while waiting for port $port on $host"
         return 3
       fi
-      log:info "Attempt $WAIT_INDEX/$CONNECTION_WAIT_TRIES, port $port not available on $host, retry in $CONNECTION_WAIT_INTERVAL"
+      log:info "Attempt $WAIT_INDEX/$ZARIFLOW_CONNECTION_WAIT_TRIES, port $port not available on $host, retry in $ZARIFLOW_CONNECTION_WAIT_INTERVAL"
     else
       log:info "Port $port is open on $host"
       break
     fi
     WAIT_INDEX=$((WAIT_INDEX + 1))
-    sleep "$CONNECTION_WAIT_INTERVAL"
+    sleep "$ZARIFLOW_CONNECTION_WAIT_INTERVAL"
   done
 }
 
+: ${ZARIFLOW_DB_WAIT_TRIES:="60"}
+: ${ZARIFLOW_DB_WAIT_INTERVAL:="1"}
+
 function wait_for_airflow_db_ready() {
   local count=0
-
-  : ${DB_WAIT_TRIES:="60"}
-  : ${DB_WAIT_TIMEOUT:="1"}
 
   while true; do
     last_print=$(python3 "$SCRIPTS_PATH/check_airflow_db.py" 2>&1)
@@ -164,10 +163,10 @@ function wait_for_airflow_db_ready() {
       break
     fi
     count=$((count + 1))
-    if [ "$count" -ge "$DB_WAIT_TRIES" ]; then
+    if [ "$count" -ge "$ZARIFLOW_DB_WAIT_TRIES" ]; then
       assert $last_error "$last_print"$'\n'"Timed out while waiting for db to initialize." || return $?
     fi
-    log:info "Airflow db not ready ($count/$DB_WAIT_TRIES), retry in $DB_WAIT_TIMEOUT [s].."
-    sleep "$DB_WAIT_TIMEOUT"
+    log:info "Airflow db not ready ($count/$ZARIFLOW_DB_WAIT_TRIES), retry in $ZARIFLOW_DB_WAIT_INTERVAL [s].."
+    sleep "$ZARIFLOW_DB_WAIT_INTERVAL"
   done
 }

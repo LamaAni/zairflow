@@ -48,7 +48,12 @@ ZAIRFLOW_ENTRYPOINT_INIT_HOOK | A bash script/command to run before the airflow 
 ZAIRFLOW_ENTRYPOINT_RUN_HOOK | A bash script/command to run before airflow runs (after initdb) | `string` | None
 ZAIRFLOW_ENTRYPOINT_DESTROY_HOOK | A bash script/command to run after the airflow environment exists | `string` | None
 ZAIRFLOW_POST_LOAD_USER_CODE | While calling initdb, INIT HOOK and RUN HOOK, points airflow to load dags and plugins from an empty folder. Allows for initialization without plugin/dag errors and proper initialization of airflow variables. | `boolean` | False
-
+ZAIRFLOW_AUTO_DETECT_CLUSTER | Auto detect the cluster config in running in a kubernetes cluster | `boolean` | true
+ZARIFLOW_DB_WAIT_TRIES | The number of attempts to run when waiting for db tables to be ready | `int` | 60
+ZARIFLOW_DB_WAIT_INTERVAL | The number of seconds to wait between each db tables test  | `int` | 1
+ZARIFLOW_CONNECTION_WAIT_TRIES | The number of attempts to run when waiting for a connection | `int` | 60
+ZARIFLOW_CONNECTION_WAIT_TIMEOUT | The connection wait timeout | `int` | 1
+ZARIFLOW_CONNECTION_WAIT_INTERVAL | The number of seconds to wait between connection attempts | `int` | 1
 
 # Helm
 
