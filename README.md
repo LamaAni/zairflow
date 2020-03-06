@@ -6,14 +6,14 @@ An opinionated docker image and helm chart for a simple Kubernetes airflow deplo
 
 The repo includes,
 
-1. A docker image for airflow.
-1. A helm chart for airflow.
+1. A [docker image](#Image) for airflow.
+1. A [helm chart](#Helm) for airflow.
 
 See examples [here](/examples).
 
-# `zairflow` Image
+# Image
 
-The zairflow image is built and published to dockerhub @,
+The zairflow image is published to dockerhub @
 ```
 lamaani/zairflow:[major].[minor].[patch]
 lamaani/zairflow:[major].[minor]
@@ -21,6 +21,22 @@ lamaani/zairflow:latest
 ```
 The image is tagged per release. Version definition is `[major].[minor].[patch]`, where 
 for each build the patch number is updated. The minor version will be updated for every stable release.
+
+## Airflow config
+
+Changes to the default config:
+1. [Core].`logging_config_class` = airflow_db_logger.airflow_log_config.LOGGING_CONFIG
+1. [Kubernetes].`dags_in_image`= True
+1. [Kubernetes].`kube_client_request_args` = "", this was changed due to a `bug` in the core airflow
+config; the json is not parsed properly.
+
+#### Note
+
+It is recommended to control the airflow configuration using environment variables, like so,
+```
+export AIRFLOW__[section]__[property]=[value]
+```
+For more info on setting airflow environment variables see [here](https://airflow.readthedocs.io/en/stable/howto/set-config.html).
 
 ## Envs
 
@@ -55,18 +71,46 @@ ZARIFLOW_CONNECTION_WAIT_TRIES | The number of attempts to run when waiting for 
 ZARIFLOW_CONNECTION_WAIT_TIMEOUT | The connection wait timeout | `int` | 1
 ZARIFLOW_CONNECTION_WAIT_INTERVAL | The number of seconds to wait between connection attempts | `int` | 1
 
+## DB logger
+
+An internal DB logger package was added that writes all logs to a database instead of files. This package can be enabled by setting the `logging_config_class` in the `airflow config`,
+```ini
+[CORE]
+logging_config_class = airflow_db_logger.airflow_log_config.LOGGING_CONFIG
+```
+
+**This package is highly recommended for multi pod implementations**, and was added by default. 
+
+Possible package options added to the airflow config,
+
+section | description |  type/values | default
+---|---|---|---
+[db_logger].`SQL_ALCHEMY_CONN` | The sqlalchemy connection string | `string` | [core].`SQL_ALCHEMY_CONN`
+[db_logger].`SQL_ALCHEMY_SCHEMA` | The schema where to put the logging tables. | `string` | [core].`SQL_ALCHEMY_SCHEMA`
+[db_logger].`SQL_ALCHEMY_POOL_ENABLED` | If true enable sql alchemy pool | `boolean` | True
+[db_logger].`SQL_ALCHEMY_POOL_SIZE` | The size of the sqlalchemy pool. | `int` | 5
+[db_logger].`SQL_ALCHEMY_MAX_OVERFLOW` | The max overflow for sqlalchemy | `int` | 1
+[db_logger].`SQL_ALCHEMY_POOL_RECYCLE` | The pool recycle time | `int` | 1800
+[db_logger].`SQL_ALCHEMY_POOL_PRE_PING` | If true, do a ping at the connection start. | `boolean` | true
+[db_logger].`SQL_ENGINE_ENCODING` | THe encoding for the sql engine | `string` | utf-8
+
 # Helm
 
-if using kubernetes executor dags in image is true.
+A template based deployment chart using helm. To learn more about helm please see [helm](https://helm.sh/) and [helmfile](https://github.com/roboll/helmfile). This [introduction](https://www.digitalocean.com/community/tutorials/an-introduction-to-helm-the-package-manager-for-kubernetes) is also a good read.
 
 ## Available executors
+
+In order to simplify the chart, only the following executors are implemented,
 
 1. LocalExecutor
 1. KubernetesExecutor
 1. SequentialExecutor (Debug)
 
-The celery executor was has not been implemented. Currently, it is under consideration,
-and may not be implemented in future releases.
+#### Note: `The celery executor was not implemented due to instabilities in task execution during testing. Currently, it is under consideration, but may not be implemented in future releases.`
 
-Note: ZAirflow overrides the default dags folder. You must set `AIRFLOW__CORE__DAGS_FOLDER` env
-in order to change the dags folder. airflow.cfg will be ignored.
+#### TL;DR: 
+See [helmfile example](/examples/docker-compose/dkubernetes-helmfile)
+
+## Chart values
+
+

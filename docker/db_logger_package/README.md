@@ -11,15 +11,15 @@ configuration of apply these values using envs, like so,
 export AIRFLOW__DB_LOGGER_[config value name]="my_value"
 ```
 
-### Possible values
+### Airflow config values
 
-name | info | default
----|---|---
-SQL_ALCHEMY_SCHEMA | The schema where to put the logging tables. | Use airflow core schema
-SQL_ALCHEMY_POOL_ENABLED | If true enable sql alchemy pool | True
-SQL_ALCHEMY_POOL_SIZE | The size of the sqlalchemy pool. | 5
-SQL_ALCHEMY_MAX_OVERFLOW | The max overflow for sqlalchemy | 1
-SQL_ALCHEMY_POOL_RECYCLE | The pool recycle time | 1800
-SQL_ALCHEMY_POOL_PRE_PING | If true, do a ping at the connection start. | true
-SQL_ENGINE_ENCODING | THe encoding for the sql engine | utf-8
-
+section | description |  type/values | default
+---|---|---|---
+[db_logger].`SQL_ALCHEMY_CONN` | The sqlalchemy connection string | `string` | [core].`SQL_ALCHEMY_CONN`
+[db_logger].`SQL_ALCHEMY_SCHEMA` | The schema where to put the logging tables. | `string` | [core].`SQL_ALCHEMY_SCHEMA`
+[db_logger].`SQL_ALCHEMY_POOL_ENABLED` | If true enable sql alchemy pool | `boolean` | True
+[db_logger].`SQL_ALCHEMY_POOL_SIZE` | The size of the sqlalchemy pool. | `int` | 5
+[db_logger].`SQL_ALCHEMY_MAX_OVERFLOW` | The max overflow for sqlalchemy | `int` | 1
+[db_logger].`SQL_ALCHEMY_POOL_RECYCLE` | The pool recycle time | `int` | 1800
+[db_logger].`SQL_ALCHEMY_POOL_PRE_PING` | If true, do a ping at the connection start. | `boolean` | true
+[db_logger].`SQL_ENGINE_ENCODING` | THe encoding for the sql engine | `string` | utf-8
