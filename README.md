@@ -171,6 +171,7 @@ name | description | type/values | default
 #### Advanced
 
 Yaml injection, use with care,
+
 name | description | type/values | applies to types
 ---|---|---|---
 `[type].injectContainerYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, initdb
