@@ -1,8 +1,8 @@
 # ZAirflow
 
-### `Alpha version`
+### `Beta version`
 
-An opinionated docker image and helm chart for a simple Kubernetes airflow deploy.
+An opinionated docker image and helm chart for a `simple docker/kubernetes` airflow deploy.
 
 The repo includes,
 
@@ -38,7 +38,7 @@ export AIRFLOW__[section]__[property]=[value]
 ```
 For more info on setting airflow environment variables see [here](https://airflow.readthedocs.io/en/stable/howto/set-config.html).
 
-## Envs
+## `Envs`
 
 #### Main
 
@@ -111,6 +111,34 @@ In order to simplify the chart, only the following executors are implemented,
 #### TL;DR: 
 See [helmfile example](/examples/docker-compose/dkubernetes-helmfile)
 
-## Chart values
+## `Chart values`
+
+#### Note: 
+The definition `[a].[b]=value` should be translated in the yaml values file as,
+```yaml
+a:
+   b: value
+```
+
+#### Main
+
+name | description | type/values | default
+---|---|---|---
 
 
+#### Advanced
+
+Yaml injection, use with care,
+name | description | type/values | applies to types
+---|---|---|---
+[type].injectContainerYaml | yaml inject | yaml | webserver, scheduler, postgres, initdb
+[type].injectTemplateSpecYaml | yaml inject | yaml | webserver, scheduler, postgres, initdb
+[type].injectSpecYaml | yaml inject | yaml | webserver, scheduler, postgres, initdb
+[type].injectYamlMetadata | yaml inject | yaml | serviceAccount
+[type].injectYaml | yaml inject | yaml | serviceAccount
+
+# Licence
+
+Copyright ©
+`Zav Shotan` and other [contributors](https://github.com/LamaAni/zairflow/graphs/contributors).
+It is free software, released under the MIT licence, and may be redistributed under the terms specified in `LICENSE`.
