@@ -72,7 +72,7 @@ function check_for_run_hooks() {
 
 # for the case where user code is loaded after the init.
 prepare_post_load_user_code || exit $?
-
+: ${ZAIRFLOW_CONTAINER_TYPE:="[None or empty]"}
 case "$ZAIRFLOW_CONTAINER_TYPE" in
 worker)
   # a worker
@@ -106,12 +106,15 @@ initdb)
   check_for_run_hooks || exit $?
   invoke_init_db
   ;;
-*)
+command)
   check_for_db || exit $?
   check_for_run_hooks || exit $?
   log:sep "Starting external command:"
   attach_post_load_user_code || exit $?
   "$@"
+  ;;
+*)
+  assert 3 "Container type not recognized: $ZAIRFLOW_CONTAINER_TYPE" || exit $?
   ;;
 esac
 
