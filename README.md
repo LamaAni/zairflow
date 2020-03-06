@@ -48,8 +48,8 @@ ZAIRFLOW_RUN_INITDB | Run `airflow initdb` before the main container process | `
 ZAIRFLOW_DB_HOST | the host for the airflow database, this value is required in order to validate the db | `string` | localhost
 ZAIRFLOW_DB_PORT | the port for the airflow database | 1-65535 | 5432
 |||
-ZAIRFLOW_CONTAINER_TYPE | The type of the container to execute | scheduler/worker/webserver/flower/initdb/command | None/Empty - will cause an error
-`...`ZAIRFLOW_CONTAINER_TYPE | Run `airflow [type]`, after preparing the env | scheduler/worker/webserver/flower/initdb 
+ZAIRFLOW_CONTAINER_TYPE | The type of the container to execute | scheduler, worker, webserver, flower, initdb, command | None/Empty - will cause an error
+`...`ZAIRFLOW_CONTAINER_TYPE | Run `airflow [type]`, after preparing the env | scheduler, worker, webserver, flower, initdb 
 `...`ZAIRFLOW_CONTAINER_TYPE | Run `"$@"`, after preparing the env | command
 |||
 ZAIRFLOW_GIT_AUTOSYNC_URI| A uri to the git repo to sync. If exists the git sync process will start. If a git repo already exists on the image at the location of the dags folder, use "internal" (remember to set the correct airflow dag folder path). See [example](/examples/docker-compose/docker-compose-git-autosync.yaml). | `string` | None
