@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 CUR_PATH="$DOCKER_BUILD_PATH"
-: ${CUR_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+: ${REPO_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
 
-source "$CUR_PATH/scripts/common.sh"
+source "$REPO_PATH/scripts/common.sh"
 
 help_text="
 Build the zairflow image
@@ -29,19 +29,11 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-CALLING_FOLDER="$PWD"
-function change_to_build_path() {
-    log:info "Going into build folder @ $CUR_PATH"
-    cd "$CUR_PATH"
-    assert $? "Failed to change docker build folder @ $CUR_PATH" || exit $?
-    return "$@"
-}
-function change_back_to_calling_folder() {
-    log:info "Going back to the calling folder @ $CALLING_FOLDER"
-    cd "$CALLING_FOLDER"
-    assert $? "Failed to change back to source folder @ $CALLING_FOLDER" || exit $?
-    return "$@"
-}
+# Move to build path.
+cd "$REPO_PATH"
+source "./envs"
+
+####################################
 
 function push_tag() {
     log:sep "Tagging and pushing: $1"
@@ -52,11 +44,12 @@ function push_tag() {
 }
 
 function build_image() {
-    source "../envs"
     assert $? "Failed to load envs" || return $?
 
     log:sep "Building zairflow $ZAIRFLOW_VERSION"
-    docker build . -t $BUILD_NAME:local --build-arg "ZAIRFLOW_VERSION=$ZAIRFLOW_VERSION"
+    docker build -f "./docker/Dockerfile" . -t $BUILD_NAME:local \
+        --build-arg "ZAIRFLOW_VERSION=$ZAIRFLOW_VERSION"
+
     assert $? "Docker build failed" || return $?
 
     if [ $DO_PUSH -eq 1 ]; then
@@ -66,7 +59,5 @@ function build_image() {
     fi
 }
 
-change_to_build_path || exit $?
 build_image
-change_back_to_calling_folder $?
 assert $? "Could not build docker image" || exit $?

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+# shellcheck disable=SC1091
+source "$SCRIPTS_PATH/common.sh"
+
+DO_LOAD_ENV=0
+
+case "$1" in
+webserver | scheduler | worker | initdb | flower | run)
+    # requires prep.
+    source "$SCRIPTS_PATH/image/prepare_airflow_env.sh" || exit $?
+    ;;
+esac
+
+call_airflow "$@" || exit $?

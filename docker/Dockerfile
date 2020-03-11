@@ -45,7 +45,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
    apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - &&\
    apt-get update -y &&\
    apt-get install --no-install-recommends -yqq\
-      kubectl
+   kubectl
 
 ##########################
 # Python enviroment
@@ -88,23 +88,25 @@ ARG PYTHON_DEPS=""
 
 ##########################
 # Copy dependencies
-COPY db_logger_package /db_logger_package
-COPY ./scripts /scripts
+COPY db_logger /db_logger
 
 ##########################
 # Install airflow 
 WORKDIR /airflow
 RUN yes | pip install --no-cache-dir --upgrade \
-      apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,kubernets${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
-      git+https://github.com/LamaAni/KubernetesJobOperator.git@master \
-      # Falsk sometimes comes in the wrong version.
-      # Flask \
-      # Specialized db logger.
-      /db_logger_package
+   apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,kubernets${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
+   git+https://github.com/LamaAni/KubernetesJobOperator.git@master \
+   # Falsk sometimes comes in the wrong version.
+   # Flask \
+   # Specialized db logger.
+   /db_logger
 
 ##########################
 # Scripts
 WORKDIR /scripts
+
+# Copy all the scripts.
+COPY ./scripts /scripts
 
 # copy bash scripts.
 RUN git clone https://github.com/LamaAni/git_autosync.git --branch 1.1.0 /scripts/git_autosync && \
@@ -119,7 +121,7 @@ RUN git clone https://github.com/LamaAni/git_autosync.git --branch 1.1.0 /script
 WORKDIR /
 RUN apt-get autoremove -yqq --purge &&\
    apt-get clean && \
-   rm -R /db_logger_package
+   rm -R /db_logger
 
 ################################################
 # Airflow directories
@@ -127,7 +129,7 @@ WORKDIR /airflow
 USER airflow
 
 # copy the config.
-COPY airflow.cfg ./airflow.cfg
+COPY ./docker/airflow.cfg ./airflow.cfg
 
 # airflow envs
 ARG ZAIRFLOW_VERSION="debug"
