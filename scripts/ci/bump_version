@@ -48,7 +48,7 @@ else
     assert "$1" "Failed to checkout $github_ref" || exit $?
 fi
 
-git add -a
+git add -A
 assert $? "Failed to add current change" || exit $?
 git commit -m"Updated version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
 assert $? "Faild to commit version change" || exit $?
