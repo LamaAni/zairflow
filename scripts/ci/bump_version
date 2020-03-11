@@ -17,7 +17,7 @@ log:info "Updated github user creds"
 [ -z $(echo "$LAST_COMMIT_TEXT" | grep -i "\[major\]") ]; ADVANCE_MAJOR="$?"
 [ -z $(echo "$LAST_COMMIT_TEXT" | grep -i "\[minor\]") ]; ADVANCE_MINOR="$?"
 
-source "$SCRIPTS_PATH/../../envs"
+source "$SCRIPTS_PATH/../envs"
 assert $? "Faild to load current version" || exit $?
 OLD_VERSION = "$ZAIRFLOW_FULL_VErSION"
 ZAIRFLOW_PATCH_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
