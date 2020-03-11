@@ -35,7 +35,7 @@ ZAIRFLOW_VERSION="$ZAIRFLOW_MAJOR_VERSION.$ZAIRFLOW_MINOR_VERSION"
 log:sep "Updating version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION"
 rm -f "$SCRIPTS_PATH/../VERSION"
 assert "$1" "Failed to remove old version file" || exit $?
-cat "$ZAIRFLOW_FULL_VERSION" > "$SCRIPTS_PATH/../VERSION"
+echo "$ZAIRFLOW_FULL_VERSION" > "$SCRIPTS_PATH/../VERSION"
 assert $? "Failed to update version" || exit $?
 
 log:sep "Commit and push"
