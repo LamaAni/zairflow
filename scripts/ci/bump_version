@@ -38,7 +38,7 @@ assert "$1" "Failed to remove old version file" || exit $?
 echo "$ZAIRFLOW_FULL_VERSION" > "$SCRIPTS_PATH/../VERSION"
 assert $? "Failed to update version" || exit $?
 
-log:sep "Commit and push"
+log:sep "Commit and push (event: $GITHUB_EVENT_NAME)"
 
 if [ "${GITHUB_EVENT_NAME}" == "push"]; then
     github_ref=${GITHUB_REF}
