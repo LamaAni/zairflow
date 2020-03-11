@@ -16,6 +16,8 @@ Flags:
     -h | --help Show this help menu.
 "
 
+HUB_TOKEN=""
+HUB_USERNAME=""
 DO_PUSH=0
 MAIN_TAG="latest"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
@@ -24,8 +26,6 @@ if [ "$GIT_BRANCH" != "master" ]; then
 else
     DO_PUSH=1
 fi
-HUB_TOKEN=""
-HUB_USERNAME=""
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -44,11 +44,11 @@ while [ "$#" -gt 0 ]; do
     --hub-username)
         shift
         HUB_USERNAME="$1"
-    ;;
+        ;;
     --hub-token)
         shift
         HUB_TOKEN="$1"
-    ;;
+        ;;
     --main-tag)
         shift
         MAIN_TAG="$1"
@@ -89,6 +89,7 @@ function build_image() {
         push_tag "$ZAIRFLOW_FULL_VERSION" || return $?
         push_tag "$MAIN_TAG" || return $?
     fi
+}
 
 if [ -n "$HUB_TOKEN" ]; then
     log:sep "Logging in to docker using $HUB_USERNAME:$HUB_TOKEN"
