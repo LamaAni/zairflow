@@ -37,24 +37,24 @@ source "./envs"
 
 function push_tag() {
     log:sep "Tagging and pushing: $1"
-    docker tag "$BUILD_NAME:local" "$BUILD_NAME:$1"
+    docker tag "$ZAIRFLOW_IMAGE_REPOSITORY:local" "$ZAIRFLOW_IMAGE_REPOSITORY:$1"
     assert $? "Docker tag failed" || return $?
-    docker push "$BUILD_NAME:$1"
+    docker push "$ZAIRFLOW_IMAGE_REPOSITORY:$1"
     assert $? "Docker push failed" || return $?
 }
 
 function build_image() {
     assert $? "Failed to load envs" || return $?
 
-    log:sep "Building zairflow $ZAIRFLOW_VERSION"
-    docker build -f "./docker/Dockerfile" . -t $BUILD_NAME:local \
-        --build-arg "ZAIRFLOW_VERSION=$ZAIRFLOW_VERSION"
+    log:sep "Building zairflow $ZAIRFLOW_FULL_VERSION @ $PWD # $ZAIRFLOW_IMAGE_REPOSITORY:local"
+    docker build -f "./docker/Dockerfile" . -t "$ZAIRFLOW_IMAGE_REPOSITORY:local" \
+        --build-arg "ZAIRFLOW_VERSION=$ZAIRFLOW_FULL_VERSION"
 
     assert $? "Docker build failed" || return $?
 
     if [ $DO_PUSH -eq 1 ]; then
         push_tag "$ZAIRFLOW_VERSION" || return $?
-        push_tag "$ZAIRFLOW_SHORT_VERSION" || return $?
+        push_tag "$ZAIRFLOW_FULL_VERSION" || return $?
         push_tag "latest" || return $?
     fi
 }

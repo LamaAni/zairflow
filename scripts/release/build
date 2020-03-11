@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+REPO_PATH=$(realpath "$SCRIPTS_PATH/../")
+source "$SCRIPTS_PATH/common.sh"
+
+help_text="
+Creates a new github release.
+Requires: https://www.npmjs.com/package/npm-github-release
+Usage: build
+Flags:
+    -h | --help Show this help menu.
+    --stable    Remove the 'pre-release' label. Version should be stable!
+    --no-push   Remove 
+"
+DO_PUSH=1
+IS_PRE_RELEASE="true"
+while [ "$#" -gt 0 ]; do
+    case $1 in
+    --help | -h)
+        echo "$help_text"
+        exit 0
+        ;;
+    --stable)
+        IS_PRE_RELEASE="false"
+    ;;
+    --no-push)
+        DO_PUSH=0
+    ;;
+    *)
+        echo "Error: unknown argument $1"
+        exit 2
+        ;;
+    esac
+    shift
+done
+
+# Move to build path.
+cd "$REPO_PATH"
+
+log:sep "Configuring new release"
+"$SCRIPTS_PATH/release/advance_version_patch" || exit $?
+source "./envs"
+
+GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+log:info "Releasing version $ZAIRFLOW_FULL_VERSION on branch $GIT_BRANCH.."
+git add .
+git commit -m "Releasing version $ZAIRFLOW_FULL_VERSION ($GIT_BRANCH)"
+git push
+
+PUSH_COMMAND="--push"
+if [ $DO_PUSH = 0 ]; then
+    PUSH_COMMAND=""
+fi
+"$REPO_PATH/docker/build" "$PUSH_COMMAND" || exit $?
+
