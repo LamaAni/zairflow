@@ -12,6 +12,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the Docker image
-        run: docker/build --hub-username="$DOCKER_USERNAME" --hub-token="$DOCKER_ACCESS_TOKEN"
-        shell: bash
+        run: bash docker/build --hub-username="$DOCKER_USERNAME" --hub-token="$DOCKER_ACCESS_TOKEN"
 
