@@ -45,7 +45,7 @@ if [ "${GITHUB_EVENT_NAME}" == "push"]; then
 else
     github_ref=${GITHUB_HEAD_REF}
     git checkout $github_ref
-    assert "Failed to checkout $github_ref" || exit $?
+    assert "$1" "Failed to checkout $github_ref" || exit $?
 fi
 
 git add -a
