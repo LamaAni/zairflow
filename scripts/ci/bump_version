@@ -48,6 +48,7 @@ else
     assert "$1" "Failed to checkout $github_ref" || exit $?
 fi
 
+log:info "Commiting for github ref: $github_ref"
 git add -A
 assert $? "Failed to add current change" || exit $?
 git commit -m"Updated version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
@@ -59,6 +60,7 @@ assert $? "Faild to tag version" || exit $?
 log:info "Tagged and committed, ref:"
 git show-ref
 assert $? "Faild to show current ref" || exit $?
+
 git push --follow-tags "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:$github_ref
 assert $? "Faild to push changes" || exit $?
 
