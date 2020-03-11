@@ -9,8 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - name: Build the Docker image
-        run: bash docker/build
+        run: docker/build --hub-username="$DOCKER_USERNAME" --hub-token="$DOCKER_ACCESS_TOKEN"
+        shell: bash
+

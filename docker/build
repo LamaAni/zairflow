@@ -10,6 +10,8 @@ Usage: build
 Args:
     --main-tag  The main tag to use (defaults to latest)
     --push      If true then push (default to true on master)
+    --hub-username The docker username to use
+    --hub-token The docker token to use
 Flags:
     -h | --help Show this help menu.
 "
@@ -22,6 +24,8 @@ if [ "$GIT_BRANCH" != "master" ]; then
 else
     DO_PUSH=1
 fi
+HUB_TOKEN=""
+HUB_USERNAME=""
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -37,6 +41,13 @@ while [ "$#" -gt 0 ]; do
             DO_PUSH=0
         fi
         ;;
+    --hub-username)
+        shift
+        HUB_USERNAME="$1"
+    ;;
+    --hub-token)
+        HUB_TOKEN="$1"
+    ;;
     --main-tag)
         shift
         MAIN_TAG="$1"
@@ -77,7 +88,11 @@ function build_image() {
         push_tag "$ZAIRFLOW_FULL_VERSION" || return $?
         push_tag "$MAIN_TAG" || return $?
     fi
-}
+
+if [ -n "$HUB_TOKEN" ]; then
+    log:sep "Logging in to docker using $HUB_USERNAME:$HUB_TOKEN"
+    docker login -u "$HUB_USERNAME" -p "$HUB_TOKEN"
+fi
 
 build_image
 assert $? "Could not build docker image" || exit $?
