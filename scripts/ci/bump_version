@@ -3,9 +3,6 @@
 source "$SCRIPTS_PATH/common.sh"
 
 log:sep "Configuring repo and user creds.."
-log:info "Git Head Ref: ${GITHUB_HEAD_REF}"
-log:info "Git Base Ref: ${GITHUB_BASE_REF}"
-log:info "Git Event Name: ${GITHUB_EVENT_NAME}"
 
 LAST_COMMIT_TEXT=$(git log -1 --pretty=%B)
 log:info "Updating commit: $LAST_COMMIT_TEXT"
