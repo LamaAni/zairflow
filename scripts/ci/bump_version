@@ -19,7 +19,7 @@ log:info "Updated github user creds"
 
 source "$SCRIPTS_PATH/../envs"
 assert $? "Faild to load current version" || exit $?
-OLD_VERSION = "$ZAIRFLOW_FULL_VERSION"
+ZAIRFLOW_OLD_VERSION="$ZAIRFLOW_FULL_VERSION"
 ZAIRFLOW_PATCH_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
 if [ $ADVANCE_MAJOR -eq 1 ]; then
     ZAIRFLOW_MAJOR_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
@@ -32,7 +32,9 @@ fi
 ZAIRFLOW_FULL_VERSION="$ZAIRFLOW_MAJOR_VERSION.$ZAIRFLOW_MINOR_VERSION.$ZAIRFLOW_PATCH_VERSION"
 ZAIRFLOW_VERSION="$ZAIRFLOW_MAJOR_VERSION.$ZAIRFLOW_MINOR_VERSION"
 
-log:sep "Updating version $OLD_VERSION -> $ZAIRFLOW_FULL_VERSION"
+log:sep "Updating version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION"
+rm -f "$SCRIPTS_PATH/../VERSION"
+assert "$Failed to remove old version file" || exit $?
 cat "$ZAIRFLOW_FULL_VERSION" > "$SCRIPTS_PATH/../VERSION"
 assert $? "Failed to update version" || exit $?
 
@@ -48,7 +50,7 @@ fi
 
 git add -a
 assert $? "Failed to add current change" || exit $?
-git commit -m"Updated version $OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
+git commit -m"Updated version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
 assert $? "Faild to commit version change" || exit $?
 git tag -a "$ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
 assert $? "Faild to tag full version" || exit $?
