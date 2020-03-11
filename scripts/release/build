@@ -51,5 +51,11 @@ PUSH_COMMAND="--push"
 if [ $DO_PUSH = 0 ]; then
     PUSH_COMMAND=""
 fi
+
+MAIN_TAG="latest"
+if [ "$GIT_BRANCH" != "master" ]; then
+    MAIN_TAG="$GIT_BRANCH"
+fi
+
 "$REPO_PATH/docker/build" "$PUSH_COMMAND" || exit $?
 

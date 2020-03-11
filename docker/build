@@ -7,11 +7,14 @@ source "$REPO_PATH/scripts/common.sh"
 help_text="
 Build the zairflow image
 Usage: build
+Args:
+    --main-tag  The main tag to use (defaults to latest)
 Flags:
-    --push   Push to repository.
+    --push      Push to repository.
     -h | --help Show this help menu.
 "
 DO_PUSH=0
+MAIN_TAG="latest"
 while [ "$#" -gt 0 ]; do
     case $1 in
     --help | -h)
@@ -20,6 +23,10 @@ while [ "$#" -gt 0 ]; do
         ;;
     --push)
         DO_PUSH=1
+        ;;
+    --main-tag)
+        shift
+        MAIN_TAG="$1"
         ;;
     *)
         echo "Error: unknown argument $1"
@@ -55,7 +62,7 @@ function build_image() {
     if [ $DO_PUSH -eq 1 ]; then
         push_tag "$ZAIRFLOW_VERSION" || return $?
         push_tag "$ZAIRFLOW_FULL_VERSION" || return $?
-        push_tag "latest" || return $?
+        push_tag "$MAIN_TAG" || return $?
     fi
 }
 
