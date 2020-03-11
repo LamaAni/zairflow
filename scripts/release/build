@@ -57,5 +57,5 @@ if [ "$GIT_BRANCH" != "master" ]; then
     MAIN_TAG="$GIT_BRANCH"
 fi
 
-"$REPO_PATH/docker/build" "$PUSH_COMMAND" || exit $?
+"$REPO_PATH/docker/build" "$PUSH_COMMAND" --main-tag "$MAIN_TAG" || exit $?
 
