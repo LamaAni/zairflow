@@ -11,12 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Increment version
-        id: version
-        uses: "vinodhraj/Bump-N-Tag-Version@master"
-        with:
-          file_name: './VERSION'
-          tag_version: 'true'
+      - name: Bump version
+        run: bash scripts/ci/bump_version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the Docker image

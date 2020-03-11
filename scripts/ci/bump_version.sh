@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source "$SCRIPTS_PATH/common.sh"
+
+log:sep "Configuring repo and user creds.."
+log:info "Git Head Ref: ${GITHUB_HEAD_REF}"
+log:info "Git Base Ref: ${GITHUB_BASE_REF}"
+log:info "Git Event Name: ${GITHUB_EVENT_NAME}"
+
+LAST_COMMIT_TEXT=$(git log -1 --pretty=%B)
+log:info "Updating commit: $LAST_COMMIT_TEXT"
+
+git config --global user.email "ci@github-action.com"
+git config --global user.name "ci automated"
+log:info "Updated github user creds"
+
+function contains(){
+    local 
+}
+
+[ -z $(echo "$LAST_COMMIT_TEXT" | | grep -i "\[major\]") ]; ADVANCE_MAJOR="$?"
+[ -z $(echo "$LAST_COMMIT_TEXT" | | grep -i "\[minor\]") ]; ADVANCE_MINOR="$?"
+
+source "$SCRIPTS_PATH/../../envs"
+assert $? "Faild to load current version" || exit $?
+OLD_VERSION = "$ZAIRFLOW_FULL_VErSION"
+ZAIRFLOW_PATCH_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
+if [ $ADVANCE_MAJOR -eq 1 ]; then
+    ZAIRFLOW_MAJOR_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
+    ZAIRFLOW_MINOR_VERSION=0
+fi
+if [ $ADVANCE_MINOR -eq 1 ]; then
+    ZAIRFLOW_MINOR_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
+fi
+
+ZAIRFLOW_FULL_VERSION="$ZAIRFLOW_MAJOR_VERSION.$ZAIRFLOW_MINOR_VERSION.$ZAIRFLOW_PATCH_VERSION"
+ZAIRFLOW_VERSION="$ZAIRFLOW_MAJOR_VERSION.$ZAIRFLOW_MINOR_VERSION"
+
+log:sep "Updating version $OLD_VERSION -> $ZAIRFLOW_FULL_VERSION"
+cat "$ZAIRFLOW_FULL_VERSION" > "$SCRIPTS_PATH/../VERSION"
+assert $? "Failed to update version" || exit $?
+
+log:sep "Commit and push"
+
+if [ "${GITHUB_EVENT_NAME}" == "push"]; then
+    github_ref=${GITHUB_REF}
+else
+    github_ref=${GITHUB_HEAD_REF}
+    git checkout $github_ref
+    assert "Failed to checkout $github_ref" || exit $?
+fi
+
+git add -a
+assert $? "Failed to add current change" || exit $?
+git commit -m"Updated version $OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
+assert $? "Faild to commit version change" || exit $?
+git tag -a "$ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
+assert $? "Faild to tag full version" || exit $?
+git tag -a "$ZAIRFLOW_VERSION" -m "[skip ci]"
+assert $? "Faild to tag version" || exit $?
+log:info "Tagged and committed, ref:"
+git show-ref
+assert $? "Faild to show current ref" || exit $?
+git push --follow-tags "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:$github_ref
+assert $? "Faild to push changes" || exit $?
+
+log:sep "Version changed."
