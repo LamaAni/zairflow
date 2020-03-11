@@ -41,8 +41,8 @@ assert $? "Failed to update version" || exit $?
 log:sep "Commit and push (event: $GITHUB_EVENT_NAME)"
 
 target_branch="${TARGET_BRANCH}"
-
 log:info "Commiting to branch: $target_branch"
+git checkout "$target_branch"
 git add -A
 assert $? "Failed to add current change" || exit $?
 git commit -m"Updated version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
