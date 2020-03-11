@@ -40,14 +40,9 @@ assert $? "Failed to update version" || exit $?
 
 log:sep "Commit and push (event: $GITHUB_EVENT_NAME)"
 
-github_ref="${GITHUB_REF}"
-if [ -z "${github_ref}" ]; then
-    github_ref=${GITHUB_HEAD_REF}
-    git checkout $github_ref
-    assert "$1" "Failed to checkout $github_ref" || exit $?
-fi
+target_branch="${TARGET_BRANCH}"
 
-log:info "Commiting for github ref: $github_ref"
+log:info "Commiting to branch: $target_branch"
 git add -A
 assert $? "Failed to add current change" || exit $?
 git commit -m"Updated version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
@@ -60,7 +55,7 @@ log:info "Tagged and committed, ref:"
 git show-ref
 assert $? "Faild to show current ref" || exit $?
 
-git push --follow-tags "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:$github_ref
+git push --follow-tags "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:$target_branch
 assert $? "Faild to push changes" || exit $?
 
 log:sep "Version changed."
