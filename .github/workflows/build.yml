@@ -1,8 +1,9 @@
-name: 'Release new version (patch)'
+name: 'Build pull request'
 
 on:
   pull_request:
-    branches-ignore: ['master']
+    branches-ignore: 
+      - 'master'
 
 jobs:
   build:
