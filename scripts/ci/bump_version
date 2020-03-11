@@ -40,8 +40,8 @@ assert $? "Failed to update version" || exit $?
 
 log:sep "Commit and push (event: $GITHUB_EVENT_NAME)"
 
-if [ "${GITHUB_EVENT_NAME}" == "push"]; then
-    github_ref=${GITHUB_REF}
+if [ "${GITHUB_EVENT_NAME}" == "push" ]; then
+    github_ref="${GITHUB_REF}"
 else
     github_ref=${GITHUB_HEAD_REF}
     git checkout $github_ref
