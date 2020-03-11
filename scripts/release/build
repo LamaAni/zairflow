@@ -23,9 +23,6 @@ while [ "$#" -gt 0 ]; do
     --stable)
         IS_PRE_RELEASE="false"
     ;;
-    --no-push)
-        DO_PUSH=0
-    ;;
     *)
         echo "Error: unknown argument $1"
         exit 2
@@ -44,18 +41,6 @@ source "./envs"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 log:info "Releasing version $ZAIRFLOW_FULL_VERSION on branch $GIT_BRANCH.."
 git add .
-git commit -m "Releasing version $ZAIRFLOW_FULL_VERSION ($GIT_BRANCH)"
+git commit -m "Releasing version $ZAIRFLOW_FULL_VERSION ($GIT_BRANCH) [release]"
 git push
-
-PUSH_COMMAND="--push"
-if [ $DO_PUSH = 0 ]; then
-    PUSH_COMMAND=""
-fi
-
-MAIN_TAG="latest"
-if [ "$GIT_BRANCH" != "master" ]; then
-    MAIN_TAG="$GIT_BRANCH"
-fi
-
-"$REPO_PATH/docker/build" "$PUSH_COMMAND" --main-tag "$MAIN_TAG" || exit $?
 

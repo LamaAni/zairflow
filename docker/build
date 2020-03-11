@@ -9,12 +9,20 @@ Build the zairflow image
 Usage: build
 Args:
     --main-tag  The main tag to use (defaults to latest)
+    --push      If true then push (default to true on master)
 Flags:
-    --push      Push to repository.
     -h | --help Show this help menu.
 "
+
 DO_PUSH=0
 MAIN_TAG="latest"
+GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$GIT_BRANCH" != "master" ]; then
+    MAIN_TAG="GIT_BRANCH"
+else
+    DO_PUSH=1
+fi
+
 while [ "$#" -gt 0 ]; do
     case $1 in
     --help | -h)
@@ -22,7 +30,12 @@ while [ "$#" -gt 0 ]; do
         exit 0
         ;;
     --push)
-        DO_PUSH=1
+        shift
+        if [ "$1" == "true" ]; then
+            DO_PUSH=1
+        else
+            DO_PUSH=0
+        fi
         ;;
     --main-tag)
         shift
