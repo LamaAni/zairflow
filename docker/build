@@ -46,6 +46,7 @@ while [ "$#" -gt 0 ]; do
         HUB_USERNAME="$1"
     ;;
     --hub-token)
+        shift
         HUB_TOKEN="$1"
     ;;
     --main-tag)
