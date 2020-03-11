@@ -7,23 +7,18 @@ on:
     branches: ['*']
 
 jobs:
-  update-version:
-    runs-on: ubuntu-latest
-    name: Bump-N-Tag Version
-    steps:
-    - uses: actions/checkout@master
-    - name: Increment version
-      id: version   
-      uses: vinodhraj/Bump-N-Tag-Version@master
-      with:
-        file_name: './VERSION'
-        tag_version: "true"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Increment version
+        id: version
+        uses: "vinodhraj/Bump-N-Tag-Version@master"
+        with:
+          file_name: './VERSION'
+          tag_version: 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build the Docker image
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
