@@ -14,3 +14,4 @@
 
 ## Release
 1. Add zipped helm file to release
+1. Add workflow checks for merge
