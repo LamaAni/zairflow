@@ -19,7 +19,7 @@ log:info "Updated github user creds"
 
 source "$SCRIPTS_PATH/../envs"
 assert $? "Faild to load current version" || exit $?
-OLD_VERSION = "$ZAIRFLOW_FULL_VErSION"
+OLD_VERSION = "$ZAIRFLOW_FULL_VERSION"
 ZAIRFLOW_PATCH_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
 if [ $ADVANCE_MAJOR -eq 1 ]; then
     ZAIRFLOW_MAJOR_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
