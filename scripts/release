@@ -5,11 +5,11 @@ source "$SCRIPTS_PATH/common.sh"
 REPO_PATH=$(realpath "$SCRIPTS_PATH/../")
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
-[ -f "node"] || [ -f "npm"] || [ -f "github-release"]
-assert $? "You must have the following installed: npm, node, npm-github-release (npm package)"
+[ -f "node" ] || [ -f "npm" ] || [ -f "github-release" ]
+assert $? "You must have the following installed: npm, node, npm-github-release (npm package)" || exit $?
 
-[ "$GIT_BRANCH" == "master" ]
-assert $? "You must be on master branch to release."
+[ "$GIT_BRANCH" != "master" ]
+assert $? "You must be on master branch to release." || exit $?
 
 help_text="
 Build the zairflow image
@@ -20,6 +20,7 @@ Flags:
 "
 
 IS_PRERELEASE="true"
+COMMENT=""
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -31,8 +32,12 @@ while [ "$#" -gt 0 ]; do
         IS_PRERELEASE="false"
         ;;
     *)
-        echo "Error: unknown argument $1"
-        exit 2
+        if [ -z "$COMMENT" ]; then
+            COMMENT="$1"
+        else
+            echo "Error: unknown argument $1"
+            exit 2
+        fi
         ;;
     esac
     shift
@@ -40,3 +45,5 @@ done
 
 cd "$SCRIPTS_PATH/../"
 "$SCRIPTS_PATH/ci/bump_version" "$@"
+
+
