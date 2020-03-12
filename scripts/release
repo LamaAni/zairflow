@@ -60,3 +60,5 @@ fi
 
 log:sep "Updated release - $RELEASE_NAME"
 log:info "Done, current release process is manual, release to build and push."
+log:info "Use the following tag:"
+echo "$ZAIRFLOW_FULL_VERSION"
