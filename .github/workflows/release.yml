@@ -3,6 +3,8 @@ name: 'Release new version'
 on:
   release:
     branches: [master]
+    types:
+      - created
 
 jobs:
   build:
