@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source "$SCRIPTS_PATH/common.sh"
+
+: ${REPO_PATH="$(realpath "$SCRIPTS_PATH/../")"}
+: ${ARCHIVE_PATH="$REPO_PATH/helm.tar.gz"}
+: ${HELM_SOURCE_PATH="$REPO_PATH/helm"}
+# go to the repo path
+cd "$SCRIPTS_PATH/../"
+
+log:sep "Creating helm release @ $HELM_SOURCE_PATH -> $ARCHIVE_PATH"
+tar -czvf "$ARCHIVE_PATH" "$HELM_SOURCE_PATH"
+assert $? "Failed to create helm archive" || exit $?
+log:info "Done"

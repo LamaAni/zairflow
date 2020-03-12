@@ -11,13 +11,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      # - name: Bump version
-      #   run: bash scripts/ci/bump_version
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     TARGET_BRANCH: master
       - name: Build the Docker image
+        id: build-docker-image
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
         run: bash docker/build --hub-username "$DOCKER_USERNAME" --hub-token "$DOCKER_ACCESS_TOKEN"
+
+      - name: Create helm release
+        id: gzip-helm-release
+        run: bash scripts/ci/create_helm_release
+
+      - name: Upload files to release (helm)
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./helm.tar.gz
+          asset_name: helm.tar.gz
+          asset_content_type: application/zip
