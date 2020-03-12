@@ -59,14 +59,5 @@ if [ "$IS_PRERELEASE" != "true" ]; then
     RELEASE_NAME="Version $ZAIRFLOW_VERSION/$ZAIRFLOW_FULL_VERSION"
 fi
 
-log:sep "Releasing version: $RELEASE_NAME"
-github-release \
-    -t "$ZAIRFLOW_FULL_VERSION" \
-    --release-id "$ZAIRFLOW_FULL_VERSION" \
-    --name "$RELEASE_NAME" \
-    --body "$(date)" \
-    --draft "$IS_DRAFT" \
-    --prerelease "$IS_PRERELEASE"
-assert $? "Failed to release"
-
+log:sep "Updated release - $RELEASE_NAME"
 log:info "Done"
