@@ -5,21 +5,24 @@ source "$SCRIPTS_PATH/common.sh"
 REPO_PATH=$(realpath "$SCRIPTS_PATH/../")
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
-[ -f "node" ] || [ -f "npm" ] || [ -f "github-release" ]
+type node && type npm && type github-release
 assert $? "You must have the following installed: npm, node, npm-github-release (npm package)" || exit $?
 
-[ "$GIT_BRANCH" != "master" ]
+echo "$GIT_BRANCH"
+[ "$GIT_BRANCH" == "master" ]
 assert $? "You must be on master branch to release." || exit $?
 
 help_text="
 Build the zairflow image
 Usage: release [info]
 Flags:
-    -h | --help Show this help menu.
-    --stable    A stable release (not pre-release)
+    -h | --help     Show this help menu.
+    --stable        A stable release (not pre-release)
+    --skip-draft    Skip the draft, release the verison as is.
 "
 
 IS_PRERELEASE="true"
+IS_DRAFT="true"
 COMMENT=""
 
 while [ "$#" -gt 0 ]; do
@@ -30,6 +33,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     --stable)
         IS_PRERELEASE="false"
+        ;;
+    --skip-draft)
+        IS_DRAFT="false"
         ;;
     *)
         if [ -z "$COMMENT" ]; then
@@ -43,7 +49,21 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-cd "$SCRIPTS_PATH/../"
+cd "$REPO_PATH"
 "$SCRIPTS_PATH/ci/bump_version" "$@"
 
+source "$REPO_PATH/envs"
 
+RELEASE_NAME="Pre-Release version $ZAIRFLOW_VERSION/$ZAIRFLOW_FULL_VERSION"
+if [ "$IS_PRERELEASE" != "true" ]; then
+    RELEASE_NAME="Version $ZAIRFLOW_VERSION/$ZAIRFLOW_FULL_VERSION"
+fi
+
+github-release \
+    -t "$ZAIRFLOW_FULL_VERSION" \
+    --release-id "$ZAIRFLOW_FULL_VERSION" \
+    --name "$RELEASE_NAME"
+    --body "$(date)"
+    --draft "$IS_DRAFT"
+    --prerelease "$IS_PRERELEASE"
+assert $? "Failed to release"
