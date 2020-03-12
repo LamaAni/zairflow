@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(realpath "$BASH_SOURCE[0]"))"}
+source "$SCRIPTS_PATH/common.sh"
+
+REPO_PATH=$(realpath "$SCRIPTS_PATH/../")
+GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+[ -f "node"] || [ -f "npm"] || [ -f "github-release"]
+assert $? "You must have the following installed: npm, node, npm-github-release (npm package)"
+
+[ "$GIT_BRANCH" == "master" ]
+assert $? "You must be on master branch to release."
+
+help_text="
+Build the zairflow image
+Usage: release [info]
+Flags:
+    -h | --help Show this help menu.
+    --stable    A stable release (not pre-release)
+"
+
+IS_PRERELEASE="true"
+
+while [ "$#" -gt 0 ]; do
+    case $1 in
+    --help | -h)
+        echo "$help_text"
+        exit 0
+        ;;
+    --stable)
+        IS_PRERELEASE="false"
+        ;;
+    *)
+        echo "Error: unknown argument $1"
+        exit 2
+        ;;
+    esac
+    shift
+done
+
+cd "$SCRIPTS_PATH/../"
+"$SCRIPTS_PATH/ci/bump_version" "$@"

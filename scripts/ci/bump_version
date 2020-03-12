@@ -3,27 +3,30 @@
 source "$SCRIPTS_PATH/common.sh"
 
 log:sep "Configuring repo and user creds.."
+LAST_COMMIT_TEXT="$1"
+: ${LAST_COMMIT_TEXT:=$(git log -1 --pretty=%B)}
 
-LAST_COMMIT_TEXT=$(git log -1 --pretty=%B)
-log:info "Updating commit: $LAST_COMMIT_TEXT"
+log:info "Releaseing using commit: $LAST_COMMIT_TEXT"
 
 git config --global user.email "ci@github-action.com"
 git config --global user.name "ci automated"
 log:info "Updated github user creds"
 
-[ -z $(echo "$LAST_COMMIT_TEXT" | grep -i "\[major\]") ]; ADVANCE_MAJOR="$?"
-[ -z $(echo "$LAST_COMMIT_TEXT" | grep -i "\[minor\]") ]; ADVANCE_MINOR="$?"
+[ -z $(echo "$LAST_COMMIT_TEXT" | grep -i "\[major\]") ]
+ADVANCE_MAJOR="$?"
+[ -z $(echo "$LAST_COMMIT_TEXT" | grep -i "\[minor\]") ]
+ADVANCE_MINOR="$?"
 
 source "$SCRIPTS_PATH/../envs"
 assert $? "Faild to load current version" || exit $?
 ZAIRFLOW_OLD_VERSION="$ZAIRFLOW_FULL_VERSION"
-ZAIRFLOW_PATCH_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
+ZAIRFLOW_PATCH_VERSION=$((ZAIRFLOW_PATCH_VERSION + 1))
 if [ $ADVANCE_MAJOR -eq 1 ]; then
-    ZAIRFLOW_MAJOR_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
+    ZAIRFLOW_MAJOR_VERSION=$((ZAIRFLOW_PATCH_VERSION + 1))
     ZAIRFLOW_MINOR_VERSION=0
 fi
 if [ $ADVANCE_MINOR -eq 1 ]; then
-    ZAIRFLOW_MINOR_VERSION=$((ZAIRFLOW_PATCH_VERSION+1))
+    ZAIRFLOW_MINOR_VERSION=$((ZAIRFLOW_PATCH_VERSION + 1))
 fi
 
 ZAIRFLOW_FULL_VERSION="$ZAIRFLOW_MAJOR_VERSION.$ZAIRFLOW_MINOR_VERSION.$ZAIRFLOW_PATCH_VERSION"
@@ -32,14 +35,11 @@ ZAIRFLOW_VERSION="$ZAIRFLOW_MAJOR_VERSION.$ZAIRFLOW_MINOR_VERSION"
 log:sep "Updating version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION"
 rm -f "$SCRIPTS_PATH/../VERSION"
 assert "$1" "Failed to remove old version file" || exit $?
-echo "$ZAIRFLOW_FULL_VERSION" > "$SCRIPTS_PATH/../VERSION"
+echo "$ZAIRFLOW_FULL_VERSION" >"$SCRIPTS_PATH/../VERSION"
 assert $? "Failed to update version" || exit $?
 
-log:sep "Commit and push (event: $GITHUB_EVENT_NAME)"
+log:sep "Commit and push"
 
-target_branch="${TARGET_BRANCH}"
-log:info "Commiting to branch: $target_branch"
-git checkout "$target_branch"
 git add -A
 assert $? "Failed to add current change" || exit $?
 git commit -m"Updated version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
@@ -52,7 +52,7 @@ log:info "Tagged and committed, ref:"
 git show-ref
 assert $? "Faild to show current ref" || exit $?
 
-git push --follow-tags "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:$target_branch
+git push
 assert $? "Faild to push changes" || exit $?
 
 log:sep "Version changed."
