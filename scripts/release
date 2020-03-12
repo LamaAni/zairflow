@@ -17,7 +17,6 @@ Usage: release [info]
 Flags:
     -h | --help     Show this help menu.
     --stable        A stable release (not pre-release)
-    --skip-draft    Skip the draft, release the verison as is.
 "
 
 IS_PRERELEASE="true"
@@ -60,4 +59,4 @@ if [ "$IS_PRERELEASE" != "true" ]; then
 fi
 
 log:sep "Updated release - $RELEASE_NAME"
-log:info "Done"
+log:info "Done, current release process is manual, release to build and push."
