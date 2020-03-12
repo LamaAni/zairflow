@@ -62,8 +62,8 @@ fi
 github-release \
     -t "$ZAIRFLOW_FULL_VERSION" \
     --release-id "$ZAIRFLOW_FULL_VERSION" \
-    --name "$RELEASE_NAME"
-    --body "$(date)"
-    --draft "$IS_DRAFT"
+    --name "$RELEASE_NAME" \
+    --body "$(date)" \
+    --draft "$IS_DRAFT" \
     --prerelease "$IS_PRERELEASE"
 assert $? "Failed to release"
