@@ -46,8 +46,6 @@ git commit -m"Updated version $ZAIRFLOW_OLD_VERSION -> $ZAIRFLOW_FULL_VERSION" -
 assert $? "Faild to commit version change" || exit $?
 git tag -a "$ZAIRFLOW_FULL_VERSION" -m "[skip ci]"
 assert $? "Faild to tag full version" || exit $?
-git tag -a "$ZAIRFLOW_VERSION" -m "[skip ci]"
-assert $? "Faild to tag version" || exit $?
 log:info "Tagged and committed, ref:"
 git show-ref
 assert $? "Faild to show current ref" || exit $?

@@ -8,7 +8,6 @@ GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 type node && type npm && type github-release
 assert $? "You must have the following installed: npm, node, npm-github-release (npm package)" || exit $?
 
-echo "$GIT_BRANCH"
 [ "$GIT_BRANCH" == "master" ]
 assert $? "You must be on master branch to release." || exit $?
 
@@ -51,6 +50,7 @@ done
 
 cd "$REPO_PATH"
 "$SCRIPTS_PATH/ci/bump_version" "$@"
+assert "$?" "Failed to tag version"
 
 source "$REPO_PATH/envs"
 
