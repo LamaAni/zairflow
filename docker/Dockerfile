@@ -112,7 +112,7 @@ COPY ./scripts /scripts
 RUN git clone https://github.com/LamaAni/git_autosync.git --branch 1.1.0 /scripts/git_autosync && \
    ln -sf /scripts/git_autosync/git_autosync /usr/bin/git_autosync && \
    mv /usr/local/bin/airflow /usr/local/bin/call_airflow && \
-   ln -sf /scripts/invoke_airflow /usr/local/bin/airflow && \
+   ln -sf /scripts/image/invoke_airflow /usr/local/bin/airflow && \
    chmod +x -R /scripts && chmod +x /usr/bin/git_autosync
 
 # ##########################

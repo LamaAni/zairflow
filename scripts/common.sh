@@ -103,7 +103,7 @@ function value_in_array() {
 # Airflow
 
 function get_airflow_config_vals() {
-  python3 $SCRIPTS_PATH/get_airflow_config_vals.py "$@"
+  python3 $SCRIPTS_PATH/image/get_airflow_config_vals.py "$@"
 }
 
 ########################################
@@ -156,7 +156,7 @@ function wait_for_airflow_db_ready() {
   local count=0
 
   while true; do
-    last_print=$(python3 "$SCRIPTS_PATH/check_airflow_db.py" 2>&1)
+    last_print=$(python3 "$SCRIPTS_PATH/image/check_airflow_db.py" 2>&1)
     last_error=$?
     if [ $last_error -eq 0 ]; then
       printf "%s\n" "$last_print"
