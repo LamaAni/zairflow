@@ -154,4 +154,4 @@ RUN chown -R airflow /airflow /app && chmod -R 0777 /airflow
 USER airflow
 WORKDIR /app
 EXPOSE 8080 5555 8793
-ENTRYPOINT ["/scripts/entrypoint.sh"]
+ENTRYPOINT ["/scripts/image/entrypoint.sh"]
