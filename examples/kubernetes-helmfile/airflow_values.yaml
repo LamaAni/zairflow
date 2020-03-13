@@ -15,6 +15,9 @@ envs:
   AIRFLOW__CORE__DAGS_FOLDER: '/app/examples/docker-compose/dags'
   AIRFLOW__CORE__PLUGINS_FOLDER: '/app/examples/docker-compose/plugins'
 
+image:
+  pullPolicy: Always
+
 serviceAccount:
   enabled: true
 
