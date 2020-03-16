@@ -21,13 +21,20 @@ jobs:
       - name: Create helm release
         id: gzip-helm-release
         run: bash scripts/ci/create_helm_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TAG: ${{github.ref}}
+          GITHUB_HEAD_REF: ${{github.head_ref}}
+          GITHUB_BASE_REF: ${{github.base_ref}}
 
       - name: Upload files to release (helm)
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TAG: ${{github.ref}}
+          GITHUB_TAG: ${{ github.ref }}
+          GITHUB_HEAD_REF: ${{github.head_ref}}
+          GITHUB_BASE_REF: ${{github.base_ref}}
         with:
           upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.ref }}/assets
           #  steps.create_release.outputs.upload_url?? This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
