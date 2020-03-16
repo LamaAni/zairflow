@@ -16,7 +16,7 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-        run: bash docker/build --hub-username "$DOCKER_USERNAME" --hub-token "$DOCKER_ACCESS_TOKEN"
+        run: bash docker/build --hub-username "$DOCKER_USERNAME" --push --hub-token "$DOCKER_ACCESS_TOKEN"
 
       - name: Create helm release
         id: gzip-helm-release

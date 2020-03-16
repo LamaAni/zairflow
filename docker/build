@@ -20,12 +20,6 @@ HUB_TOKEN=""
 HUB_USERNAME=""
 DO_PUSH=0
 MAIN_TAG="latest"
-GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
-if [ "$GIT_BRANCH" != "master" ]; then
-    MAIN_TAG="GIT_BRANCH"
-else
-    DO_PUSH=1
-fi
 
 while [ "$#" -gt 0 ]; do
     case $1 in
