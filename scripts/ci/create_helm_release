@@ -9,6 +9,6 @@ source "$SCRIPTS_PATH/common.sh"
 cd "$SCRIPTS_PATH/../"
 
 log:sep "Creating helm release @ $HELM_SOURCE_PATH -> $ARCHIVE_PATH"
-tar -czvf "$ARCHIVE_PATH" "$HELM_SOURCE_PATH"
+tar -czvf "$ARCHIVE_PATH" -C "$HELM_SOURCE_PATH" .
 assert $? "Failed to create helm archive" || exit $?
 log:info "Done"
