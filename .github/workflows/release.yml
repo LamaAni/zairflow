@@ -24,7 +24,9 @@ jobs:
 
       - name: Get the release tag (version)
         id: release_tag
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+      - name: Echo
+        run: echo ${{ steps.release_tag.outputs.TAG }}
 
       - name: Upload files to release (helm.tar.gz)
         id: upload-release-asset
@@ -32,7 +34,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.release_tag.outputs.result }}/assets
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.release_tag.outputs.TAG }}/assets
           #  steps.create_release.outputs.upload_url?? This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           asset_path: ./helm.tar.gz
           asset_name: helm.tar.gz
