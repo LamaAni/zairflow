@@ -28,12 +28,7 @@ while [ "$#" -gt 0 ]; do
         exit 0
         ;;
     --push)
-        shift
-        if [ "$1" == "true" ]; then
-            DO_PUSH=1
-        else
-            DO_PUSH=0
-        fi
+        DO_PUSH=1
         ;;
     --hub-username)
         shift
