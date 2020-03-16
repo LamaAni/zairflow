@@ -18,26 +18,22 @@ jobs:
       #     DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       #   run: bash docker/build --hub-username "$DOCKER_USERNAME" --push --hub-token "$DOCKER_ACCESS_TOKEN"
 
-      - name: Create helm release
+      - name: Create helm release (tar the folder)
         id: gzip-helm-release
         run: bash scripts/ci/create_helm_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TAG: ${{github.ref}}
-          GITHUB_HEAD_REF: ${{github.head_ref}}
-          GITHUB_BASE_REF: ${{github.base_ref}}
 
-      - name: Upload files to release (helm)
+      - name: Get the release tag (version)
+        id: release_tag
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Upload files to release (helm.tar.gz)
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TAG: ${{ github.ref }}
-          GITHUB_HEAD_REF: ${{github.head_ref}}
-          GITHUB_BASE_REF: ${{github.base_ref}}
         with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ github.ref }}/assets
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.release_tag.outputs.result }}/assets
           #  steps.create_release.outputs.upload_url?? This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
           asset_path: ./helm.tar.gz
           asset_name: helm.tar.gz
-          asset_content_type: application/zip
+          asset_content_type: application/gzip
