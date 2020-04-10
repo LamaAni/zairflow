@@ -70,7 +70,7 @@ function prepare_airflow_env() {
 
   if [ -n "$ZAIRFLOW_GIT_AUTOSYNC_URI" ]; then
     log:sep "Starting git auto-sync to $ZAIRFLOW_GIT_AUTOSYNC_PATH"
-    "$SCRIPTS_PATH/image/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$ZAIRFLOW_GIT_AUTOSYNC_PATH"
+    "$SCRIPTS_PATH/image/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$ZAIRFLOW_GIT_AUTOSYNC_PATH" "$ZAIRFLOW_GIT_AUTOSYNC_BRANCH"
     assert $? "Failed to initialize git autosync" || return $?
   fi
 }

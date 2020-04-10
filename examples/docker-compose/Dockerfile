@@ -15,6 +15,7 @@ USER airflow
 COPY ./dags /app/dags
 COPY ./plugins /app/plugins
 COPY ./scripts/init_connections /scripts/init_connections
+RUN chmod +x -R ./scripts
 
 # Defining airflow folders
 ENV AIRFLOW__CORE__DAGS_FOLDER=/app/dags

@@ -1,11 +1,12 @@
 version: '3.4'
-x-globalenvs: &globalenvs 
+x-globalenvs: &globalenvs
   # As an example, initializing without the user code.
   ZAIRFLOW_POST_LOAD_USER_CODE: 'true'
   ZAIRFLOW_DB_HOST: 'postgres'
 
   # Git autosync
   ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
+  ZAIRFLOW_GIT_AUTOSYNC_BRANCH: 'master'
   AIRFLOW__CORE__DAGS_FOLDER: /app/examples/docker-compose/dags
   AIRFLOW__CORE__PLUGINS_FOLDER: /app/examples/docker-compose/plugins
 
