@@ -52,8 +52,9 @@ ZAIRFLOW_CONTAINER_TYPE | The type of the container to execute | scheduler, work
 `...`ZAIRFLOW_CONTAINER_TYPE | Run `airflow [type]`, after preparing the env | scheduler, worker, webserver, flower, initdb 
 `...`ZAIRFLOW_CONTAINER_TYPE | Run `"$@"`, after preparing the env | command
 |||
-ZAIRFLOW_GIT_AUTOSYNC_URI| A uri to the git repo to sync. If exists the git sync process will start. If a git repo already exists on the image at the location of the dags folder, use "internal" (remember to set the correct airflow dag folder path). See [example](/examples/docker-compose/docker-compose-git-autosync.yaml). | `string` | None
-ZAIRFLOW_GIT_AUTOSYNC_PATH| The path where the git repo will sync to (remember to set the correct airflow dags/plugins folder path). See [example](/examples/docker-compose/docker-compose-git-autosync.yaml). | `string` | None
+ZAIRFLOW_GIT_AUTOSYNC_URI| A uri to the git repo to sync. If exists the git sync process will start. If a git repo already exists on the image at the location of the dags folder, use "internal" (remember to set the correct airflow dag folder path). See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync. | `string` | None
+ZAIRFLOW_GIT_AUTOSYNC_BRANCH| The autosync branch name, if dose not exist uses the default branch. See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync. | `string` | None
+
 
 #### Advanced
 
@@ -65,11 +66,15 @@ ZAIRFLOW_ENTRYPOINT_RUN_HOOK | A bash script/command to run before airflow runs 
 ZAIRFLOW_ENTRYPOINT_DESTROY_HOOK | A bash script/command to run after the airflow environment exists | `string` | None
 ZAIRFLOW_POST_LOAD_USER_CODE | While calling initdb, INIT HOOK and RUN HOOK, points airflow to load dags and plugins from an empty folder. Allows for initialization without plugin/dag errors and proper initialization of airflow variables. | `boolean` | False
 ZAIRFLOW_AUTO_DETECT_CLUSTER | Auto detect the cluster config in running in a kubernetes cluster | `boolean` | true
+|||
 ZARIFLOW_DB_WAIT_TRIES | The number of attempts to run when waiting for db tables to be ready | `int` | 60
 ZARIFLOW_DB_WAIT_INTERVAL | The number of seconds to wait between each db tables test  | `int` | 1
+|||
 ZARIFLOW_CONNECTION_WAIT_TRIES | The number of attempts to run when waiting for a connection | `int` | 60
 ZARIFLOW_CONNECTION_WAIT_TIMEOUT | The connection wait timeout | `int` | 1
 ZARIFLOW_CONNECTION_WAIT_INTERVAL | The number of seconds to wait between connection attempts | `int` | 1
+|||
+ZAIRFLOW_GIT_AUTOSYNC_PATH| Overrides /app directory. The path where the git repo will sync to (remember to set the correct airflow dags/plugins folder path). See notes below on autosync. | `string` | None
 
 ## DB logger
 
@@ -93,6 +98,35 @@ section | description |  type/values | default
 [db_logger].`SQL_ALCHEMY_POOL_RECYCLE` | The pool recycle time | `int` | 1800
 [db_logger].`SQL_ALCHEMY_POOL_PRE_PING` | If true, do a ping at the connection start. | `boolean` | true
 [db_logger].`SQL_ENGINE_ENCODING` | THe encoding for the sql engine | `string` | utf-8
+
+## Git auto-sync
+
+The auto-sync feature runs a backround script, inside the airflow pod, which periodically checks for changes in the git repo and pulls any change
+that was detected. See script github reop and details [here](https://github.com/LamaAni/git_autosync). 
+
+`The auto sync is recommended for development mode.`
+
+### Configuring the auto sync enviroment
+
+Fist we tell zairflow where the repo is, by setting the `environment variables`:
+```yaml
+ZAIRFLOW_GIT_AUTOSYNC_URI: [my-repo-uri]
+ZAIRFLOW_GIT_AUTOSYNC_BRANCH: [my-repo-branch] # Optional, default = default branch.
+```
+
+Then, if in your repo the paths to the airflow dags and plugins are:
+```shell
+[repo root]/deployment/airflow/dags
+[repo root]/deployment/airflow/plugins
+```
+
+You need to set the airflow `environment variables` (or in the airflow config file):
+```yaml
+AIRFLOW__CORE__DAGS_FOLDER: /app/deployment/airflow/dags
+AIRFLOW__CORE__PLUGINS_FOLDER: /app/deployment/airflow/plugins
+```
+
+##### NOTE: If your image pre-contains dags/plugins, you must copy them into the appropriate paths for dags and plugins
 
 # Helm
 
