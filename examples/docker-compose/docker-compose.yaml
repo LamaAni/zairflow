@@ -23,7 +23,6 @@ services:
     environment:
       ZAIRFLOW_CONTAINER_TYPE: 'webserver'
       ZAIRFLOW_RUN_INITDB: 'true'
-      ZAIRFLOW_ENTRYPOINT_RUN_HOOK: '/scripts/init_connections'
       <<: *globalenvs
 
   airflow-scheduler:
