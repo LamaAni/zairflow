@@ -42,7 +42,7 @@ function init_git_autosync() {
             git clone --single-branch $branch_arg "$uri" "$tmp_clone_dir"
             assert $? "Failed to initialize git repo." || revert_path $? || return $?
             log:info "Copying repo to working directory @ $PWD"
-            cp -af $tmp_clone_dir/. .
+            cp -afr $tmp_clone_dir/. .
             assert $? "Failed to copy cloned git repo." || revert_path $? || return $?
             log:info "Validating git repo @ $PWD"
             git status &>/dev/null
