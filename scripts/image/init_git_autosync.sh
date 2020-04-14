@@ -3,6 +3,10 @@
 # shellcheck disable=SC1091
 source "$SCRIPTS_PATH/common.sh"
 
+# Config
+: ${ZAIRFLOW_GIT_AUTOSYNC_PATH="/app"}
+: ${ZAIRFLOW_GIT_AUTOSYNC_CLEAR_DIRECTORY="true"}
+
 function init_git_autosync() {
     local uri="$1"
     local sync_path="$2"
@@ -16,7 +20,6 @@ function init_git_autosync() {
     [ -n "$uri" ]
     assert $? "The git repo url must be defined (if the repo already exists use 'internal')"
 
-    log:info "Preparing git auto-sync"
     [ -n "$sync_path" ]
     assert $? "The sync path must be defined." || return $?
 
@@ -59,21 +62,17 @@ function init_git_autosync() {
     }
 
     if [ "$uri" != "internal" ]; then
-        log:info "Initializing repo"
-        git status &>/dev/null
-        if [ $? -ne 0 ]; then
-            # log:warn "Git repo not found @ $PWD, attempting to clone $uri..."
-            log:info "Git repo not found @ $PWD, cloaing from remote..."
-            if [ "$clear_target_directory" == "true" ]; then
-                delete_source_and_clone || return $?
-            else
-                clone_using_tempdir || return $?
-            fi
-            log:info "Validating repo"
-            git status &>/dev/null
-            assert $? "Failed to assert git repo creation." || revert_path $? || return $?
-            log:info "Git repo initialized succesfully"
+        log:info "Initializing repo @ $PWD, cloaing from remote..."
+
+        if [ "$clear_target_directory" == "true" ]; then
+            delete_source_and_clone || return $?
+        else
+            clone_using_tempdir || return $?
         fi
+        log:info "Validating repo"
+        git status &>/dev/null
+        assert $? "Failed to assert git repo creation." || revert_path $? || return $?
+        log:info "Git repo initialized succesfully"
     fi
 
     git_autosync --async
