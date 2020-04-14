@@ -16,6 +16,7 @@ function prepare_airflow_env() {
   : ${ZAIRFLOW_AUTO_DETECT_CLUSTER:="true"}
   : ${ZAIRFLOW_POST_LOAD_USER_CODE:="false"}
   : ${ZAIRFLOW_GIT_AUTOSYNC_PATH="/app"}
+  : ${ZAIRFLOW_GIT_AUTOSYNC_CLEAR_DIRECTORY="true"}
 
   ZAIRFLOW_WAIT_FOR=($ZAIRFLOW_WAIT_FOR)
 
@@ -70,7 +71,7 @@ function prepare_airflow_env() {
 
   if [ -n "$ZAIRFLOW_GIT_AUTOSYNC_URI" ]; then
     log:sep "Starting git auto-sync to $ZAIRFLOW_GIT_AUTOSYNC_PATH"
-    "$SCRIPTS_PATH/image/init_git_autosync.sh" "$ZAIRFLOW_GIT_AUTOSYNC_URI" "$ZAIRFLOW_GIT_AUTOSYNC_PATH" "$ZAIRFLOW_GIT_AUTOSYNC_BRANCH"
+    "$SCRIPTS_PATH/image/init_git_autosync.sh"
     assert $? "Failed to initialize git autosync" || return $?
   fi
 }
