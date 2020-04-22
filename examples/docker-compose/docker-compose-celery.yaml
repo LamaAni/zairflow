@@ -1,0 +1,86 @@
+version: '3.4'
+x-globalenvs: &globalenvs # As an example, initializing without the user code.
+  ZAIRFLOW_DB_HOST: 'postgres'
+  ZAIRFLOW_POST_LOAD_USER_CODE: 'true'
+
+  # Airflow args
+  AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql://airflow:airflow@postgres:5432/airflow'
+  AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+
+  # Airflow celery args
+  AIRFLOW__CELERY__RESULT_BACKEND: 'db+postgresql://airflow:airflow@postgres:5432/airflow'
+
+  # NOTE: in the current example we are using the db as a backend, so to reduce the number
+  # of instances and to increase restart persistance. You can use the redis service, if you
+  # uncomment the redis broker and the redis service.
+  # NOTE: Flower will not work without redis (at this time)
+  AIRFLOW__CELERY__BROKER_URL: 'sqla+postgresql://airflow:airflow@postgres:5432/airflow'
+  # AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/
+
+networks:
+  airflow-backend:
+    driver: bridge
+
+services:
+  airflow-web:
+    build: .
+    networks:
+      - airflow-backend
+    ports:
+      - '8080:8080'
+    environment:
+      ZAIRFLOW_CONTAINER_TYPE: 'webserver'
+      ZAIRFLOW_RUN_INITDB: 'true'
+      <<: *globalenvs
+
+  airflow-scheduler:
+    build: .
+    networks:
+      - airflow-backend
+    environment:
+      ZAIRFLOW_CONTAINER_TYPE: 'scheduler'
+      # start the airflow scheduler after the web-service has started.
+      # since we want to run the init connections only once.
+      ZAIRFLOW_WAIT_FOR: 'airflow-web:8080'
+      <<: *globalenvs
+
+  # dup. to add more workers.
+  airflow-worker:
+    build: .
+    networks:
+      - airflow-backend
+    environment:
+      ZAIRFLOW_CONTAINER_TYPE: 'worker'
+      # start the airflow worker after the web-service has started.
+      # since we want to run the init connections only once.
+      ZAIRFLOW_WAIT_FOR: 'airflow-web:8080'
+      <<: *globalenvs
+
+  postgres:
+    image: 'postgres:12.2'
+    networks:
+      - airflow-backend
+    environment:
+      POSTGRES_USER: 'airflow'
+      POSTGRES_PASSWORD: 'airflow'
+      POSTGRES_DB: 'airflow'
+      MAX_CONNECTIONS: '10000'
+    ports:
+      - '5432:5432'
+  # # Will only work with the redis service.
+  # airflow-flower:
+  #   build: .
+  #   ports:
+  #     - '5555:5555'
+  #   networks:
+  #     - airflow-backend
+  #   environment:
+  #     ZAIRFLOW_CONTAINER_TYPE: 'flower'
+  #     # ZAIRFLOW_WAIT_FOR: 'airflow-web:8080'
+  #     <<: *globalenvs
+  # redis:
+  #   networks:
+  #     - airflow-backend
+  #   image: "redis:alpine3.11"
