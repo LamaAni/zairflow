@@ -2,6 +2,7 @@
 # Starting from the zairflow image.
 FROM lamaani/zairflow:latest
 
+ENV VER=1
 # USER root
 
 # You can install other stuff here.

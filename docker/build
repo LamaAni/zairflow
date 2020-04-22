@@ -8,10 +8,10 @@ help_text="
 Build the zairflow image
 Usage: build
 Args:
-    --main-tag  The main tag to use (defaults to latest)
-    --push      If true then push (default to true on master)
-    --hub-username The docker username to use
-    --hub-token The docker token to use
+    --main-tag      The main tag to use (defaults to latest)
+    --push          If true then push (default to true on master)
+    --hub-username  The docker username to use
+    --hub-token     The docker token to use
 Flags:
     -h | --help Show this help menu.
 "

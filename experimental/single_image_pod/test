@@ -37,7 +37,7 @@ function attach() {
 }
 
 function forward() {
-    kubectl port-forward "$POD_NAME" 3030:8080
+    kubectl port-forward "$POD_NAME" 8080:8080
 }
 
 delete

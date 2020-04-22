@@ -7,7 +7,7 @@ Airflow web-server service: {{ $full_name }}-web-svc
 
 Using kubectl:
   webservice: 
-    kubectl port-forward svc/{{ $full_name }}-web-svc 3030:8080
+    kubectl port-forward svc/{{ $full_name }}-web-svc 8080:8080
   database:
     kubectl port-forward svc/{{ $full_name }}-web-svc 5432:5432
 
