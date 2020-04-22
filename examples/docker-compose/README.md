@@ -16,3 +16,13 @@ docker-compose up
 ```shell
 docker compose -f ./docker-compose-git-autosync.yaml up
 ```
+
+## Use airflow with the celery executor
+
+This option dose not yet exist in kubernetes.
+
+#### File: `docker-compose-git-autosync.yaml`
+#### Commands:
+```shell
+docker compose -f ./docker-compose-git-autosync.yaml up
+```
