@@ -73,10 +73,6 @@ RUN useradd -m airflow
 
 # set python to use unicode.
 ENV SLUGIFY_USES_TEXT_UNIDECODE=yes
-# FIXME: Is this still needed?
-# ENV AIRFLOW_GPL_UNIDECODE yes
-# FIXME: Is this still needed?
-# ENV C_FORCE_ROOT=true
 ENV PATH="/scripts:${PATH}:/home/airflow/.local/bin"
 
 ##########################
