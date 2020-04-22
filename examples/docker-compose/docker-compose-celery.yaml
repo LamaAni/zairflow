@@ -19,13 +19,16 @@ x-globalenvs: &globalenvs # As an example, initializing without the user code.
   AIRFLOW__CELERY__BROKER_URL: 'sqla+postgresql://airflow:airflow@postgres:5432/airflow'
   # AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/
 
+x-airflow-image: &airflow-image
+  build: .
+
 networks:
   airflow-backend:
     driver: bridge
 
 services:
   airflow-web:
-    build: .
+    <<: *airflow-image
     networks:
       - airflow-backend
     ports:
@@ -36,7 +39,7 @@ services:
       <<: *globalenvs
 
   airflow-scheduler:
-    build: .
+    <<: *airflow-image
     networks:
       - airflow-backend
     environment:
@@ -48,7 +51,7 @@ services:
 
   # dup. to add more workers.
   airflow-worker:
-    build: .
+    <<: *airflow-image
     networks:
       - airflow-backend
     environment:

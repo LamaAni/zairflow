@@ -27,7 +27,7 @@ function delete() {
 }
 
 function forward() {
-    kubectl port-forward svc/zairflow-test-webserver-svc 3030:8080
+    kubectl port-forward svc/zairflow-test-webserver-svc 8080:8080
 }
 
 if [ $# -eq 0 ]; then
