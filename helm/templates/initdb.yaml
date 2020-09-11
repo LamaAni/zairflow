@@ -14,7 +14,7 @@ spec:
         deployment-target: {{ $full_name }}-initdb
         {{- include "zairflow-helm.labels" . | nindent 8 }}
       annotations:
-        {{- include "zairflow-helm.template_configmap_checksum" . | nindent 8 -}}
+        {{- include "zairflow-helm.template_configmap_checksum" . | nindent 8 }}
     spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
