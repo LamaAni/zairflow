@@ -40,6 +40,8 @@ spec:
     metadata:
       labels:
         deployment-target: {{ $full_name }}-pg-db
+      annotations:
+        {{- include "zairflow-helm.template_configmap_checksum" . | nindent 8 }}
     spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
