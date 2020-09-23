@@ -93,7 +93,7 @@ COPY db_logger /db_logger
 WORKDIR /airflow
 RUN yes | pip install --no-cache-dir --upgrade \
    apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,kubernets${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
-   airflow-kubernetes-job-operator==1.0.0 \
+   airflow-kubernetes-job-operator==1.0.1 \
    # Falsk sometimes comes in the wrong version.
    # Flask \
    # Specialized db logger.
