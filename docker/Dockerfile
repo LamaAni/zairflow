@@ -34,7 +34,9 @@ RUN apt-get update -yqq &&\
    libssl-dev\
    redis-tools\
    postgresql-client\
-   default-libmysqlclient-dev
+   default-libmysqlclient-dev\
+   # changes in airflow 1.10.12
+   libsasl2-dev
 
 ##########################
 # google keyring & kubectl
@@ -78,7 +80,7 @@ ENV PATH="/scripts:${PATH}:/home/airflow/.local/bin"
 ##########################
 # Main version
 
-ARG AIRFLOW_VERSION=1.10.10
+ARG AIRFLOW_VERSION=1.10.12
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 
@@ -91,7 +93,7 @@ COPY db_logger /db_logger
 WORKDIR /airflow
 RUN yes | pip install --no-cache-dir --upgrade \
    apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,kubernets${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
-   git+https://github.com/LamaAni/KubernetesJobOperator.git@master \
+   airflow-kubernetes-job-operator==1.0.0 \
    # Falsk sometimes comes in the wrong version.
    # Flask \
    # Specialized db logger.
