@@ -16,7 +16,9 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: zairflow-docker-build
+          keys: ${{github.repository}}
+          restore-keys: |
+            ${{github.repository}}
 
       - name: Build the Docker image
         id: build-docker-image
