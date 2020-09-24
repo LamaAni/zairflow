@@ -12,14 +12,17 @@ Args:
     --push          If true then push (default to true on master)
     --hub-username  The docker username to use
     --hub-token     The docker token to use
+    
 Flags:
-    -h | --help Show this help menu.
+    -h | --help     Show this help menu.
+    --pull-cache    Pull the cached images for latest and the main-tag (if any)
 "
 
 HUB_TOKEN=""
 HUB_USERNAME=""
 DO_PUSH=0
 MAIN_TAG="latest"
+PULL_CACHE=0
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -38,6 +41,9 @@ while [ "$#" -gt 0 ]; do
         shift
         HUB_TOKEN="$1"
         ;;
+    --pull-cache)
+        PULL_CACHE=1
+        ;;
     --main-tag)
         shift
         MAIN_TAG="$1"
@@ -55,6 +61,19 @@ cd "$REPO_PATH"
 source "./envs"
 
 ####################################
+
+function pull_cache() {
+    log:sep "Pulling cache from repository..."
+    log "Pulling current tag ($MAIN_TAG)..."
+    HAS_ERROR=0
+    docker pull "$ZAIRFLOW_IMAGE_REPOSITORY:$MAIN_TAG"
+    assert_warning $? "Failed to pull current branch, attempting latest" || HAS_ERROR=1
+    if [ $HAS_ERROR -eq 1 ]; then
+        log "Pulling latest..."
+        docker pull "$ZAIRFLOW_IMAGE_REPOSITORY:latest"
+        assert_warning $? "Failed to pull latest. Image will be rebuilt."
+    fi
+}
 
 function push_tag() {
     log:sep "Tagging and pushing: $1"
@@ -80,6 +99,9 @@ function build_image() {
     fi
 }
 
+if [ $PULL_CACHE -eq 1 ]; then
+    pull_cache || exit $?
+fi
 if [ -n "$HUB_TOKEN" ]; then
     log:sep "Logging in to docker using $HUB_USERNAME:$HUB_TOKEN"
     docker login -u "$HUB_USERNAME" -p "$HUB_TOKEN"
