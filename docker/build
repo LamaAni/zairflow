@@ -13,7 +13,7 @@ Args:
     --hub-username  The docker username to use
     --hub-token     The docker token to use
 Flags:
-    -h | --help Show this help menu.
+    -h | --help     Show this help menu.
 "
 
 HUB_TOKEN=""
@@ -80,6 +80,9 @@ function build_image() {
     fi
 }
 
+if [ $PULL_CACHE -eq 1 ]; then
+    pull_cache || exit $?
+fi
 if [ -n "$HUB_TOKEN" ]; then
     log:sep "Logging in to docker using $HUB_USERNAME:$HUB_TOKEN"
     docker login -u "$HUB_USERNAME" -p "$HUB_TOKEN"
