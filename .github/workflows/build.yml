@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - 'master'
+  push:
+    branches:
+      - "*"
 
 jobs:
   build:
@@ -15,7 +18,8 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: zairflow-docker-build
+          restore-keys: |
+            zairflow-docker-cache
 
       - name: Build the Docker image
         env:
