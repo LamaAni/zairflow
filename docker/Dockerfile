@@ -130,6 +130,7 @@ USER airflow
 COPY ./docker/airflow.cfg ./airflow.cfg
 
 # airflow envs
+ENV TESTER="lama"
 ARG ZAIRFLOW_VERSION="debug"
 ENV AIRFLOW_HOME /airflow
 ENV FERNET_KEY "abcd"
