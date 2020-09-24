@@ -3,6 +3,9 @@
 # Recommended values can be found in README and
 # in the values file in this chart.
 
+image:
+  pullPolicy: Always
+
 envs:
   # sync to /app
   ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
@@ -17,3 +20,5 @@ envs:
   AIRFLOW__CORE__PLUGINS_FOLDER: /app/experimental/plugins
 serviceAccount:
   enabled: true
+postgres:
+  presist: false

@@ -7,3 +7,5 @@ releases:
     chart: ../../helm
     values:
       - ./local_airflow_values.yaml
+      - envs:
+          TEST_ENV: "my test env 2"
