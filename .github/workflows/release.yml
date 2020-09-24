@@ -12,6 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: satackey/action-docker-layer-caching@v0.0.8
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
+        with:
+          key: zairflow-docker-build
+
       - name: Build the Docker image
         id: build-docker-image
         env:
