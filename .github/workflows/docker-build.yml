@@ -25,12 +25,12 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: ${{github.repository}}-${{github.ref}}
+          key: ${{github.repository}}-${{github.head_ref || github.ref}}
           restore-keys: |
             ${{github.repository}}
 
       # Only happens on branch
-      - name: Build the Docker image on branch
+      - name: 'Branch: Build the Docker image on branch'
         if: ${{github.event_name != 'release'}}
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -38,7 +38,7 @@ jobs:
         run: bash docker/build --hub-username "$DOCKER_USERNAME" --hub-token "$DOCKER_ACCESS_TOKEN"
 
       # Only happens on release.
-      - name: Build the docker image for release
+      - name: 'Release: Build the docker image for release'
         if: ${{github.event_name == 'release'}}
         id: build-docker-image
         env:
@@ -46,17 +46,17 @@ jobs:
           DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
         run: bash docker/build --hub-username "$DOCKER_USERNAME" --push --hub-token "$DOCKER_ACCESS_TOKEN"
 
-      - name: Create helm release (tar the folder)
+      - name: 'Release: Create helm release (tar the folder)'
         if: ${{github.event_name == 'release'}}
         id: gzip-helm-release
         run: bash scripts/ci/create_helm_release
 
-      - name: Get the release tag (version)
+      - name: 'Release: Get the release tag (version)'
         if: ${{github.event_name == 'release'}}
         id: release_tag
         run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
 
-      - name: Upload files to release
+      - name: 'Release: Upload files'
         if: ${{github.event_name == 'release'}}
         uses: AButler/upload-release-assets@v2.0
         with:
