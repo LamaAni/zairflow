@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous runs on same branch
-        uses: rokroskar/workflow-run-cleanup-action@0.2.2
+        uses: rokroskar/workflow-run-cleanup-action@v0.2.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
