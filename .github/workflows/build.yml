@@ -18,7 +18,7 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          keys: ${{github.repository}}-${{github.ref}}
+          key: ${{github.repository}}-${{github.ref}}
           restore-keys: |
             ${{github.repository}}
 
