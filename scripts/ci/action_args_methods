@@ -60,8 +60,10 @@ elif [ "$(has_arg '\nl')" != "true" ]; then
     version="$version latest"
 fi
 
+log:sep "Commit message: "
+echo "$COMMIT_MESSAGE"
 log:sep "Args:"
-out try_force_release $force_release
+out try_force_release "$force_release"
 out release "$release"
 out release_tag "$release_tag"
 out multi_linux "$multi_linux"
