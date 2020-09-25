@@ -40,9 +40,14 @@ log "Release tag: $release_tag"
 log "Force release: $force_release"
 
 log:sep "Args:"
-if [ "$release_tag" == "master" ] && [ $force_release -eq 1 ] || [ "$EVENT_NAME" == 'release' ]; then
-    out "release" "true"
-    log:warning "this is a release run..."
+if [ $force_release -eq 1 ] || [ "$EVENT_NAME" == 'release' ]; then
+    if [ "$release_tag" == "master" ] || [ "$EVENT_NAME" == 'release' ]; then
+        out "release" "true"
+        log:warning "This is a release run..."
+    else
+        out "release" "false"
+        log:warning "Ignored release since this is not master"
+    fi
 else
     out "release" "false"
 fi
