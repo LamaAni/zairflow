@@ -3,7 +3,7 @@
 source "$SCRIPTS_PATH/common.sh"
 
 function out() {
-    info "Setting: output.$1 = $2"
+    info "output.$1 = $2"
     echo "::set-output name=$1::$2"
 }
 
