@@ -18,9 +18,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Get commit multi-linux
+      - name: Get multi linux info
         id: multi_linux
-        run: "echo ::set-output name=enabled::${{contains('\\ml',github.event.head_commit.message)}}"
+        run: |
+          echo ::set-output name=enabled::${{contains('\\ml',github.event.head_commit.message) || github.event_name == 'release'}}
 
       - name: Set up Docker Buildx
         if: ${{steps.multi_linux.outputs.enabled=='true'}}
@@ -50,6 +51,7 @@ jobs:
           DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
           DOCKER_IMAGE_TAG: 'ci-build'
+          USE_BUILDX: ${{steps.multi_linux.outputs.enabled}}
         run: bash docker/build
 
       # Only happens on release.
