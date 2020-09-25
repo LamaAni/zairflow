@@ -79,13 +79,9 @@ function push_tag() {
 function build_image() {
     assert $? "Failed to load envs" || return $?
 
-    local all_tags
-    all_tags=()
+    local push_tags
+    push_tags=()
 
-    if [ -n "$DOCKER_IMAGE_TAG" ]; then
-        all_tags+=("$DOCKER_IMAGE_TAG")
-        version="$DOCKER_IMAGE_TAG"
-    fi
     local version="local-build"
     if [ -n "$DOCKER_VERSION_TAG" ]; then
         version="$DOCKER_VERSION_TAG"
@@ -94,26 +90,27 @@ function build_image() {
         local partial_tag=""
         for part in "${DOCKER_VERSION_TAG_split[@]}"; do
             partial_tag="${partial_tag}${part}"
-            all_tags+=("$partial_tag")
+            push_tags+=("$partial_tag")
             partial_tag="${partial_tag}."
         done
     fi
 
     log:sep "Config"
-    log "Path:  " "$PWD"
-    log "Repo:  " "${ZAIRFLOW_IMAGE_REPOSITORY}"
-    log "Tags:  " "${all_tags[@]}"
+    log "Path:      " "$PWD"
+    log "Repo:      " "${ZAIRFLOW_IMAGE_REPOSITORY}"
+    log "local tag: " "${DOCKER_IMAGE_TAG}"
+    log "push tags: " "${push_tags[@]}"
 
     if [ $DO_BUILD -eq 1 ]; then
         log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
-        docker build -f "./docker/Dockerfile" . -t "$ZAIRFLOW_IMAGE_REPOSITORY:local" \
+        docker build -f "./docker/Dockerfile" . -t "$ZAIRFLOW_IMAGE_REPOSITORY:$DOCKER_IMAGE_TAG" \
             --build-arg "ZAIRFLOW_VERSION=$version"
         assert $? "Docker build failed" || return $?
     fi
 
     if [ $DO_PUSH -eq 1 ]; then
-        log:sep "Pushing $ZAIRFLOW_IMAGE_REPOSITORY -> " "${all_tags[@]}"
-        for tag in "${all_tags[@]}"; do
+        log:sep "Pushing $ZAIRFLOW_IMAGE_REPOSITORY -> " "${push_tags[@]}"
+        for tag in "${push_tags[@]}"; do
             push_tag "$tag" || return $?
         done
     fi
