@@ -28,14 +28,14 @@ jobs:
         id: get-latest-commit
         uses: ActionsRML/get-PR-latest-commit@v1
 
-      - name: Load commit args
+      - name: Load build args and flags
         id: commit_args
         env:
           LAST_GIT_EVENT: '${{ github.event.after }}'
           EVENT_NAME: '${{github.event_name}}'
           TAG_REG: '${{github.head_ref || github.ref}}'
           COMMIT_MESSAGE: '${{steps.get-latest-commit.outputs.latest_commit_message}}'
-          DEFAULT_MULTI_LINUX_ON_RELEASE: "false"
+          DEFAULT_MULTI_LINUX_ON_RELEASE: 'false'
         # flags:
         #   '\ml'   multi linux run
         #   '\noml' force no multi linux run
@@ -73,25 +73,6 @@ jobs:
           key: '${{steps.commit_args.outputs.cache_key}}'
           restore-keys: '${{steps.commit_args.outputs.cache_key_fallback}}'
 
-      - name: 'Build the Docker image on branch'
-        env:
-          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
-          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
-          DOCKER_IMAGE_TAG: 'ci-build'
-          USE_BUILDX: ${{steps.commit_args.outputs.multi_linux}}
-        run: bash docker/build
-
-      # Only happens on release.
-      - name: 'Release: Push the docker image for release'
-        if: ${{steps.commit_args.outputs.release=='true'}}
-        id: build-docker-image
-        env:
-          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
-          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
-          DOCKER_IMAGE_TAG: 'ci-build'
-          DOCKER_VERSION_TAG: '${{ steps.commit_args.outputs.version }}'
-        run: bash docker/build --push --skip-build
-
       - name: 'Release: Create helm release (tar the folder)'
         if: ${{steps.commit_args.outputs.release=='true'}}
         id: gzip-helm-release
@@ -104,3 +85,21 @@ jobs:
           files: 'helm.tar.gz'
           release-tag: ${{ steps.release_tag.outputs.TAG }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Build the Docker image on branch'
+        env:
+          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+          DOCKER_IMAGE_TAG: 'ci-build'
+          USE_BUILDX: ${{steps.commit_args.outputs.multi_linux}}
+        run: bash docker/build
+
+      - name: 'Release: Push the docker image for release'
+        if: ${{steps.commit_args.outputs.release=='true'}}
+        id: build-docker-image
+        env:
+          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+          DOCKER_IMAGE_TAG: 'ci-build'
+          DOCKER_VERSION_TAG: '${{ steps.commit_args.outputs.version }}'
+        run: bash docker/build --push --skip-build

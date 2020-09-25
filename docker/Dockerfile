@@ -1,5 +1,5 @@
 
-FROM python:3.8.6-slim
+FROM amancevice/pandas:1.1.2-slim
 ENV TERM linux
 
 #########################################
@@ -37,7 +37,6 @@ RUN ${APT_GET_INSTALL}\
    git\
    sudo\
    netcat\
-   python-psycopg2\
    libssl-dev\
    redis-tools\
    openssh-client\
@@ -48,6 +47,7 @@ RUN ${APT_GET_INSTALL}\
 
 RUN ${APT_GET_INSTALL}\ 
    postgresql-client\
+   python-psycopg2\
    # Cleanup
    &&\
    apt-get clean
