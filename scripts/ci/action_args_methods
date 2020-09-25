@@ -9,8 +9,10 @@ function out() {
 
 function has_arg() {
     if [[ "$COMMIT_MESSAGE" == *"$1"* ]]; then
+        echo "true"
         return 1
     fi
+    echo "false"
     return 0
 }
 
@@ -20,8 +22,7 @@ function out_arg() {
     local true_value="$3"
     local false_value="$4"
 
-    has_arg "$ptrn"
-    if [ $? -eq 0 ]; then
+    if [ "$(has_arg "$ptrn")" == "true" ]; then
         out "$name" "$false_value"
     else
         out "$name" "$true_value"
@@ -32,27 +33,31 @@ log:sep "Loading commit args.."
 log "Loading flags"
 
 log "Loading release info"
-has_arg '\fr'
-force_release=$?
+force_release=$(has_arg '\fr')
 release_tag="$(basename "$GITHUB_REF")"
 
 log "Release tag: $release_tag"
 log "Force release: $force_release"
 
+release="false"
 log:sep "Args:"
-if [ $force_release -eq 1 ] || [ "$EVENT_NAME" == 'release' ]; then
+if [ "$force_release" == "true" ] || [ "$EVENT_NAME" == 'release' ]; then
     if [ "$release_tag" == "master" ] || [ "$EVENT_NAME" == 'release' ]; then
-        out "release" "true"
+        release="true"
         log:warning "This is a release run..."
     else
-        out "release" "false"
         log:warning "Ignored release since this is not master"
     fi
-else
-    out "release" "false"
 fi
 
+multi_linux="false"
+if [ "$(has_arg '\noml')" == "false" ]; then
+    if [ "$(has_arg '\ml')" == "true" ]; then
+        multi_linux="true"
+    fi
+fi
+
+out release "$release"
 out release_tag "$release_tag"
-out_arg '\ml' "multi_linux" "true" "false"
-out_arg '\noml' "multi_linux" "false" "true"
+out multi_linux "$multi_linux"
 out_arg '\nc' "no_cache" "true" "false"

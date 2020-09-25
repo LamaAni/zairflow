@@ -29,12 +29,16 @@ jobs:
         env:
             COMMIT_MESSAGE: "${{github.event.head_commit.message}}"
             EVENT_NAME: "${{github.event_name}}"
-        # args:
-        # out_arg '\ml'   "multi_linux"       "true" "false"
-        # out_arg '\noml' "no_multi_linux"    "true" "false"
-        # out_arg '\nc'   "no_cache"          "true" "false"
-        # out_arg '\fr'   "release"           "true" "false" (only on master or release, otherwise false)
-        # out_arg         "release_tag"       (branch or tag)
+        # flags:
+        #   '\ml'   multi linux run
+        #   '\noml' force no multi linux run
+        #   '\nc'   force no cache
+        #   '\fr'   force the release
+        # outputs:
+        #   release       "true"/"false"
+        #   release_tag   name of the release branch or tag
+        #   multi_linux   build a multi linux image.
+        #   no_cache      "true"/"false"
         run: bash scripts/ci/action_args_methods
 
       - name: Set up Docker Buildx
