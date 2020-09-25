@@ -42,16 +42,18 @@ release_tag="$(basename "$TAG_REG")"
 is_debug="$(has_arg '\dbg')"
 
 release="false"
+
 if [ "$force_release" == "true" ] || [ "$EVENT_NAME" == 'release' ]; then
     if [ "$release_tag" == "master" ] || [ "$EVENT_NAME" == 'release' ] || [ "$is_debug" == "true" ]; then
         release="true"
+        multi_linux="$DEFAULT_MULTI_LINUX_ON_RELEASE"
         log:warning "This is a release run..."
     else
         log:warning "Ignored release since this is not master"
     fi
 fi
 
-multi_linux="false"
+: "${multi_linux:="false"}"
 if [ "$(has_arg '\noml')" == "false" ]; then
     if [ "$(has_arg '\ml')" == "true" ]; then
         multi_linux="true"

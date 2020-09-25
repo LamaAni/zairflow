@@ -35,6 +35,7 @@ jobs:
           EVENT_NAME: '${{github.event_name}}'
           TAG_REG: '${{github.head_ref || github.ref}}'
           COMMIT_MESSAGE: '${{steps.get-latest-commit.outputs.latest_commit_message}}'
+          DEFAULT_MULTI_LINUX_ON_RELEASE: "false"
         # flags:
         #   '\ml'   multi linux run
         #   '\noml' force no multi linux run

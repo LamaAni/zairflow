@@ -42,11 +42,12 @@ RUN ${APT_GET_INSTALL}\
    redis-tools\
    openssh-client\
    build-essential\
-   postgresql-client\
-   postgresql\
    default-libmysqlclient-dev\
    libsasl2-dev\
-   kubectl\
+   kubectl
+
+RUN ${APT_GET_INSTALL}\ 
+   postgresql-client\
    # Cleanup
    &&\
    apt-get clean
@@ -65,9 +66,10 @@ COPY ./db_logger ./db_logger
 COPY ./docker/requirements_pip.txt .
 
 # Install python requirements and airflow.
-RUN yes | pip install --no-cache-dir \
-   -r ./requirements_pip.txt\
-   ./db_logger\
+ARG PIP_INSTALL_COMMAND="pip install --no-cache-dir"
+RUN ${PIP_INSTALL_COMMAND} \
+   -r ./requirements_pip.txt
+RUN ${PIP_INSTALL_COMMAND} ./db_logger\
    airflow-kubernetes-job-operator==${KUBE_JOB_OPERATOR_VERSION}\
    apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
    ${PYTHON_DEPS}
