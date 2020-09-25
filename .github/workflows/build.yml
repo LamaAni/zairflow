@@ -34,8 +34,10 @@ jobs:
         #   '\noml' force no multi linux run
         #   '\nc'   force no cache
         #   '\fr'   force the release
+        #   '\dbg'  force debug release
+        #   '\nl'   force no latest tag
         # outputs:
-        #   release       "true"/"false"
+        #   release       "true"/"false" (only on master or \dbg)
         #   release_tag   name of the release branch or tag
         #   multi_linux   build a multi linux image.
         #   no_cache      "true"/"false"
@@ -68,11 +70,6 @@ jobs:
         run: bash docker/build
 
       # Only happens on release.
-      - name: 'Release: Get the release tag (version)'
-        if: ${{steps.commit_args.outputs.release=='true'}}
-        id: release_tag
-        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
-
       - name: 'Release: Push the docker image for release'
         if: ${{steps.commit_args.outputs.release=='true'}}
         id: build-docker-image
@@ -80,7 +77,7 @@ jobs:
           DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
           DOCKER_IMAGE_TAG: 'ci-build'
-          DOCKER_VERSION_TAG: 'latest ${{ steps.release_tag.outputs.TAG }}'
+          DOCKER_VERSION_TAG: '${{ steps.commit_args.outputs.version }}'
         run: bash docker/build --push --skip-build
 
       - name: 'Release: Create helm release (tar the folder)'
