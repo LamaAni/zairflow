@@ -29,7 +29,7 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${DOCKER_VERSION_TAG:=""}
 : ${DO_PUSH:=0}
 : ${DO_BUILD:=1}
-: ${DOCKER_ARCHITECTURES:="linux/arm/v7,linux/arm64/v8,linux/amd64"}
+: ${DOCKER_ARCHITECTURES:="linux/arm/v7,linux/arm64,linux/amd64"}
 : ${USE_BUILDX:=""}
 
 while [ "$#" -gt 0 ]; do
