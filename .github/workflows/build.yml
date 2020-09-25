@@ -28,6 +28,7 @@ jobs:
         id: commit_args
         env:
             COMMIT_MESSAGE: "${{github.event.head_commit.message}}"
+            LAST_GIT_EVENT: "${{ github.event.after }}"
             EVENT_NAME: "${{github.event_name}}"
         # flags:
         #   '\ml'   multi linux run
