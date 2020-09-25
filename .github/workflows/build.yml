@@ -20,7 +20,7 @@ jobs:
 
       - name: Get commit multi-linux
         id: multi_linux
-        run: echo ::set-output enabled=${{contains("/ml",github.event.head_commit.message)}}
+        run: "echo ::set-output enabled=${{contains('/ml',github.event.head_commit.message)}}"
 
       - name: Set up Docker Buildx
         if: ${{steps.multi_linux.outputs.enabled}}
