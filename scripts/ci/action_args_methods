@@ -63,6 +63,7 @@ fi
 log:sep "Commit message: "
 echo "$COMMIT_MESSAGE"
 log:sep "Args:"
+out event_name "$EVENT_NAME"
 out try_force_release "$force_release"
 out release "$release"
 out release_tag "$release_tag"
