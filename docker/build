@@ -15,7 +15,6 @@ Args:
     --hub-token     The docker token to use
 Flags:
     -h | --help     Show this help menu.
-    --skip-build    Skip the build.
     --push          If true then push (default to true on master)
     --multi-linux   If exists, attempt to use docker buildx, to mulid for multiple architectures.
                     The arch. can be set via DOCKER_ARCHITECTURES end
@@ -27,9 +26,8 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${DOCKER_USERNAME:=""}
 : ${DOCKER_IMAGE_TAG:="local"}
 : ${DOCKER_VERSION_TAG:=""}
-: ${DO_PUSH:=0}
-: ${DO_BUILD:=1}
-: ${DOCKER_ARCHITECTURES:="linux/arm/v7,linux/arm64,linux/amd64"}
+: ${DO_PUSH:="false"}
+: ${DOCKER_ARCHITECTURES:="linux/amd64,linux/arm64,linux/riscv64,linux/ppc64le,linux/386,linux/arm/v7,linux/arm/v6,linux/s390x"}
 : ${USE_BUILDX:=""}
 
 while [ "$#" -gt 0 ]; do
@@ -39,10 +37,7 @@ while [ "$#" -gt 0 ]; do
         exit 0
         ;;
     --push)
-        DO_PUSH=1
-        ;;
-    --skip-build)
-        DO_BUILD=0
+        DO_PUSH="true"
         ;;
     --hub-username)
         shift
@@ -82,6 +77,7 @@ if [ "$USE_BUILDX" == "true" ]; then
     log "$DOCKER_ARCHITECTURES"
     DOCKER_COMMAND_PLUGIN="buildx"
     DOCKER_COMMAND_ARGS="--platform ${DOCKER_ARCHITECTURES}"
+    DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS -o type=image,name=${ZAIRFLOW_IMAGE_REPOSITORY}:${DOCKER_IMAGE_TAG},push=true"
 fi
 
 ####################################
@@ -123,20 +119,25 @@ function build_image() {
     log "push tags: " "${push_tags[@]}"
     log "version:   " "$version"
 
-    if [ $DO_BUILD -eq 1 ]; then
+    local tag_argument=""
+    for tag in "${push_tags[@]}"; do
+        tag_argument="$tag_argument -t $tag"
+    done
+
+    if [ "$DO_PUSH" == "true" ]; then
+        DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --push"
+        log:sep "Building and pushing $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
+    else
         log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
-        docker $DOCKER_COMMAND_PLUGIN build $DOCKER_COMMAND_ARGS -f "./docker/Dockerfile" . \
-            -t "$ZAIRFLOW_IMAGE_REPOSITORY:$DOCKER_IMAGE_TAG" \
-            --build-arg "ZAIRFLOW_VERSION=$version"
-        assert $? "Docker build failed" || return $?
     fi
 
-    if [ $DO_PUSH -eq 1 ]; then
-        log:sep "Pushing $ZAIRFLOW_IMAGE_REPOSITORY -> " "${push_tags[@]}"
-        for tag in "${push_tags[@]}"; do
-            push_tag "$tag" || return $?
-        done
-    fi
+    docker $DOCKER_COMMAND_PLUGIN build \
+        $tag_argument \
+        $DOCKER_COMMAND_ARGS \
+        --build-arg "ZAIRFLOW_VERSION=$version" \
+        -f "./docker/Dockerfile" .
+    assert $? "Docker build failed" || return $?
+
 }
 
 if [ -n "$DOCKER_ACCESS_TOKEN" ]; then

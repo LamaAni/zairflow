@@ -92,14 +92,15 @@ jobs:
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
           DOCKER_IMAGE_TAG: 'ci-build'
           USE_BUILDX: ${{steps.commit_args.outputs.multi_linux}}
+          DO_PUSH: ${{steps.commit_args.outputs.release=='true'}}
         run: bash docker/build
 
-      - name: 'Release: Push the docker image for release'
-        if: ${{steps.commit_args.outputs.release=='true'}}
-        id: build-docker-image
-        env:
-          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
-          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
-          DOCKER_IMAGE_TAG: 'ci-build'
-          DOCKER_VERSION_TAG: '${{ steps.commit_args.outputs.version }}'
-        run: bash docker/build --push --skip-build
+      # - name: 'Release: Push the docker image for release'
+      #   if: ${{steps.commit_args.outputs.release=='true'}}
+      #   id: build-docker-image
+      #   env:
+      #     DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
+      #     DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+      #     DOCKER_IMAGE_TAG: 'ci-build'
+      #     DOCKER_VERSION_TAG: '${{ steps.commit_args.outputs.version }}'
+      #   run: bash docker/build --push --skip-build
