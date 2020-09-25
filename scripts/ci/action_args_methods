@@ -2,7 +2,8 @@
 : ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
 source "$SCRIPTS_PATH/common.sh"
 
-: "${COMMIT_MESSAGE:="$(git log --format=%B -n 1 $LAST_GIT_EVENT)"}"
+COMMIT_MESSAGE:="$(git log --format=%B -n 1 "$LAST_GIT_EVENT")"
+assert $? "Failed to pull commit message" || exit $?
 
 function out() {
     log "output.$1 = $2"
