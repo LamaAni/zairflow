@@ -27,7 +27,7 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${DOCKER_IMAGE_TAG:="local"}
 : ${DOCKER_VERSION_TAG:=""}
 : ${DO_PUSH:="false"}
-: ${DOCKER_ARCHITECTURES:="linux/amd64,linux/arm64,linux/arm64/v8,linux/386,linux/arm/v7,linux/arm/v6,linux/s390x"}
+: ${DOCKER_ARCHITECTURES:="linux/386,linux/amd64,linux/arm64/v8,linux/arm/v5,linux/arm/v7,linux/s390x"}
 : ${USE_BUILDX:=""}
 
 while [ "$#" -gt 0 ]; do
