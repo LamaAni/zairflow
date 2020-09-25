@@ -18,6 +18,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      - name: Get commit multi-linux
+        id: multi_linux
+        run: echo ::set-output enabled=${{contains(/multi-linux)}}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v3
+        with:
+          buildx-version: latest
+          qemu-version: latest
+
+      - name: Available platforms
+        run: 'echo Available docker platforms: ${{ steps.buildx.outputs.platforms }}'
+
       - name: 'Checkout the code'
         uses: actions/checkout@v2
 

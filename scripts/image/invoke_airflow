@@ -3,8 +3,6 @@
 # shellcheck disable=SC1091
 source "$SCRIPTS_PATH/common.sh"
 
-DO_LOAD_ENV=0
-
 case "$1" in
 webserver | scheduler | worker | initdb | flower | run)
     # requires prep.
