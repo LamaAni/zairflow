@@ -37,7 +37,7 @@ out_arg '\nc' "no_cache" "true" "false"
 log "Loading release info"
 has_arg '\fr'
 force_release=$?
-release_tag="${GITHUB_REF/refs\/tags\//}"
+release_tag="$(basename "$GITHUB_REF")"
 out release_tag "$release_tag"
 log "Release tag: $release_tag"
 if [ "$release_tag" == "master" ] && [ $force_release -eq 1 ] || [ "$EVENT_NAME" == 'release' ]; then

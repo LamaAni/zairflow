@@ -34,7 +34,7 @@ jobs:
         # out_arg '\noml' "no_multi_linux"    "true" "false"
         # out_arg '\ml'   "multi_linux"       "true" "false"
         # out_arg '\nc'   "no_cache"          "true" "false"
-        # out_arg '\fr'   "release"           "true" "false" (only on master)
+        # out_arg '\fr'   "release"           "true" "false" (only on master or release, otherwise false)
         # out_arg '\fr'   "release_tag"       (branch or tag)
         run: bash scripts/ci/action_args_methods
 
