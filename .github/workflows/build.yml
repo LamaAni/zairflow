@@ -33,32 +33,33 @@ jobs:
           restore-keys: |
             ${{github.repository}}
 
-      # Only happens on branch
-      - name: 'Branch: Build the Docker image on branch'
-        if: ${{github.event_name != 'release'}}
+      - name: 'Build the Docker image on branch'
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-        run: bash docker/build --hub-username "$DOCKER_USERNAME" --hub-token "$DOCKER_ACCESS_TOKEN"
+          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+          DOCKER_IMAGE_TAG: '${{github.head_ref || github.ref}}'
+        run: bash docker/build
 
       # Only happens on release.
-      - name: 'Release: Build the docker image for release'
+      - name: 'Release: Get the release tag (version)'
+        if: ${{github.event_name == 'release'}}
+        id: release_tag
+        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+
+      - name: 'Release: Push the docker image for release'
         if: ${{github.event_name == 'release'}}
         id: build-docker-image
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-        run: bash docker/build --hub-username "$DOCKER_USERNAME" --push --hub-token "$DOCKER_ACCESS_TOKEN"
+          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+          DOCKER_IMAGE_TAG: '${{github.head_ref || github.ref}}'
+          DOCKER_VERSION_TAG: '${{ steps.release_tag.outputs.TAG }}'
+        run: bash docker/build --push --skip-build
 
       - name: 'Release: Create helm release (tar the folder)'
         if: ${{github.event_name == 'release'}}
         id: gzip-helm-release
         run: bash scripts/ci/create_helm_release
-
-      - name: 'Release: Get the release tag (version)'
-        if: ${{github.event_name == 'release'}}
-        id: release_tag
-        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
 
       - name: 'Release: Upload files'
         if: ${{github.event_name == 'release'}}

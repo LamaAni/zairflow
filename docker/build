@@ -8,18 +8,23 @@ help_text="
 Build the zairflow image
 Usage: build
 Args:
-    --main-tag      The main tag to use (defaults to latest)
-    --push          If true then push (default to true on master)
+    -t | --tag      the release to to use (defaults to local). 
+    --version-tag   The version tag. If dose not exist, then skipped. If exists
+                    then split by '.' and add each tag. i.e. tag.0.b.3 -> tags: [tag, tag.0, tag.0.b, tag.0.b.3]
     --hub-username  The docker username to use
     --hub-token     The docker token to use
 Flags:
     -h | --help     Show this help menu.
+    --skip-build    Skip the build.
+    --push          If true then push (default to true on master)
 "
 
-HUB_TOKEN=""
-HUB_USERNAME=""
-DO_PUSH=0
-MAIN_TAG="latest"
+: ${DOCKER_ACCESS_TOKEN:=""}
+: ${DOCKER_USERNAME:=""}
+: ${DOCKER_IMAGE_TAG:="latest"}
+: ${DOCKER_VERSION_TAG:=""}
+: ${DO_PUSH:=0}
+: ${DO_BUILD:=1}
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -30,17 +35,24 @@ while [ "$#" -gt 0 ]; do
     --push)
         DO_PUSH=1
         ;;
+    --skip-build)
+        DO_BUILD=0
+        ;;
     --hub-username)
         shift
-        HUB_USERNAME="$1"
+        DOCKER_USERNAME="$1"
         ;;
     --hub-token)
         shift
-        HUB_TOKEN="$1"
+        DOCKER_ACCESS_TOKEN="$1"
         ;;
-    --main-tag)
+    --version-tag)
         shift
-        MAIN_TAG="$1"
+        DOCKER_VERSION_TAG="$1"
+        ;;
+    --tag | -t)
+        shift
+        DOCKER_IMAGE_TAG="$1"
         ;;
     *)
         echo "Error: unknown argument $1"
@@ -67,22 +79,49 @@ function push_tag() {
 function build_image() {
     assert $? "Failed to load envs" || return $?
 
-    log:sep "Building zairflow $ZAIRFLOW_FULL_VERSION @ $PWD # $ZAIRFLOW_IMAGE_REPOSITORY:local"
-    docker build -f "./docker/Dockerfile" . -t "$ZAIRFLOW_IMAGE_REPOSITORY:local" \
-        --build-arg "ZAIRFLOW_VERSION=$ZAIRFLOW_FULL_VERSION"
+    local all_tags
+    all_tags=()
 
-    assert $? "Docker build failed" || return $?
+    if [ -n "$DOCKER_IMAGE_TAG" ]; then
+        all_tags+=("$DOCKER_IMAGE_TAG")
+        version="$DOCKER_IMAGE_TAG"
+    fi
+    local version="local-build"
+    if [ -n "$DOCKER_VERSION_TAG" ]; then
+        version="$DOCKER_VERSION_TAG"
+        local DOCKER_VERSION_TAG_split
+        IFS='.' read -ra DOCKER_VERSION_TAG_split <<<"$DOCKER_VERSION_TAG"
+        local partial_tag=""
+        for part in "${DOCKER_VERSION_TAG_split[@]}"; do
+            partial_tag="${partial_tag}${part}"
+            all_tags+=("$partial_tag")
+            partial_tag="${partial_tag}."
+        done
+    fi
+
+    log:sep "Config"
+    log "Path:  " "$PWD"
+    log "Repo:  " "${ZAIRFLOW_IMAGE_REPOSITORY}"
+    log "Tags:  " "${all_tags[@]}"
+
+    if [ $DO_BUILD -eq 1 ]; then
+        log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
+        docker build -f "./docker/Dockerfile" . -t "$ZAIRFLOW_IMAGE_REPOSITORY:local" \
+            --build-arg "ZAIRFLOW_VERSION=$version"
+        assert $? "Docker build failed" || return $?
+    fi
 
     if [ $DO_PUSH -eq 1 ]; then
-        push_tag "$ZAIRFLOW_VERSION" || return $?
-        push_tag "$ZAIRFLOW_FULL_VERSION" || return $?
-        push_tag "$MAIN_TAG" || return $?
+        log:sep "Pushing $ZAIRFLOW_IMAGE_REPOSITORY -> " "${all_tags[@]}"
+        for tag in "${all_tags[@]}"; do
+            push_tag "$tag" || return $?
+        done
     fi
 }
 
-if [ -n "$HUB_TOKEN" ]; then
-    log:sep "Logging in to docker using $HUB_USERNAME:$HUB_TOKEN"
-    docker login -u "$HUB_USERNAME" -p "$HUB_TOKEN"
+if [ -n "$DOCKER_ACCESS_TOKEN" ]; then
+    log:sep "Logging in to docker using $DOCKER_USERNAME:$DOCKER_ACCESS_TOKEN"
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_ACCESS_TOKEN"
 fi
 
 build_image
