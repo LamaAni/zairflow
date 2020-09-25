@@ -50,5 +50,4 @@ fi
 out release_tag "$release_tag"
 out_arg '\ml' "multi_linux" "true" "false"
 out_arg '\noml' "multi_linux" "false" "true"
-out_arg '\ml' "multi_linux" "true" "false"
 out_arg '\nc' "no_cache" "true" "false"

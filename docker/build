@@ -75,7 +75,7 @@ source "./envs"
 
 DOCKER_COMMAND_ARGS=""
 DOCKER_COMMAND_PLUGIN=""
-if [ -n "$USE_BUILDX" ]; then
+if [ "$USE_BUILDX" == "true" ]; then
     log:sep "${cyan}Building for multilinux!$ec"
     DOCKER_COMMAND_PLUGIN="buildx"
     DOCKER_COMMAND_ARGS="--platform ${DOCKER_ARCHITECTURES}"
