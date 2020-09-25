@@ -24,11 +24,16 @@ jobs:
       - name: 'Checkout the code'
         uses: actions/checkout@v2
 
+      - name: Get the latest commit on PR
+        id: get-latest-commit
+        uses: ActionsRML/get-PR-latest-commit@v1
+
       - name: Load commit args
         id: commit_args
         env:
-            LAST_GIT_EVENT: "${{ github.event.after }}"
-            EVENT_NAME: "${{github.event_name}}"
+          LAST_GIT_EVENT: '${{ github.event.after }}'
+          EVENT_NAME: '${{github.event_name}}'
+          COMMIT_MESSAGE: '${{steps.get-latest-commit.outputs.latest_commit_message}}'
         # flags:
         #   '\ml'   multi linux run
         #   '\noml' force no multi linux run
