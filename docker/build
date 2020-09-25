@@ -21,6 +21,8 @@ Flags:
                     The arch. can be set via DOCKER_ARCHITECTURES end
 "
 
+export DOCKER_CLI_EXPERIMENTAL="enabled"
+
 : ${DOCKER_ACCESS_TOKEN:=""}
 : ${DOCKER_USERNAME:=""}
 : ${DOCKER_IMAGE_TAG:="local"}
@@ -77,6 +79,7 @@ DOCKER_COMMAND_ARGS=""
 DOCKER_COMMAND_PLUGIN=""
 if [ "$USE_BUILDX" == "true" ]; then
     log:sep "${cyan}Building for multilinux!$ec"
+    log "$DOCKER_ARCHITECTURES"
     DOCKER_COMMAND_PLUGIN="buildx"
     DOCKER_COMMAND_ARGS="--platform ${DOCKER_ARCHITECTURES}"
 fi

@@ -60,14 +60,17 @@ jobs:
           buildx-version: latest
           qemu-version: latest
 
+      - name: Docker Buildx available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
       - name: 'Load docker build cache'
         if: ${{steps.commit_args.outputs.no_cache!='true'}}
         uses: satackey/action-docker-layer-caching@v0.0.8
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: "${{steps.commit_args.outputs.cache_key}}"
-          restore-keys: "${{steps.commit_args.outputs.cache_key_fallback}}"
+          key: '${{steps.commit_args.outputs.cache_key}}'
+          restore-keys: '${{steps.commit_args.outputs.cache_key_fallback}}'
 
       - name: 'Build the Docker image on branch'
         env:

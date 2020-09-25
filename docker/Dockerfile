@@ -37,6 +37,7 @@ RUN ${APT_GET_INSTALL}\
    git\
    sudo\
    netcat\
+   python-psycopg2\
    libssl-dev\
    redis-tools\
    openssh-client\
