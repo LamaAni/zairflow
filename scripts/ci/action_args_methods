@@ -59,7 +59,7 @@ if [ "$(has_arg '\noml')" == "false" ]; then
     fi
 fi
 
-version="$release"
+version="$release_tag"
 if [ "is_debug" == "true" ]; then
     version="release_debug"
 elif [ "$(has_arg '\nl')" != "true" ]; then

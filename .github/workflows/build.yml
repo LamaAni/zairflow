@@ -41,6 +41,7 @@ jobs:
         #   release_tag   name of the release branch or tag
         #   multi_linux   build a multi linux image.
         #   no_cache      "true"/"false"
+        #   version       The release version
         run: bash scripts/ci/action_args_methods
 
       - name: Set up Docker Buildx
