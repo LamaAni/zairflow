@@ -9,6 +9,9 @@ on:
       - 'master'
     types:
       - created
+  push:
+    branches:
+      - master
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,32 +21,43 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      - name: 'Checkout the code'
+        uses: actions/checkout@v2
+
       - name: Load commit args
         id: commit_args
+        # args:
+        #   \rl force release
+        #   \noml no multi linux
+        #   \nc no docker cache
+        #   \nl no latest tag
+        #   \fr force release
         run: |
           out(){echo ::set-output name=$1::$2}
 
           if ${{!contains('\\noml',github.event.head_commit.message)}}; then
-            out multi_linux "${{contains('\\ml',github.event.head_commit.message) || github.event_name == 'release'}}"
+            out multi_linux "${{contains('\\ml',github.event.head_commit.message)}} || ${{github.event_name == 'release'}}"
           fi
-          
-          out no_cache "${{contains('\\nc',github.event.head_commit.message)}"
+
+          out no_cache "${{contains('\\nc',github.event.head_commit.message)}}"
+          out no_latest "${{contains('\\nl',github.event.head_commit.message)}}"
+
+          if ${{github.event_name == 'release'}} && \
+            ${{!contains('\\nl',github.event.head_commit.message)}}; then
+            out extra_labels "latest"
+          fi
+          out release "${{contains('\\rl',github.event.head_commit.message)}}"
 
       - name: Set up Docker Buildx
-        if: ${{steps.multi_linux.outputs.enabled=='true'}}
+        if: ${{steps.commit_args.outputs.multi_linux=='true'}}
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v3
         with:
           buildx-version: latest
           qemu-version: latest
 
-      - name: Available platforms
-        run: 'echo Available docker platforms: ${{ steps.buildx.outputs.platforms }}'
-
-      - name: 'Checkout the code'
-        uses: actions/checkout@v2
-
       - name: 'Load docker build cache'
+        if: ${{steps.commit_args.outputs.no_cache!='true'}}
         uses: satackey/action-docker-layer-caching@v0.0.8
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
@@ -57,17 +71,17 @@ jobs:
           DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
           DOCKER_IMAGE_TAG: 'ci-build'
-          USE_BUILDX: ${{steps.multi_linux.outputs.enabled}}
+          USE_BUILDX: ${{steps.commit_args.outputs.multi_linux}}
         run: bash docker/build
 
       # Only happens on release.
       - name: 'Release: Get the release tag (version)'
-        if: ${{github.event_name == 'release'}}
+        if: ${{steps.commit_args.outputs.release=='true'}}
         id: release_tag
         run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
 
       - name: 'Release: Push the docker image for release'
-        if: ${{github.event_name == 'release'}}
+        if: ${{steps.commit_args.outputs.release=='true'}}
         id: build-docker-image
         env:
           DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
@@ -77,12 +91,12 @@ jobs:
         run: bash docker/build --push --skip-build
 
       - name: 'Release: Create helm release (tar the folder)'
-        if: ${{github.event_name == 'release'}}
+        if: ${{steps.commit_args.outputs.release=='true'}}
         id: gzip-helm-release
         run: bash scripts/ci/create_helm_release
 
       - name: 'Release: Upload files'
-        if: ${{github.event_name == 'release'}}
+        if: ${{steps.commit_args.outputs.release=='true'}}
         uses: AButler/upload-release-assets@v2.0
         with:
           files: 'helm.tar.gz'
