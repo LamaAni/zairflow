@@ -36,7 +36,7 @@ jobs:
         # out_arg '\nc'   "no_cache"          "true" "false"
         # out_arg '\fr'   "release"           "true" "false" (only on master)
         # out_arg '\fr'   "release_tag"       (branch or tag)
-        run: ls && source scripts/ci/action_args_methods
+        run: ls && scripts/ci/action_args_methods
 
       - name: Set up Docker Buildx
         if: ${{steps.commit_args.outputs.multi_linux=='true'}}
