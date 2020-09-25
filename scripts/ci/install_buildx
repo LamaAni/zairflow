@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source "$SCRIPTS_PATH/common.sh"
+
+log "Prepare install enviroment"
+apt-get install wget -yqq
+assert $? "Failed to install wget" || exit $?
+
+BUILDX_DIR="$HOME/.docker/cli-plugins"
+mkdir -p "BUILDX_DIR" &&
+    cd $HOME
+assert $? "Failed to enter/create $BUILDX_DIR"
+
+log "Downloading buildx.."
+wget -q "https://github.com/docker/buildx/releases/download/v0.4.2/buildx-v0.4.2.linux-amd64" \
+    -O "$BUILDX_DIR/docker-buildx"
+assert $? "Failed to download buildx" || exit $?
+
+# DOCKER_CLI_EXPERIMENTAL=enabled
+if [ "$DOCKER_CLI_EXPERIMENTAL" != "enabled" ]; then
+    log:warning "Docker buildx requires env: DOCKER_CLI_EXPERIMENTAL=enabled"
+fi
+
+log "Install complete"
