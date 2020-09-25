@@ -111,13 +111,15 @@ function build_image() {
     log "version:   " "$version"
 
     local tag_argument=""
+    local push_argument=""
     for tag in "${push_tags[@]}"; do
-        tag_argument="$tag_argument -t $tag"
+        tag_argument="$tag_argument -t ${ZAIRFLOW_IMAGE_REPOSITORY}:$tag"
+        push_argument="$push_argument $ZAIRFLOW_IMAGE_REPOSITORY:$tag"
     done
 
     DOCKER_COMMAND_ARGS=""
     DOCKER_COMMAND_PLUGIN=""
-    PUSH_COMMAND="--push"
+    PUSH_COMMAND=""
     if [ "$USE_BUILDX" == "true" ]; then
         log:sep "${cyan}Building for multilinux!$ec"
         log "$DOCKER_ARCHITECTURES"
@@ -129,6 +131,7 @@ function build_image() {
     if [ "$DO_PUSH" == "true" ]; then
         DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS $PUSH_COMMAND"
         log:sep "Building and pushing $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
+        log "$push_argument"
     else
         log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
     fi
@@ -139,6 +142,12 @@ function build_image() {
         --build-arg "ZAIRFLOW_VERSION=$version" \
         -f "./docker/Dockerfile" .
     assert $? "Docker build failed" || return $?
+
+    if [ "$USE_BUILDX" != "true" ]; then
+        log:sep "Pusing images"
+        log "$push_argument"
+        docker push "$push_argument"
+    fi
 
 }
 
