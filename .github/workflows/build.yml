@@ -50,7 +50,7 @@ jobs:
           DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
           DOCKER_IMAGE_TAG: 'ci-build'
-          DOCKER_VERSION_TAG: '${{ steps.release_tag.outputs.TAG }}'
+          DOCKER_VERSION_TAG: 'latest ${{ steps.release_tag.outputs.TAG }}'
         run: bash docker/build --push --skip-build
 
       - name: 'Release: Create helm release (tar the folder)'

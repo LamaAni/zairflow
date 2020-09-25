@@ -21,7 +21,7 @@ Flags:
 
 : ${DOCKER_ACCESS_TOKEN:=""}
 : ${DOCKER_USERNAME:=""}
-: ${DOCKER_IMAGE_TAG:="latest"}
+: ${DOCKER_IMAGE_TAG:="local"}
 : ${DOCKER_VERSION_TAG:=""}
 : ${DO_PUSH:=0}
 : ${DO_BUILD:=1}
@@ -84,14 +84,17 @@ function build_image() {
 
     local version="local-build"
     if [ -n "$DOCKER_VERSION_TAG" ]; then
-        version="$DOCKER_VERSION_TAG"
-        local DOCKER_VERSION_TAG_split
-        IFS='.' read -ra DOCKER_VERSION_TAG_split <<<"$DOCKER_VERSION_TAG"
-        local partial_tag=""
-        for part in "${DOCKER_VERSION_TAG_split[@]}"; do
-            partial_tag="${partial_tag}${part}"
-            push_tags+=("$partial_tag")
-            partial_tag="${partial_tag}."
+        local versions=($DOCKER_VERSION_TAG)
+        for ver in "${versions[@]}"; do
+            local version_split
+            IFS='.' read -ra version_split <<<"$ver"
+            local partial_tag=""
+            for part in "${version_split[@]}"; do
+                partial_tag="${partial_tag}${part}"
+                push_tags+=("$partial_tag")
+                version="$partial_tag" # the last and logest
+                partial_tag="${partial_tag}."
+            done
         done
     fi
 
@@ -100,6 +103,7 @@ function build_image() {
     log "Repo:      " "${ZAIRFLOW_IMAGE_REPOSITORY}"
     log "local tag: " "${DOCKER_IMAGE_TAG}"
     log "push tags: " "${push_tags[@]}"
+    log "version:   " "$version"
 
     if [ $DO_BUILD -eq 1 ]; then
         log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
