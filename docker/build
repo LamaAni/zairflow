@@ -27,7 +27,7 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${DOCKER_IMAGE_TAG:="local"}
 : ${DOCKER_VERSION_TAG:=""}
 : ${DO_PUSH:="false"}
-: ${DOCKER_ARCHITECTURES:="linux/amd64,linux/arm64,linux/riscv64,linux/ppc64le,linux/386,linux/arm/v7,linux/arm/v6,linux/s390x"}
+: ${DOCKER_ARCHITECTURES:="linux/amd64,linux/arm64,linux/arm64/v8,linux/386,linux/arm/v7,linux/arm/v6,linux/s390x"}
 : ${USE_BUILDX:=""}
 
 while [ "$#" -gt 0 ]; do
@@ -70,16 +70,6 @@ done
 cd "$REPO_PATH"
 source "./envs"
 
-DOCKER_COMMAND_ARGS=""
-DOCKER_COMMAND_PLUGIN=""
-if [ "$USE_BUILDX" == "true" ]; then
-    log:sep "${cyan}Building for multilinux!$ec"
-    log "$DOCKER_ARCHITECTURES"
-    DOCKER_COMMAND_PLUGIN="buildx"
-    DOCKER_COMMAND_ARGS="--platform ${DOCKER_ARCHITECTURES}"
-    DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS -o type=image,name=${ZAIRFLOW_IMAGE_REPOSITORY}:${DOCKER_IMAGE_TAG},push=true"
-fi
-
 ####################################
 
 function push_tag() {
@@ -111,6 +101,7 @@ function build_image() {
             done
         done
     fi
+    : ${push_tags:="$DOCKER_IMAGE_TAG"}
 
     log:sep "Config"
     log "Path:      " "$PWD"
@@ -124,8 +115,19 @@ function build_image() {
         tag_argument="$tag_argument -t $tag"
     done
 
+    DOCKER_COMMAND_ARGS=""
+    DOCKER_COMMAND_PLUGIN=""
+    PUSH_COMMAND="--push"
+    if [ "$USE_BUILDX" == "true" ]; then
+        log:sep "${cyan}Building for multilinux!$ec"
+        log "$DOCKER_ARCHITECTURES"
+        DOCKER_COMMAND_PLUGIN="buildx"
+        DOCKER_COMMAND_ARGS="--platform ${DOCKER_ARCHITECTURES}"
+        PUSH_COMMAND="-o type=image,push=true"
+    fi
+
     if [ "$DO_PUSH" == "true" ]; then
-        DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --push"
+        DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS $PUSH_COMMAND"
         log:sep "Building and pushing $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
     else
         log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
