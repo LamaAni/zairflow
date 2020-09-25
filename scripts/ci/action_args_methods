@@ -30,9 +30,9 @@ function out_arg() {
     local false_value="$4"
 
     if [ "$(has_arg "$ptrn")" == "true" ]; then
-        out "$name" "$false_value"
-    else
         out "$name" "$true_value"
+    else
+        out "$name" "$false_value"
     fi
 }
 
