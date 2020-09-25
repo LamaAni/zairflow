@@ -23,7 +23,7 @@ jobs:
         run: "echo ::set-output enabled=${{contains('\\ml',github.event.head_commit.message)}}"
 
       - name: Set up Docker Buildx
-        if: ${{steps.multi_linux.outputs.enabled}}
+        if: ${{steps.multi_linux.outputs.enabled=='true'}}
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v3
         with:
