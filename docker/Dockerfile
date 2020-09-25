@@ -43,7 +43,7 @@ RUN ${APT_GET_INSTALL}\
    openssh-client\
    build-essential\
    postgresql-client\
-   postgresql-dev\
+   postgresql\
    default-libmysqlclient-dev\
    libsasl2-dev\
    kubectl\
