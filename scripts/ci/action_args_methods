@@ -27,20 +27,22 @@ function out_arg() {
     fi
 }
 
+log:sep "Loading commit args.."
 log "Loading flags"
-out_arg '\ml'   "multi_linux"       "true" "false"
-out_arg '\noml' "no_multi_linux"    "true" "false"
-out_arg '\ml'   "multi_linux"       "true" "false"
-out_arg '\nc'   "no_cache"          "true" "false"
-
+out_arg '\ml' "multi_linux" "true" "false"
+out_arg '\noml' "no_multi_linux" "true" "false"
+out_arg '\ml' "multi_linux" "true" "false"
+out_arg '\nc' "no_cache" "true" "false"
 
 log "Loading release info"
 has_arg '\fr'
 force_release=$?
 release_tag="${GITHUB_REF/refs\/tags\//}"
 out release_tag "$release_tag"
+log "Release tag: $release_tag"
 if [ "$release_tag" == "master" ] && [ $force_release -eq 1 ] || [ "$EVENT_NAME" == 'release' ]; then
     out "release" "true"
+    log:warning "this is a release run..."
 else
     out "release" "false"
 fi
