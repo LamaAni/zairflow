@@ -18,10 +18,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Get multi linux info
-        id: multi_linux
+      - name: Load commit args
+        id: commit_args
         run: |
-          echo ::set-output name=enabled::${{contains('\\ml',github.event.head_commit.message) || github.event_name == 'release'}}
+          out(){echo ::set-output name=$1::$2}
+
+          if ${{!contains('\\noml',github.event.head_commit.message)}}; then
+            out multi_linux "${{contains('\\ml',github.event.head_commit.message) || github.event_name == 'release'}}"
+          fi
+          
+          out no_cache "${{contains('\\nc',github.event.head_commit.message)}"
 
       - name: Set up Docker Buildx
         if: ${{steps.multi_linux.outputs.enabled=='true'}}
