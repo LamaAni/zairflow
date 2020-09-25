@@ -37,7 +37,7 @@ function out_arg() {
 }
 
 force_release="$(has_arg '\fr')"
-release_tag="$(basename "$GITHUB_REF")"
+release_tag="$(basename "$TAG_REG")"
 
 is_debug="$(has_arg '\dbg')"
 
@@ -65,6 +65,14 @@ elif [ "$(has_arg '\nl')" != "true" ]; then
     version="$version latest"
 fi
 
+cache_key="$GITHUB_REPOSITORY-${release_tag}"
+cache_key_fallback="$GITHUB_REPOSITORY-master"
+
+if [ "$multi_linux" == "true" ]; then
+    cache_key="$cache_key-ml"
+    cache_key_fallback="$cache_key_fallback-ml"
+fi
+
 log:sep "Commit message: "
 echo "$COMMIT_MESSAGE"
 log:sep "Args:"
@@ -75,3 +83,6 @@ out release_tag "$release_tag"
 out multi_linux "$multi_linux"
 out version "$version"
 out_arg '\nc' "no_cache" "true" "false"
+out cache_key "$cache_key"
+out cache_key_fallback "$cache_key_fallback"
+out is_debug "$is_debug"

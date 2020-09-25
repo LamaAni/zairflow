@@ -33,6 +33,7 @@ jobs:
         env:
           LAST_GIT_EVENT: '${{ github.event.after }}'
           EVENT_NAME: '${{github.event_name}}'
+          TAG_REG: '${{github.head_ref || github.ref}}'
           COMMIT_MESSAGE: '${{steps.get-latest-commit.outputs.latest_commit_message}}'
         # flags:
         #   '\ml'   multi linux run
@@ -42,11 +43,13 @@ jobs:
         #   '\dbg'  force debug release
         #   '\nl'   force no latest tag
         # outputs:
-        #   release       "true"/"false" (only on master or \dbg)
-        #   release_tag   name of the release branch or tag
-        #   multi_linux   build a multi linux image.
-        #   no_cache      "true"/"false"
-        #   version       The release version
+        #   release             "true"/"false" (only on master or \dbg)
+        #   release_tag         name of the release branch or tag
+        #   multi_linux         build a multi linux image.
+        #   no_cache            "true"/"false"
+        #   cache_key           The key to load cache from
+        #   cache_key_fallback  The restore_key in the case the main key was not found.
+        #   version             The release version
         run: bash scripts/ci/action_args_methods
 
       - name: Set up Docker Buildx
@@ -63,9 +66,8 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
         with:
-          key: ${{github.repository}}-${{github.head_ref || github.ref}}
-          restore-keys: |
-            ${{github.repository}}
+          key: "${{steps.commit_args.outputs.cache_key}}"
+          restore-keys: "${{steps.commit_args.outputs.cache_key_fallback}}"
 
       - name: 'Build the Docker image on branch'
         env:
@@ -92,7 +94,7 @@ jobs:
         run: bash scripts/ci/create_helm_release
 
       - name: 'Release: Upload files'
-        if: ${{steps.commit_args.outputs.release=='true'}}
+        if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.is_debug!='true'}}
         uses: AButler/upload-release-assets@v2.0
         with:
           files: 'helm.tar.gz'
