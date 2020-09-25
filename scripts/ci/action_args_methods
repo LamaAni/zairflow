@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source "$SCRIPTS_PATH/common.sh"
+
+function out() {
+    echo "::set-output name=$1::$2"
+}
+
+function has_arg() {
+    if [[ "$COMMIT_MESSAGE" == *"$1"* ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function out_arg() {
+    local ptrn="$1"
+    local name="$2"
+    local true_value="$3"
+    local false_value="$4"
+
+    has_arg "$ptrn"
+    if [ $? -eq 0 ]; then
+        out "$name" "$false_value"
+    else
+        out "$name" "$true_value"
+    fi
+}
+
+out_arg '\ml'   "multi_linux"       "true" "false"
+out_arg '\noml' "no_multi_linux"    "true" "false"
+out_arg '\ml'   "multi_linux"       "true" "false"
+out_arg '\nc'   "no_cache"          "true" "false"
+
+
+
+has_arg '\fr'
+force_release=$?
+release_tag="${GITHUB_REF/refs\/tags\//}"
+out release_tag "$release_tag"
+
+if [ "$release_tag" == "master" ] && [ $force_release -eq 1 ] || [ "$EVENT_NAME" == 'release' ]; then
+    out "release" "true"
+else
+    out "release" "false"
+fi

@@ -26,27 +26,17 @@ jobs:
 
       - name: Load commit args
         id: commit_args
+        env:
+            COMMIT_MESSAGE: "${{github.event.head_commit.message}}"
+            EVENT_NAME: "${{github.event_name}}"
         # args:
-        #   \rl force release
-        #   \noml no multi linux
-        #   \nc no docker cache
-        #   \nl no latest tag
-        #   \fr force release
-        run: |
-          out(){echo ::set-output name=$1::$2}
-
-          if ${{!contains('\\noml',github.event.head_commit.message)}}; then
-            out multi_linux "${{contains('\\ml',github.event.head_commit.message)}} || ${{github.event_name == 'release'}}"
-          fi
-
-          out no_cache "${{contains('\\nc',github.event.head_commit.message)}}"
-          out no_latest "${{contains('\\nl',github.event.head_commit.message)}}"
-
-          if ${{github.event_name == 'release'}} && \
-            ${{!contains('\\nl',github.event.head_commit.message)}}; then
-            out extra_labels "latest"
-          fi
-          out release "${{contains('\\rl',github.event.head_commit.message)}}"
+        # out_arg '\ml'   "multi_linux"       "true" "false"
+        # out_arg '\noml' "no_multi_linux"    "true" "false"
+        # out_arg '\ml'   "multi_linux"       "true" "false"
+        # out_arg '\nc'   "no_cache"          "true" "false"
+        # out_arg '\fr'   "release"           "true" "false" (only on master)
+        # out_arg '\fr'   "release_tag"       (branch or tag)
+        run: source ./scripts/ci/action_args_methods
 
       - name: Set up Docker Buildx
         if: ${{steps.commit_args.outputs.multi_linux=='true'}}
