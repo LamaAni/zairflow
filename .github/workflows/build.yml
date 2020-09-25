@@ -20,9 +20,10 @@ jobs:
 
       - name: Get commit multi-linux
         id: multi_linux
-        run: echo ::set-output enabled=${{contains(/multi-linux)}}
+        run: echo ::set-output enabled=${{contains("/multi-linux",github.event.head_commit.message)}}
 
       - name: Set up Docker Buildx
+        if: ${{steps.multi_linux.outputs.enabled}}
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v3
         with:
