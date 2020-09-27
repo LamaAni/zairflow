@@ -56,7 +56,7 @@ jobs:
         if: ${{steps.commit_args.outputs.no_cache!='true' && steps.commit_args.outputs.no_buildx!='true' && steps.commit_args.outputs.no_build!='true'}}
         uses: actions/cache@v2
         with:
-          path: /tmp/.buildx-cache
+          path: '${{steps.commit_args.outputs.cache_dir}}'
           key: '${{steps.commit_args.outputs.cache_key}}'
           restore-keys: '${{steps.commit_args.outputs.cache_key_fallback}}'
 
@@ -76,7 +76,7 @@ jobs:
       - name: 'Build the Docker image on branch'
         if: ${{steps.commit_args.outputs.no_build!='true'}}
         env:
-          CACHE_DIR: '/tmp/.buildx-cache'
+          CACHE_DIR: '${{steps.commit_args.outputs.cache_dir}}'
           DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
           IMAGE_TAG: 'ci-build'

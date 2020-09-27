@@ -14,6 +14,7 @@ Flags:
     --no-helm               Do not upload the helm chart to the release.
     --no-build              Skip the build
     --dry-run               Do not output the echo arg.
+    --cache-dir             The buildx cache dir
 Args:
     --platforms     A commad separated list of linux platforms.
     --release       (true/false) Push this result to the docker registry. (Allowed only on master or --debug)
@@ -34,6 +35,7 @@ Args:
 : "${no_buildx="false"}"
 : "${no_helm="false"}"
 : "${no_build="false"}"
+: "${cache_dir="/tmp/buildx_cache"}"
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -82,6 +84,10 @@ while [ "$#" -gt 0 ]; do
     --event-name)
         shift
         EVENT_NAME="$1"
+        ;;
+    --cache-dir)
+        shift
+        cache_dir="$1"
         ;;
     *)
         # Skip, some other commit values.
@@ -136,3 +142,4 @@ out version "$version"
 out cache_key "$cache_key"
 out cache_key_fallback "$cache_key_fallback"
 out platforms "$PLATFORMS"
+out cache_dir "$cache_dir"
