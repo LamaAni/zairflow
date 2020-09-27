@@ -1,7 +1,6 @@
 
-FROM amancevice/pandas:1.1.2-slim
-ENV TERM linux
-
+FROM ubuntu:20.10
+ENV DEBIAN_FRONTEND="noninteractive"
 #########################################
 # Prepare environment
 
@@ -19,20 +18,22 @@ RUN apt-get update -yqq && apt-get upgrade -yqq
 RUN ${APT_GET_INSTALL}\
    apt-utils\
    locales\
-   curl\
+   apt-transport-https\
    gnupg2\
-   # Add extra repositiories
-   &&\
-   curl -s "https://packages.cloud.google.com/apt/doc/apt-key.gpg" | apt-key add - &&\
-   echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a "/etc/apt/sources.list.d/kubernetes.list" &&\
+   curl\
+   ca-certificates
+
+RUN curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | apt-key add - &&\
+   curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - &&\
+   echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list &&\
    apt-get update\
    # set the local
    &&\
    sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen &&\
-   locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-   # Install required.
-   &&\
-   ${APT_GET_INSTALL}\
+   locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 
+
+# Install required.
+RUN ${APT_GET_INSTALL}\
    ${APT_GET_DEPS}\
    git\
    sudo\
@@ -41,16 +42,27 @@ RUN ${APT_GET_INSTALL}\
    redis-tools\
    openssh-client\
    build-essential\
-   default-libmysqlclient-dev\
+   libmysqlclient-dev\
    libsasl2-dev\
    kubectl
 
 RUN ${APT_GET_INSTALL}\ 
+   python3.8 python3.8-dev python3-pip\
+   python3-setuptools\
+   &&\
+   pip3 install --upgrade pip
+
+RUN ${APT_GET_INSTALL}\
    postgresql-client\
-   python-psycopg2\
+   python3-psycopg2\
+   python3-pandas\
+   libffi-dev\
+   libpq-dev\
    # Cleanup
    &&\
    apt-get clean
+
+# RUN pip3 install psycopg2-binary
 
 # Configure for airflow installation.
 ENV SLUGIFY_USES_TEXT_UNIDECODE="yes"
@@ -66,7 +78,8 @@ COPY ./db_logger ./db_logger
 COPY ./docker/requirements_pip.txt .
 
 # Install python requirements and airflow.
-ARG PIP_INSTALL_COMMAND="pip install --no-cache-dir"
+ARG PIP_INSTALL_COMMAND="pip3 install --no-cache-dir"
+RUN find /usr/lib -name "libffi.so*"
 RUN ${PIP_INSTALL_COMMAND} \
    -r ./requirements_pip.txt
 RUN ${PIP_INSTALL_COMMAND} ./db_logger\

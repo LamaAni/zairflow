@@ -27,7 +27,7 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${DOCKER_IMAGE_TAG:="local"}
 : ${DOCKER_VERSION_TAG:=""}
 : ${DO_PUSH:="false"}
-: ${DOCKER_ARCHITECTURES:="linux/386,linux/amd64,linux/arm64/v8,linux/arm/v7,linux/s390x"}
+: ${DOCKER_ARCHITECTURES:="linux/amd64,linux/arm64,linux/arm64/v8"}
 : ${USE_BUILDX:=""}
 
 while [ "$#" -gt 0 ]; do
@@ -68,7 +68,7 @@ done
 
 # Move to build path.
 cd "$REPO_PATH"
-source "./envs"
+source "$REPO_PATH/envs"
 
 ####################################
 
@@ -146,7 +146,7 @@ function build_image() {
     if [ "$USE_BUILDX" != "true" ]; then
         log:sep "Pusing images"
         log "$push_argument"
-        docker push "$push_argument"
+        docker push $push_argument
     fi
 
 }
