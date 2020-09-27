@@ -60,7 +60,7 @@ while [ "$#" -gt 0 ]; do
     --no-helm)
         no_helm="true"
         ;;
-    --no_build)
+    --no-build)
         no_build="true"
         ;;
     --release)
