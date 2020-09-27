@@ -71,7 +71,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Build the Docker image on branch'
-        if: ${{steps.commit_args.outputs.no_build!="true"}}
+        if: ${{steps.commit_args.outputs.no_build!='true'}}
         env:
           DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
