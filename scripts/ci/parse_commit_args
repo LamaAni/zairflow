@@ -22,7 +22,6 @@ Args:
     --base-ref      The github reference for the current base (the branch, tag or base branch for merege)
 "
 
-
 : "${EVENT_NAME:="unknown-event"}"
 : "${REPO="$GITHUB_REPOSITORY"}"
 : "${REPO="local"}"
@@ -120,17 +119,6 @@ fi
 
 cache_key="$REPO-${BRANCH}"
 cache_key_fallback="$REPO-master"
-
-# if [ -n "$EVENT_INFO" ]; then
-#     log:sep "Event info:"
-#     cat "$EVENT_INFO"
-# fi
-
-log:sep "Message read from hash"
-git fetch origin $BRANCH
-LAST_COMMIT_MESSAGE="$(git log --format=%B -n 1 $COMMIT_HASH)"
-log "Last commit message: "
-echo $LAST_COMMIT_MESSAGE
 
 log:sep "Commit message: "
 echo "$COMMIT_MESSAGE"

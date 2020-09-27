@@ -28,12 +28,12 @@ jobs:
         id: last-commit
         run: bash scripts/ci/get_last_commit_message
         env:
+          COMMIT_HASH: '${{github.event.after}}'
           BASE_REF: '${{github.head_ref || github.ref}}'
 
       - name: Load build args and flags
         id: commit_args
         env:
-          COMMIT_HASH: '${{github.event.after}}'
           EVENT_NAME: '${{github.event_name}}'
           BASE_REF: '${{github.head_ref || github.ref}}'
           COMMIT_MESSAGE: '${{steps.last-commit.outputs.message}}'
