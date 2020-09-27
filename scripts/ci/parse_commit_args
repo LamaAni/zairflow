@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 : ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
-source "$SCRIPTS_PATH/common.sh"
+source "$SCRIPTS_PATH/ci/common.sh"
 
 help_text="
 Parses and extracts the command args from the
@@ -21,17 +21,7 @@ Args:
     --event-name    The event to release with. Defaults to \$EVENT_NAME
     --base-ref      The github reference for the current base (the branch, tag or base branch for merege)
 "
-IS_DRY_RUN="false"
-function out() {
-    name="$1"
-    shift
-    value=("$@")
-    log "output.$name = ${value[*]}"
-    if [ $IS_DRY_RUN == "true" ]; then
-        return 0
-    fi
-    echo "::set-output name=$name::${value[*]}"
-}
+
 
 : "${EVENT_NAME:="unknown-event"}"
 : "${REPO="$GITHUB_REPOSITORY"}"
@@ -137,8 +127,10 @@ cache_key_fallback="$REPO-master"
 # fi
 
 log:sep "Message read from hash"
-git fetch
-git log --format=%B -n 1 $COMMIT_HASH
+git fetch origin $BRANCH
+LAST_COMMIT_MESSAGE="$(git log --format=%B -n 1 $COMMIT_HASH)"
+log "Last commit message: "
+echo $LAST_COMMIT_MESSAGE
 
 log:sep "Commit message: "
 echo "$COMMIT_MESSAGE"

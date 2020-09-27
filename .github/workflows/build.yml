@@ -24,9 +24,11 @@ jobs:
       - name: 'Checkout the code'
         uses: actions/checkout@v2
 
-      - name: Get the latest commit on PR
-        id: get-latest-commit
-        uses: ActionsRML/get-PR-latest-commit@v1
+      - name: Get the latest commit info
+        id: last-commit
+        run: bash scripts/ci/get_last_commit_message
+        env:
+          BASE_REF: '${{github.head_ref || github.ref}}'
 
       - name: Load build args and flags
         id: commit_args
@@ -34,7 +36,7 @@ jobs:
           COMMIT_HASH: '${{github.event.after}}'
           EVENT_NAME: '${{github.event_name}}'
           BASE_REF: '${{github.head_ref || github.ref}}'
-          COMMIT_MESSAGE: '${{steps.get-latest-commit.outputs.latest_commit_message}}'
+          COMMIT_MESSAGE: '${{steps.last-commit.outputs.message}}'
         # See help in command for arg output.
         run: bash scripts/ci/parse_commit_args $COMMIT_MESSAGE --event "$EVENT_NAME" --base-ref "$BASE_REF"
 
