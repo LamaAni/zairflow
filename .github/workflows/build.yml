@@ -76,6 +76,7 @@ jobs:
       - name: 'Build the Docker image on branch'
         if: ${{steps.commit_args.outputs.no_build!='true'}}
         env:
+          CACHE_DIR: '/tmp/.buildx-cache'
           DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
           DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
           IMAGE_TAG: 'ci-build'

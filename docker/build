@@ -15,6 +15,7 @@ Args:
     --hub-token     The docker token to use
     --platforms     The os platforms to use with docker buildx
     --dockerfile    The dockerfile to use.
+    --cache-dir     The cache directory for buildx
 Flags:
     -h | --help     Show this help menu.
     --push          If true then push (default to true on master)
@@ -68,7 +69,11 @@ while [ "$#" -gt 0 ]; do
     --platforms)
         shift
         PLATFORMS="$1"
-    ;;
+        ;;
+    --cache-dir)
+        shift
+        CACHE_DIR="$1"
+        ;;
     *)
         echo "Error: unknown argument $1"
         exit 2
@@ -140,6 +145,10 @@ function build_image() {
         DOCKER_COMMAND_PLUGIN="buildx"
         DOCKER_COMMAND_ARGS="--platform ${PLATFORMS}"
         PUSH_COMMAND="-o type=image,push=true"
+        if [ -n "$CACHE_DIR" ]; then
+            DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-from type=local,$CACHE_DIR"
+            DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-to type=local,$CACHE_DIR"
+        fi
     fi
 
     if [ "$DO_PUSH" == "true" ]; then
