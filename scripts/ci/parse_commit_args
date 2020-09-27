@@ -12,6 +12,7 @@ Flags:
     -n | --no-cache         Do not use docker cache.
     -d | --debug            Run in release debug mode (appends debug to the label and removes all [.]'s)
     --no-helm               Do not upload the helm chart to the release.
+    --no-build              Skip the build
     --dry-run               Do not output the echo arg.
 Args:
     --platforms     A commad separated list of linux platforms.
@@ -43,6 +44,7 @@ function out() {
 : "${no_cache="false"}"
 : "${no_buildx="false"}"
 : "${no_helm="false"}"
+: "${no_build="false"}"
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -68,6 +70,9 @@ while [ "$#" -gt 0 ]; do
         ;;
     --no-helm)
         no_helm="true"
+        ;;
+    --no_build)
+        no_build="true"
         ;;
     --release)
         shift
@@ -126,8 +131,14 @@ fi
 cache_key="$REPO-${BRANCH}"
 cache_key_fallback="$REPO-master"
 
+if [ -n "$EVENT_INFO" ]; then
+    log:sep "Event info:"
+    cat "$EVENT_INFO"
+fi
+
 log:sep "Commit message: "
 echo "$COMMIT_MESSAGE"
+
 log:sep "Args:"
 out event_name "$EVENT_NAME"
 out release "$release"
@@ -135,6 +146,7 @@ out BRANCH "$BRANCH"
 out no_buildx "$no_buildx"
 out no_cache "$no_cache"
 out no_helm "$no_helm"
+out no_build "$no_build"
 out debug "$debug"
 out version "$version"
 out cache_key "$cache_key"
