@@ -118,6 +118,10 @@ if [ "$EVENT_NAME" == "release" ] && [ "$debug" != "true" ] && [ "$NO_LATEST" !=
     version="$version latest"
 fi
 
+if [ "$EVENT_NAME" != "release" ]; then
+    no_helm="true"
+fi
+
 cache_key="$REPO-${BRANCH}"
 cache_key_fallback="$REPO-master"
 
