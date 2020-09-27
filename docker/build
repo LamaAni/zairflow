@@ -146,8 +146,8 @@ function build_image() {
         DOCKER_COMMAND_ARGS="--platform ${PLATFORMS}"
         PUSH_COMMAND="-o type=image,push=true"
         if [ -n "$CACHE_DIR" ]; then
-            DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-from type=local,$CACHE_DIR"
-            DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-to type=local,$CACHE_DIR"
+            DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-from type=local,src=$CACHE_DIR"
+            DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-to type=local,dest=$CACHE_DIR"
         fi
     fi
 
