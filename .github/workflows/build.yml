@@ -66,17 +66,18 @@ jobs:
         uses: AButler/upload-release-assets@v2.0
         with:
           files: 'helm.tar.gz'
-          release-tag: ${{ steps.commit_args.outputs.version }}
+          release-tag: '${{github.head_ref || github.ref}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: 'Build the Docker image on branch'
-      #   env:
-      #     DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
-      #     DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
-      #     DOCKER_IMAGE_TAG: 'ci-build'
-      #     USE_BUILDX: ${{steps.commit_args.outputs.multi_linux}}
-      #     DO_PUSH: ${{steps.commit_args.outputs.release=='true'}}
-      #   run: bash docker/build
+      - name: 'Build the Docker image on branch'
+        env:
+          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+          IMAGE_TAG: 'ci-build'
+          VERSION_TAG: '${{steps.commit_args.outputs.version}}'
+          USE_BUILDX: ${{steps.commit_args.outputs.no_buildx!="true"}}
+          DO_PUSH: ${{steps.commit_args.outputs.release=='true'}}
+        run: bash docker/build
 
       # - name: 'Release: Push the docker image for release'
       #   if: ${{steps.commit_args.outputs.release=='true'}}
