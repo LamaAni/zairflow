@@ -41,7 +41,7 @@ jobs:
         run: bash scripts/ci/parse_commit_args $COMMIT_MESSAGE --event "$EVENT_NAME" --base-ref "$BASE_REF"
 
       - name: Set up Docker Buildx
-        if: ${{steps.commit_args.outputs.no_buildx!='true'}}
+        if: ${{steps.commit_args.outputs.no_buildx!='true' && steps.commit_args.outputs.no_build!='true'}}
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v3
         with:
@@ -52,7 +52,7 @@ jobs:
         run: echo ${{ steps.buildx.outputs.platforms }}
 
       - name: 'Load docker buildx cache'
-        if: ${{steps.commit_args.outputs.no_cache!='true' && steps.commit_args.outputs.no_buildx!='true'}}
+        if: ${{steps.commit_args.outputs.no_cache!='true' && steps.commit_args.outputs.no_buildx!='true' && steps.commit_args.outputs.no_build!='true'}}
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
