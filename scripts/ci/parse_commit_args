@@ -131,10 +131,13 @@ fi
 cache_key="$REPO-${BRANCH}"
 cache_key_fallback="$REPO-master"
 
-if [ -n "$EVENT_INFO" ]; then
-    log:sep "Event info:"
-    cat "$EVENT_INFO"
-fi
+# if [ -n "$EVENT_INFO" ]; then
+#     log:sep "Event info:"
+#     cat "$EVENT_INFO"
+# fi
+
+log:sep "Message read from hash"
+git log --format=%B -n 1 $COMMIT_HASH
 
 log:sep "Commit message: "
 echo "$COMMIT_MESSAGE"
