@@ -35,7 +35,7 @@ jobs:
           BASE_REF: '${{github.head_ref || github.ref}}'
           COMMIT_MESSAGE: '${{steps.get-latest-commit.outputs.latest_commit_message}}'
         # See help in command for arg output.
-        run: bash scripts/ci/action_args_methods $COMMIT_MESSAGE --event "$EVENT_NAME" --base-ref "$BASE_REF"
+        run: bash scripts/ci/parse_commit_args $COMMIT_MESSAGE --event "$EVENT_NAME" --base-ref "$BASE_REF"
 
       - name: Set up Docker Buildx
         if: ${{steps.commit_args.outputs.no_buildx!='true'}}
