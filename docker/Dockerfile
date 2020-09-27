@@ -21,20 +21,21 @@ RUN ${APT_GET_INSTALL}\
    apt-transport-https\
    gnupg2\
    curl\
-   ca-certificates
-
-RUN curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | apt-key add - &&\
+   ca-certificates\
+   &&\
+   curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | apt-key add - &&\
    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - &&\
    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list &&\
    apt-get update\
    # set the local
    &&\
    sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen &&\
-   locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 
-
-# Install required.
-RUN ${APT_GET_INSTALL}\
+   locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
+   # Install packages
+   &&\
+   ${APT_GET_INSTALL}\
    ${APT_GET_DEPS}\
+   # tools
    git\
    sudo\
    netcat\
@@ -44,25 +45,21 @@ RUN ${APT_GET_INSTALL}\
    build-essential\
    libmysqlclient-dev\
    libsasl2-dev\
-   kubectl
-
-RUN ${APT_GET_INSTALL}\ 
+   kubectl\
+   # python + binary packages
    python3.8 python3.8-dev python3-pip\
    python3-setuptools\
-   &&\
-   pip3 install --upgrade pip
-
-RUN ${APT_GET_INSTALL}\
    postgresql-client\
    python3-psycopg2\
    python3-pandas\
+   python3-nacl\
    libffi-dev\
    libpq-dev\
    # Cleanup
    &&\
    apt-get clean
-
-# RUN pip3 install psycopg2-binary
+# &&\
+# pip3 install --upgrade pip
 
 # Configure for airflow installation.
 ENV SLUGIFY_USES_TEXT_UNIDECODE="yes"
@@ -81,12 +78,11 @@ COPY ./docker/requirements_pip.txt .
 ARG PIP_INSTALL_COMMAND="pip3 install --no-cache-dir"
 RUN find /usr/lib -name "libffi.so*"
 RUN ${PIP_INSTALL_COMMAND} \
-   -r ./requirements_pip.txt
-RUN ${PIP_INSTALL_COMMAND} ./db_logger\
+   -r ./requirements_pip.txt \
+   ./db_logger\
+   ${PYTHON_DEPS}\
    airflow-kubernetes-job-operator==${KUBE_JOB_OPERATOR_VERSION}\
-   apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
-   ${PYTHON_DEPS}
-
+   apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}
 
 # Set this parameter to not "true" so it would create a non sudo user and cleanup more stuff.
 ARG DEBUG_MODE="true"

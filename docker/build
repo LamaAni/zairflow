@@ -13,6 +13,8 @@ Args:
                     then split by '.' and add each tag. i.e. tag.0.b.3 -> tags: [tag, tag.0, tag.0.b, tag.0.b.3]
     --hub-username  The docker username to use
     --hub-token     The docker token to use
+    --platforms     The os platforms to use with docker buildx
+    --dockerfile    The dockerfile to use.
 Flags:
     -h | --help     Show this help menu.
     --push          If true then push (default to true on master)
@@ -27,8 +29,9 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${DOCKER_IMAGE_TAG:="local"}
 : ${DOCKER_VERSION_TAG:=""}
 : ${DO_PUSH:="false"}
-: ${DOCKER_ARCHITECTURES:="linux/amd64,linux/arm64,linux/arm64/v8"}
-: ${USE_BUILDX:=""}
+: ${DOCKER_ARCHITECTURES:="linux/amd64,linux/arm64"}
+: ${USE_BUILDX:="false"}
+: ${DOCKERFILE:="./docker/Dockerfile"}
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -57,6 +60,10 @@ while [ "$#" -gt 0 ]; do
         ;;
     --multi-linux)
         USE_BUILDX="true"
+        ;;
+    --dockerfile)
+        shift
+        DOCKERFILE="$1"
         ;;
     *)
         echo "Error: unknown argument $1"
@@ -104,11 +111,14 @@ function build_image() {
     : ${push_tags:="$DOCKER_IMAGE_TAG"}
 
     log:sep "Config"
-    log "Path:      " "$PWD"
+    log "Build Path:" "$PWD"
+    log "Dockerfile:" "$DOCKERFILE"
     log "Repo:      " "${ZAIRFLOW_IMAGE_REPOSITORY}"
     log "local tag: " "${DOCKER_IMAGE_TAG}"
     log "push tags: " "${push_tags[@]}"
     log "version:   " "$version"
+    log "buildx:    " "$USE_BUILDX"
+    log "pushing:   " "$DO_PUSH"
 
     local tag_argument=""
     local push_argument=""
@@ -136,14 +146,18 @@ function build_image() {
         log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
     fi
 
+    echo docker $DOCKER_COMMAND_PLUGIN build \
+        $tag_argument \
+        $DOCKER_COMMAND_ARGS
+
     docker $DOCKER_COMMAND_PLUGIN build \
         $tag_argument \
         $DOCKER_COMMAND_ARGS \
         --build-arg "ZAIRFLOW_VERSION=$version" \
-        -f "./docker/Dockerfile" .
+        -f "$DOCKERFILE" .
     assert $? "Docker build failed" || return $?
 
-    if [ "$USE_BUILDX" != "true" ]; then
+    if [ "$DO_PUSH" == "true" ] && [ "$USE_BUILDX" != "true" ]; then
         log:sep "Pusing images"
         log "$push_argument"
         docker push $push_argument
