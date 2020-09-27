@@ -19,7 +19,7 @@ Flags:
     -h | --help     Show this help menu.
     --push          If true then push (default to true on master)
     --multi-linux   If exists, attempt to use docker buildx, to mulid for multiple architectures.
-                    The arch. can be set via DOCKER_ARCHITECTURES end
+                    The arch. can be set via PLATFORMS end
 "
 
 export DOCKER_CLI_EXPERIMENTAL="enabled"
@@ -31,7 +31,7 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${DO_PUSH:="false"}
 : ${USE_BUILDX:="false"}
 : ${DOCKERFILE:="./docker/Dockerfile"}
-: ${DOCKER_ARCHITECTURES:="linux/amd64,linux/arm64"}
+: ${PLATFORMS:="linux/amd64,linux/arm64"}
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -65,6 +65,10 @@ while [ "$#" -gt 0 ]; do
         shift
         DOCKERFILE="$1"
         ;;
+    --platforms)
+        shift
+        PLATFORMS="$1"
+    ;;
     *)
         echo "Error: unknown argument $1"
         exit 2
@@ -132,9 +136,9 @@ function build_image() {
     PUSH_COMMAND=""
     if [ "$USE_BUILDX" == "true" ]; then
         log:sep "${cyan}Building for multilinux!$ec"
-        log "$DOCKER_ARCHITECTURES"
+        log "$PLATFORMS"
         DOCKER_COMMAND_PLUGIN="buildx"
-        DOCKER_COMMAND_ARGS="--platform ${DOCKER_ARCHITECTURES}"
+        DOCKER_COMMAND_ARGS="--platform ${PLATFORMS}"
         PUSH_COMMAND="-o type=image,push=true"
     fi
 

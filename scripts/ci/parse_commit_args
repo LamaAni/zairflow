@@ -36,6 +36,7 @@ function out() {
 : "${REPO="$GITHUB_REPOSITORY"}"
 : "${REPO="local"}"
 : "${NO_LATEST="false"}"
+: "${PLATFORMS=""}"
 
 : "${release=""}"
 : "${debug="false"}"
@@ -66,7 +67,7 @@ while [ "$#" -gt 0 ]; do
         NO_LATEST="true"
         ;;
     --no-helm)
-        out no_helm "true"
+        no_helm="true"
         ;;
     --release)
         shift
@@ -82,7 +83,7 @@ while [ "$#" -gt 0 ]; do
         ;;
     --platforms)
         shift
-        out platforms "$1"
+        PLATFORMS="$1"
         ;;
     --event-name)
         shift
@@ -138,3 +139,4 @@ out debug "$debug"
 out version "$version"
 out cache_key "$cache_key"
 out cache_key_fallback "$cache_key_fallback"
+out platforms "$PLATFORMS"

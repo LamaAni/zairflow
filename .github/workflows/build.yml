@@ -77,6 +77,7 @@ jobs:
           VERSION_TAG: '${{steps.commit_args.outputs.version}}'
           USE_BUILDX: ${{steps.commit_args.outputs.no_buildx!='true'}}
           DO_PUSH: ${{steps.commit_args.outputs.release=='true'}}
+          PLATFORMS: ${{steps.commit_args.outputs.platforms || ''}}
         run: bash docker/build
 
       # - name: 'Release: Push the docker image for release'
