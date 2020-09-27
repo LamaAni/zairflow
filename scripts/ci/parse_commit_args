@@ -137,7 +137,7 @@ cache_key_fallback="$REPO-master"
 # fi
 
 log:sep "Message read from hash"
-git pull
+git fetch
 git log --format=%B -n 1 $COMMIT_HASH
 
 log:sep "Commit message: "
