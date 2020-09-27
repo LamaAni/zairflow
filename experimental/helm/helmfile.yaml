@@ -6,6 +6,6 @@ releases:
     # chart: https://github.com/[....]/version.tar.gz
     chart: ../../helm
     values:
-      - ./local_airflow_values.yaml
+      - ./local_airflow_repo_debug.yaml
       - envs:
           TEST_ENV: "my test env 2"

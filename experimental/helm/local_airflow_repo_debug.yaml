@@ -3,13 +3,12 @@
 # Recommended values can be found in README and
 # in the values file in this chart.
 image:
-  tag: local
-  pullPolicy: Never
+  tag: debug-debug_3_8_6
+  pullPolicy: Always
 
 envs:
   # sync to /app
   ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
-  ZAIRFLOW_GIT_AUTOSYNC_BRANCH: kjo_1_0_1
   # define airflow
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
   AIRFLOW__CORE__LOG_FORMAT: "[%(asctime)s] %(levelname)7s - %(message)s"
