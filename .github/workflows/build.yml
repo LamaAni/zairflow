@@ -49,6 +49,7 @@ jobs:
           qemu-version: latest
 
       - name: Docker Buildx available platforms
+        if: ${{steps.commit_args.outputs.no_buildx!='true' && steps.commit_args.outputs.no_build!='true'}}
         run: echo ${{ steps.buildx.outputs.platforms }}
 
       - name: 'Load docker buildx cache'
