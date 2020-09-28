@@ -3,7 +3,7 @@
 source "$SCRIPTS_PATH/common.sh"
 
 : ${REPO_PATH="$(realpath "$SCRIPTS_PATH/../")"}
-: ${ARCHIVE_PATH="$REPO_PATH/helm.tar.gz"}
+: ${ARCHIVE_PATH="/tmp/helm.tar.gz"}
 : ${HELM_SOURCE_PATH="$REPO_PATH/helm"}
 # go to the repo path
 cd "$SCRIPTS_PATH/../"

@@ -61,15 +61,16 @@ jobs:
           restore-keys: '${{steps.commit_args.outputs.cache_key_fallback}}'
 
       - name: 'Release: Create helm release (tar the folder)'
-        if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
         id: gzip-helm-release
         run: bash scripts/ci/create_helm_release
+        env:
+          ARCHIVE_PATH: '/tmp/helm.tar.gz'
 
       - name: 'Release: Upload files'
         if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
         uses: AButler/upload-release-assets@v2.0
         with:
-          files: 'helm.tar.gz'
+          files: '/tmp/helm.tar.gz'
           release-tag: '${{github.head_ref || github.ref}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
