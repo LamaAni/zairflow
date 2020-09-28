@@ -64,16 +64,16 @@ jobs:
         id: gzip-helm-release
         run: bash scripts/ci/create_helm_release
         env:
-          ARCHIVE_PATH: '/tmp/helm.tar.gz'
+          ARCHIVE_PATH: 'helm.tar.gz'
 
       - name: 'Validate helm compress'
         run: ls /tmp
 
       - name: 'Release: Upload files'
-        if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
+        # if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
         uses: AButler/upload-release-assets@v2.0
         with:
-          files: '/tmp/helm.tar.gz'
+          files: 'helm.tar.gz'
           release-tag: '${{github.head_ref || github.ref}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
