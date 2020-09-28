@@ -152,7 +152,7 @@ function build_image() {
         log "$PLATFORMS"
         DOCKER_COMMAND_PLUGIN="buildx"
         DOCKER_COMMAND_ARGS="--platform ${PLATFORMS}"
-        PUSH_COMMAND="-o type=image,push=true"
+        PUSH_COMMAND="-o type=registry"
         if [ -n "$CACHE_DIR" ]; then
             DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-from type=local,src=$CACHE_DIR"
             DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-to type=local,dest=$CACHE_DIR"
