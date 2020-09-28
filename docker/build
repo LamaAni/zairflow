@@ -89,6 +89,7 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
+# Must be lowercase
 IMAGE_REPOSITORY="${IMAGE_REPOSITORY,,}"
 
 # Move to build path.
