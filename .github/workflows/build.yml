@@ -66,6 +66,9 @@ jobs:
         env:
           ARCHIVE_PATH: '/tmp/helm.tar.gz'
 
+      - name: 'Validate helm compress'
+        run: ls /tmp
+
       - name: 'Release: Upload files'
         if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
         uses: AButler/upload-release-assets@v2.0
