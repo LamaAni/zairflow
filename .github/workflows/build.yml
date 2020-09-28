@@ -92,6 +92,7 @@ jobs:
       - name: 'Build/Push the docker image to github'
         if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_build!='true'}}
         env:
+          DOCKER_REGISTRY_URL: 'docker.pkg.github.com'
           IMAGE_REPOSITORY: 'docker.pkg.github.com/${{github.repository}}/zairflow'
           DOCKER_USERNAME: '${{github.actor}}'
           DOCKER_ACCESS_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
