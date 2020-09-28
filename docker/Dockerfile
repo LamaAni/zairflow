@@ -120,7 +120,7 @@ RUN groupadd airflow &&\
 USER airflow
 
 # copy the config.
-COPY ./docker/airflow.cfg ./airflow.cfg
+COPY ./docker/airflow.cfg /airflow/airflow.cfg
 
 # airflow core config envs.
 ENV FERNET_KEY="${FERNET_KEY}"
