@@ -17,6 +17,8 @@ Args:
     --platforms     The os platforms to use with docker buildx
     --dockerfile    The dockerfile to use.
     --cache-dir     The cache directory for buildx
+    --image-repo    The image repository
+    --image-name    The image name (defaults to zairflow)
 Flags:
     -h | --help     Show this help menu.
     --push          If true then push (default to true on master)
@@ -35,7 +37,8 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${USE_BUILDX:="false"}
 : ${DOCKERFILE:="./docker/Dockerfile"}
 : ${PLATFORMS:="linux/amd64,linux/arm64"}
-: ${IMAGE_REPOSITORY:="lamaani/zairflow"}
+: ${IMAGE_REPOSITORY:="lamaani"}
+: ${IMAGE_NAME:="zairflow"}
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -81,6 +84,10 @@ while [ "$#" -gt 0 ]; do
         shift
         CACHE_DIR="$1"
         ;;
+    --image-repo)
+        shift
+        IMAGE_REPOSITORY="$1"
+        ;;
     *)
         echo "Error: unknown argument $1"
         exit 2
@@ -91,6 +98,8 @@ done
 
 # Must be lowercase
 IMAGE_REPOSITORY="${IMAGE_REPOSITORY,,}"
+IMAGE_NAME="${IMAGE_NAME,,}"
+IMAGE_URI="${IMAGE_REPOSITORY}/${IMAGE_NAME}"
 
 # Move to build path.
 cd "$REPO_PATH"
@@ -100,9 +109,9 @@ source "$REPO_PATH/envs"
 
 function push_tag() {
     log:sep "Tagging and pushing: $1"
-    docker tag "$IMAGE_REPOSITORY:local" "$IMAGE_REPOSITORY:$1"
+    docker tag "$IMAGE_URI:local" "$IMAGE_URI:$1"
     assert $? "Docker tag failed" || return $?
-    docker push "$IMAGE_REPOSITORY:$1"
+    docker push "$IMAGE_URI:$1"
     assert $? "Docker push failed" || return $?
 }
 
@@ -121,6 +130,7 @@ function build_image() {
     log "Build Path:" "$PWD"
     log "Dockerfile:" "$DOCKERFILE"
     log "Repo:      " "${IMAGE_REPOSITORY}"
+    log "Name:      " "${IMAGE_NAME}"
     log "local tag: " "${IMAGE_TAG}"
     log "push tags: " "${push_tags[@]}"
     log "version:   " "${VERSION}"
@@ -130,7 +140,7 @@ function build_image() {
     local tag_argument=""
     local push_argument=""
     for tag in "${push_tags[@]}"; do
-        tag_argument="$tag_argument -t ${IMAGE_REPOSITORY}:$tag"
+        tag_argument="$tag_argument -t ${IMAGE_URI}:$tag"
         push_argument="$push_argument $IMAGE_REPOSITORY:$tag"
     done
 
@@ -151,10 +161,10 @@ function build_image() {
 
     if [ "$DO_PUSH" == "true" ]; then
         DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS $PUSH_COMMAND"
-        log:sep "Building and pushing $IMAGE_REPOSITORY @ $PWD"
+        log:sep "Building and pushing $IMAGE_URI @ $PWD"
         log "$push_argument"
     else
-        log:sep "Building $IMAGE_REPOSITORY @ $PWD"
+        log:sep "Building $IMAGE_URI @ $PWD"
     fi
 
     echo docker $DOCKER_COMMAND_PLUGIN build \
@@ -177,7 +187,7 @@ function build_image() {
 
 if [ -n "$DOCKER_ACCESS_TOKEN" ]; then
     log:sep "Logging in to docker using $DOCKER_USERNAME:$DOCKER_ACCESS_TOKEN"
-    docker login $DOCKER_REGISTRY_URL -u "$DOCKER_USERNAME" -p "$DOCKER_ACCESS_TOKEN"
+    docker login "$DOCKER_REGISTRY_URL" -u "$DOCKER_USERNAME" -p "$DOCKER_ACCESS_TOKEN"
 fi
 
 build_image
