@@ -66,9 +66,6 @@ jobs:
         env:
           ARCHIVE_PATH: 'helm.tar.gz'
 
-      - name: 'Validate helm compress'
-        run: ls /tmp
-
       - name: 'Release: Upload files'
         if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
         uses: AButler/upload-release-assets@v2.0
@@ -77,7 +74,7 @@ jobs:
           release-tag: '${{steps.commit_args.outputs.version}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Build the Docker image on branch'
+      - name: 'Build the docker image'
         if: ${{steps.commit_args.outputs.no_build!='true'}}
         env:
           VERSION: '${{steps.commit_args.outputs.version}}'
