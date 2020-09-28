@@ -74,7 +74,7 @@ jobs:
         uses: AButler/upload-release-assets@v2.0
         with:
           files: 'helm.tar.gz'
-          release-tag: '${{github.head_ref || github.ref}}'
+          release-tag: '${{steps.commit_args.outputs.version}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Build the Docker image on branch'
