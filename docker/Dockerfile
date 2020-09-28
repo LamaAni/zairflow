@@ -76,7 +76,6 @@ COPY ./docker/requirements_pip.txt .
 
 # Install python requirements and airflow.
 ARG PIP_INSTALL_COMMAND="pip3 install --no-cache-dir"
-RUN find /usr/lib -name "libffi.so*"
 RUN ${PIP_INSTALL_COMMAND} \
    -r ./requirements_pip.txt \
    ./db_logger\
@@ -86,7 +85,7 @@ RUN ${PIP_INSTALL_COMMAND} \
 
 # Set this parameter to not "true" so it would create a non sudo user and cleanup more stuff.
 ARG DEBUG_MODE="true"
-ARG GIT_AUTOSYNC_BRANCH="1.1.0"
+ARG GIT_AUTOSYNC_BRANCH="master"
 
 # Global scripts and paths.
 ENV\
@@ -99,7 +98,7 @@ RUN chmod -R +x /scripts && bash /scripts/image/install.sh
 
 
 ###################################
-# Work enviroment
+# Work environment
 WORKDIR /airflow
 WORKDIR /app
 ARG FERNET_KEY="not_a_key"
