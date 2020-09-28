@@ -170,12 +170,11 @@ function build_image() {
         log "$push_argument"
         docker push $push_argument
     fi
-
 }
 
 if [ -n "$DOCKER_ACCESS_TOKEN" ]; then
     log:sep "Logging in to docker using $DOCKER_USERNAME:$DOCKER_ACCESS_TOKEN"
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_ACCESS_TOKEN"
+    docker login $DOCKER_REGISTRY_URL -u "$DOCKER_USERNAME" -p "$DOCKER_ACCESS_TOKEN"
 fi
 
 build_image
