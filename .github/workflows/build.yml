@@ -100,7 +100,7 @@ jobs:
           CACHE_DIR: '${{steps.commit_args.outputs.cache_dir}}'
           IMAGE_TAG: 'ci-github-build'
           IMAGE_VERSION_TAGS: '${{steps.commit_args.outputs.image_version_tags}}'
-          USE_BUILDX: 'false'
+          USE_BUILDX:  ${{steps.commit_args.outputs.no_buildx!='true'}}
           DO_PUSH: ${{steps.commit_args.outputs.release=='true'}}
           PLATFORMS: ${{steps.commit_args.outputs.platforms || ''}}
         run: bash docker/build
