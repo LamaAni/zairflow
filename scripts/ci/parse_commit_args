@@ -122,7 +122,7 @@ if [ "$debug" == "true" ]; then
     image_version_tags="${image_version_tags//"."/"-"}"
     image_version_tags="debug-$image_version_tags"
 fi
-image_version_tags="$(split_versions "." "${image_version_tags[@]}")"
+image_version_tags="$(split_versions "." $image_version_tags)"
 
 if [ "$EVENT_NAME" == "release" ] && [ "$debug" != "true" ] && [ "$NO_LATEST" != "true" ]; then
     image_version_tags="$image_version_tags latest"

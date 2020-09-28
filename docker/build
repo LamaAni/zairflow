@@ -108,7 +108,7 @@ function build_image() {
     local push_tags
 
     if [ -n "$IMAGE_VERSION_TAGS" ]; then
-        push_tags=("${IMAGE_VERSION_TAGS[@]}")
+        push_tags=(${IMAGE_VERSION_TAGS[@]})
     else
         push_tags=("$IMAGE_TAG")
     fi
