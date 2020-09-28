@@ -35,6 +35,7 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${USE_BUILDX:="false"}
 : ${DOCKERFILE:="./docker/Dockerfile"}
 : ${PLATFORMS:="linux/amd64,linux/arm64"}
+: ${IMAGE_REPOSITORY:="lamaani/zairflow"}
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -96,9 +97,9 @@ source "$REPO_PATH/envs"
 
 function push_tag() {
     log:sep "Tagging and pushing: $1"
-    docker tag "$ZAIRFLOW_IMAGE_REPOSITORY:local" "$ZAIRFLOW_IMAGE_REPOSITORY:$1"
+    docker tag "$IMAGE_REPOSITORY:local" "$IMAGE_REPOSITORY:$1"
     assert $? "Docker tag failed" || return $?
-    docker push "$ZAIRFLOW_IMAGE_REPOSITORY:$1"
+    docker push "$IMAGE_REPOSITORY:$1"
     assert $? "Docker push failed" || return $?
 }
 
@@ -116,7 +117,7 @@ function build_image() {
     log:sep "Config"
     log "Build Path:" "$PWD"
     log "Dockerfile:" "$DOCKERFILE"
-    log "Repo:      " "${ZAIRFLOW_IMAGE_REPOSITORY}"
+    log "Repo:      " "${IMAGE_REPOSITORY}"
     log "local tag: " "${IMAGE_TAG}"
     log "push tags: " "${push_tags[@]}"
     log "version:   " "${VERSION}"
@@ -126,8 +127,8 @@ function build_image() {
     local tag_argument=""
     local push_argument=""
     for tag in "${push_tags[@]}"; do
-        tag_argument="$tag_argument -t ${ZAIRFLOW_IMAGE_REPOSITORY}:$tag"
-        push_argument="$push_argument $ZAIRFLOW_IMAGE_REPOSITORY:$tag"
+        tag_argument="$tag_argument -t ${IMAGE_REPOSITORY}:$tag"
+        push_argument="$push_argument $IMAGE_REPOSITORY:$tag"
     done
 
     DOCKER_COMMAND_ARGS=""
@@ -147,10 +148,10 @@ function build_image() {
 
     if [ "$DO_PUSH" == "true" ]; then
         DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS $PUSH_COMMAND"
-        log:sep "Building and pushing $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
+        log:sep "Building and pushing $IMAGE_REPOSITORY @ $PWD"
         log "$push_argument"
     else
-        log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
+        log:sep "Building $IMAGE_REPOSITORY @ $PWD"
     fi
 
     echo docker $DOCKER_COMMAND_PLUGIN build \
