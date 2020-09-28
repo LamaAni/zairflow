@@ -13,22 +13,26 @@ Args:
                     then split by '.' and add each tag. i.e. tag.0.b.3 -> tags: [tag, tag.0, tag.0.b, tag.0.b.3]
     --hub-username  The docker username to use
     --hub-token     The docker token to use
+    --platforms     The os platforms to use with docker buildx
+    --dockerfile    The dockerfile to use.
+    --cache-dir     The cache directory for buildx
 Flags:
     -h | --help     Show this help menu.
-    --skip-build    Skip the build.
     --push          If true then push (default to true on master)
     --multi-linux   If exists, attempt to use docker buildx, to mulid for multiple architectures.
-                    The arch. can be set via DOCKER_ARCHITECTURES end
+                    The arch. can be set via PLATFORMS end
 "
+
+export DOCKER_CLI_EXPERIMENTAL="enabled"
 
 : ${DOCKER_ACCESS_TOKEN:=""}
 : ${DOCKER_USERNAME:=""}
-: ${DOCKER_IMAGE_TAG:="local"}
-: ${DOCKER_VERSION_TAG:=""}
-: ${DO_PUSH:=0}
-: ${DO_BUILD:=1}
-: ${DOCKER_ARCHITECTURES:="linux/arm/v7,linux/arm64/v8,linux/amd64"}
-: ${USE_BUILDX:=""}
+: ${IMAGE_TAG:="local"}
+: ${VERSION_TAG:=""}
+: ${DO_PUSH:="false"}
+: ${USE_BUILDX:="false"}
+: ${DOCKERFILE:="./docker/Dockerfile"}
+: ${PLATFORMS:="linux/amd64,linux/arm64"}
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -37,10 +41,7 @@ while [ "$#" -gt 0 ]; do
         exit 0
         ;;
     --push)
-        DO_PUSH=1
-        ;;
-    --skip-build)
-        DO_BUILD=0
+        DO_PUSH="true"
         ;;
     --hub-username)
         shift
@@ -52,14 +53,26 @@ while [ "$#" -gt 0 ]; do
         ;;
     --version-tag)
         shift
-        DOCKER_VERSION_TAG="$1"
+        VERSION_TAG="$1"
         ;;
     --tag | -t)
         shift
-        DOCKER_IMAGE_TAG="$1"
+        IMAGE_TAG="$1"
         ;;
     --multi-linux)
         USE_BUILDX="true"
+        ;;
+    --dockerfile)
+        shift
+        DOCKERFILE="$1"
+        ;;
+    --platforms)
+        shift
+        PLATFORMS="$1"
+        ;;
+    --cache-dir)
+        shift
+        CACHE_DIR="$1"
         ;;
     *)
         echo "Error: unknown argument $1"
@@ -71,15 +84,7 @@ done
 
 # Move to build path.
 cd "$REPO_PATH"
-source "./envs"
-
-DOCKER_COMMAND_ARGS=""
-DOCKER_COMMAND_PLUGIN=""
-if [ "$USE_BUILDX" == "true" ]; then
-    log:sep "${cyan}Building for multilinux!$ec"
-    DOCKER_COMMAND_PLUGIN="buildx"
-    DOCKER_COMMAND_ARGS="--platform ${DOCKER_ARCHITECTURES}"
-fi
+source "$REPO_PATH/envs"
 
 ####################################
 
@@ -98,8 +103,8 @@ function build_image() {
     push_tags=()
 
     local version="local-build"
-    if [ -n "$DOCKER_VERSION_TAG" ]; then
-        local versions=($DOCKER_VERSION_TAG)
+    if [ -n "$VERSION_TAG" ]; then
+        local versions=($VERSION_TAG)
         for ver in "${versions[@]}"; do
             local version_split
             IFS='.' read -ra version_split <<<"$ver"
@@ -112,28 +117,65 @@ function build_image() {
             done
         done
     fi
+    : ${push_tags:="$IMAGE_TAG"}
 
     log:sep "Config"
-    log "Path:      " "$PWD"
+    log "Build Path:" "$PWD"
+    log "Dockerfile:" "$DOCKERFILE"
     log "Repo:      " "${ZAIRFLOW_IMAGE_REPOSITORY}"
-    log "local tag: " "${DOCKER_IMAGE_TAG}"
+    log "local tag: " "${IMAGE_TAG}"
     log "push tags: " "${push_tags[@]}"
     log "version:   " "$version"
+    log "buildx:    " "$USE_BUILDX"
+    log "pushing:   " "$DO_PUSH"
 
-    if [ $DO_BUILD -eq 1 ]; then
+    local tag_argument=""
+    local push_argument=""
+    for tag in "${push_tags[@]}"; do
+        tag_argument="$tag_argument -t ${ZAIRFLOW_IMAGE_REPOSITORY}:$tag"
+        push_argument="$push_argument $ZAIRFLOW_IMAGE_REPOSITORY:$tag"
+    done
+
+    DOCKER_COMMAND_ARGS=""
+    DOCKER_COMMAND_PLUGIN=""
+    PUSH_COMMAND=""
+    if [ "$USE_BUILDX" == "true" ]; then
+        log:sep "${cyan}Building for multilinux!$ec"
+        log "$PLATFORMS"
+        DOCKER_COMMAND_PLUGIN="buildx"
+        DOCKER_COMMAND_ARGS="--platform ${PLATFORMS}"
+        PUSH_COMMAND="-o type=image,push=true"
+        if [ -n "$CACHE_DIR" ]; then
+            DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-from type=local,src=$CACHE_DIR"
+            DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --cache-to type=local,dest=$CACHE_DIR"
+        fi
+    fi
+
+    if [ "$DO_PUSH" == "true" ]; then
+        DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS $PUSH_COMMAND"
+        log:sep "Building and pushing $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
+        log "$push_argument"
+    else
         log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
-        docker $DOCKER_COMMAND_PLUGIN build $DOCKER_COMMAND_ARGS -f "./docker/Dockerfile" . \
-            -t "$ZAIRFLOW_IMAGE_REPOSITORY:$DOCKER_IMAGE_TAG" \
-            --build-arg "ZAIRFLOW_VERSION=$version"
-        assert $? "Docker build failed" || return $?
     fi
 
-    if [ $DO_PUSH -eq 1 ]; then
-        log:sep "Pushing $ZAIRFLOW_IMAGE_REPOSITORY -> " "${push_tags[@]}"
-        for tag in "${push_tags[@]}"; do
-            push_tag "$tag" || return $?
-        done
+    echo docker $DOCKER_COMMAND_PLUGIN build \
+        $tag_argument \
+        $DOCKER_COMMAND_ARGS
+
+    docker $DOCKER_COMMAND_PLUGIN build \
+        $tag_argument \
+        $DOCKER_COMMAND_ARGS \
+        --build-arg "ZAIRFLOW_VERSION=$version" \
+        -f "$DOCKERFILE" .
+    assert $? "Docker build failed" || return $?
+
+    if [ "$DO_PUSH" == "true" ] && [ "$USE_BUILDX" != "true" ]; then
+        log:sep "Pusing images"
+        log "$push_argument"
+        docker push $push_argument
     fi
+
 }
 
 if [ -n "$DOCKER_ACCESS_TOKEN" ]; then

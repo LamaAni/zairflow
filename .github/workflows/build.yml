@@ -24,70 +24,64 @@ jobs:
       - name: 'Checkout the code'
         uses: actions/checkout@v2
 
-      - name: Load commit args
+      - name: Get the latest commit info
+        id: last-commit
+        run: bash scripts/ci/get_last_commit_message
+        env:
+          COMMIT_HASH: '${{github.event.after}}'
+          BASE_REF: '${{github.head_ref || github.ref}}'
+
+      - name: Load build args and flags
         id: commit_args
         env:
-            COMMIT_MESSAGE: "${{github.event.head_commit.message}}"
-            EVENT_NAME: "${{github.event_name}}"
-        # args:
-        # out_arg '\ml'   "multi_linux"       "true" "false"
-        # out_arg '\noml' "no_multi_linux"    "true" "false"
-        # out_arg '\nc'   "no_cache"          "true" "false"
-        # out_arg '\fr'   "release"           "true" "false" (only on master or release, otherwise false)
-        # out_arg         "release_tag"       (branch or tag)
-        run: bash scripts/ci/action_args_methods
+          EVENT_NAME: '${{github.event_name}}'
+          BASE_REF: '${{github.head_ref || github.ref}}'
+          COMMIT_MESSAGE: '${{steps.last-commit.outputs.message}}'
+        # See help in command for arg output.
+        run: bash scripts/ci/parse_commit_args $COMMIT_MESSAGE --event "$EVENT_NAME" --base-ref "$BASE_REF"
 
       - name: Set up Docker Buildx
-        if: ${{steps.commit_args.outputs.multi_linux=='true'}}
+        if: ${{steps.commit_args.outputs.no_buildx!='true' && steps.commit_args.outputs.no_build!='true'}}
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v3
         with:
           buildx-version: latest
           qemu-version: latest
 
-      - name: 'Load docker build cache'
-        if: ${{steps.commit_args.outputs.no_cache!='true'}}
-        uses: satackey/action-docker-layer-caching@v0.0.8
-        # Ignore the failure of a step and avoid terminating the job.
-        continue-on-error: true
+      - name: Docker Buildx available platforms
+        if: ${{steps.commit_args.outputs.no_buildx!='true' && steps.commit_args.outputs.no_build!='true'}}
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
+      - name: 'Load docker buildx cache'
+        if: ${{steps.commit_args.outputs.no_cache!='true' && steps.commit_args.outputs.no_buildx!='true' && steps.commit_args.outputs.no_build!='true'}}
+        uses: actions/cache@v2
         with:
-          key: ${{github.repository}}-${{github.head_ref || github.ref}}
-          restore-keys: |
-            ${{github.repository}}
-
-      - name: 'Build the Docker image on branch'
-        env:
-          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
-          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
-          DOCKER_IMAGE_TAG: 'ci-build'
-          USE_BUILDX: ${{steps.commit_args.outputs.multi_linux}}
-        run: bash docker/build
-
-      # Only happens on release.
-      - name: 'Release: Get the release tag (version)'
-        if: ${{steps.commit_args.outputs.release=='true'}}
-        id: release_tag
-        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
-
-      - name: 'Release: Push the docker image for release'
-        if: ${{steps.commit_args.outputs.release=='true'}}
-        id: build-docker-image
-        env:
-          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
-          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
-          DOCKER_IMAGE_TAG: 'ci-build'
-          DOCKER_VERSION_TAG: 'latest ${{ steps.release_tag.outputs.TAG }}'
-        run: bash docker/build --push --skip-build
+          path: '${{steps.commit_args.outputs.cache_dir}}'
+          key: '${{steps.commit_args.outputs.cache_key}}'
+          restore-keys: '${{steps.commit_args.outputs.cache_key_fallback}}'
 
       - name: 'Release: Create helm release (tar the folder)'
-        if: ${{steps.commit_args.outputs.release=='true'}}
+        if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
         id: gzip-helm-release
         run: bash scripts/ci/create_helm_release
 
       - name: 'Release: Upload files'
-        if: ${{steps.commit_args.outputs.release=='true'}}
+        if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
         uses: AButler/upload-release-assets@v2.0
         with:
           files: 'helm.tar.gz'
-          release-tag: ${{ steps.release_tag.outputs.TAG }}
+          release-tag: '${{github.head_ref || github.ref}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Build the Docker image on branch'
+        if: ${{steps.commit_args.outputs.no_build!='true'}}
+        env:
+          CACHE_DIR: '${{steps.commit_args.outputs.cache_dir}}'
+          DOCKER_USERNAME: '${{ secrets.DOCKER_USERNAME }}'
+          DOCKER_ACCESS_TOKEN: '${{ secrets.DOCKER_ACCESS_TOKEN }}'
+          IMAGE_TAG: 'ci-build'
+          VERSION_TAG: '${{steps.commit_args.outputs.version}}'
+          USE_BUILDX: ${{steps.commit_args.outputs.no_buildx!='true'}}
+          DO_PUSH: ${{steps.commit_args.outputs.release=='true'}}
+          PLATFORMS: ${{steps.commit_args.outputs.platforms || ''}}
+        run: bash docker/build

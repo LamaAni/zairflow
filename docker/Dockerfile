@@ -1,7 +1,6 @@
 
-FROM python:3.8.6-slim
-ENV TERM linux
-
+FROM ubuntu:20.10
+ENV DEBIAN_FRONTEND="noninteractive"
 #########################################
 # Prepare environment
 
@@ -19,21 +18,24 @@ RUN apt-get update -yqq && apt-get upgrade -yqq
 RUN ${APT_GET_INSTALL}\
    apt-utils\
    locales\
-   curl\
+   apt-transport-https\
    gnupg2\
-   # Add extra repositiories
+   curl\
+   ca-certificates\
    &&\
-   curl -s "https://packages.cloud.google.com/apt/doc/apt-key.gpg" | apt-key add - &&\
-   echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a "/etc/apt/sources.list.d/kubernetes.list" &&\
+   curl -fsSL "https://download.docker.com/linux/ubuntu/gpg" | apt-key add - &&\
+   curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - &&\
+   echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list &&\
    apt-get update\
    # set the local
    &&\
    sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen &&\
    locale-gen && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-   # Install required.
+   # Install packages
    &&\
    ${APT_GET_INSTALL}\
    ${APT_GET_DEPS}\
+   # tools
    git\
    sudo\
    netcat\
@@ -41,13 +43,23 @@ RUN ${APT_GET_INSTALL}\
    redis-tools\
    openssh-client\
    build-essential\
-   postgresql-client\
-   default-libmysqlclient-dev\
+   libmysqlclient-dev\
    libsasl2-dev\
    kubectl\
+   # python + binary packages
+   python3.8 python3.8-dev python3-pip\
+   python3-setuptools\
+   postgresql-client\
+   python3-psycopg2\
+   python3-pandas\
+   python3-nacl\
+   libffi-dev\
+   libpq-dev\
    # Cleanup
    &&\
    apt-get clean
+# &&\
+# pip3 install --upgrade pip
 
 # Configure for airflow installation.
 ENV SLUGIFY_USES_TEXT_UNIDECODE="yes"
@@ -63,17 +75,17 @@ COPY ./db_logger ./db_logger
 COPY ./docker/requirements_pip.txt .
 
 # Install python requirements and airflow.
-RUN yes | pip install --no-cache-dir \
-   -r ./requirements_pip.txt\
+ARG PIP_INSTALL_COMMAND="pip3 install --no-cache-dir"
+RUN ${PIP_INSTALL_COMMAND} \
+   -r ./requirements_pip.txt \
    ./db_logger\
+   ${PYTHON_DEPS}\
    airflow-kubernetes-job-operator==${KUBE_JOB_OPERATOR_VERSION}\
-   apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}\
-   ${PYTHON_DEPS}
-
+   apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}
 
 # Set this parameter to not "true" so it would create a non sudo user and cleanup more stuff.
 ARG DEBUG_MODE="true"
-ARG GIT_AUTOSYNC_BRANCH="1.1.0"
+ARG GIT_AUTOSYNC_BRANCH="master"
 
 # Global scripts and paths.
 ENV\
@@ -86,7 +98,7 @@ RUN chmod -R +x /scripts && bash /scripts/image/install.sh
 
 
 ###################################
-# Work enviroment
+# Work environment
 WORKDIR /airflow
 WORKDIR /app
 ARG FERNET_KEY="not_a_key"

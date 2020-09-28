@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source "$SCRIPTS_PATH/ci/common.sh"
+
+help_text="
+Parses and extracts the command args from the
+Usage: parse_commit_args
+Flags:
+    -h | --help     Show this help menu. and continue.
+    
+    -s | --single-linux     Create a signle-linux (amd64) build, using regular docker build.
+    -n | --no-cache         Do not use docker cache.
+    -d | --debug            Run in release debug mode (appends debug to the label and removes all [.]'s)
+    --no-helm               Do not upload the helm chart to the release.
+    --no-build              Skip the build
+    --dry-run               Do not output the echo arg.
+    --cache-dir             The buildx cache dir
+Args:
+    --platforms     A commad separated list of linux platforms.
+    --release       (true/false) Push this result to the docker registry. (Allowed only on master or --debug)
+                    Defaults to true on release event, defaults to false on any other.
+    --event-name    The event to release with. Defaults to \$EVENT_NAME
+    --base-ref      The github reference for the current base (the branch, tag or base branch for merege)
+"
+
+: "${EVENT_NAME:="unknown-event"}"
+: "${REPO="$GITHUB_REPOSITORY"}"
+: "${REPO="local"}"
+: "${NO_LATEST="false"}"
+: "${PLATFORMS=""}"
+
+: "${release=""}"
+: "${debug="false"}"
+: "${no_cache="false"}"
+: "${no_buildx="false"}"
+: "${no_helm="false"}"
+: "${no_build="false"}"
+: "${cache_dir="/tmp/buildx_cache"}"
+
+while [ "$#" -gt 0 ]; do
+    case $1 in
+    --help | -h)
+        log:sep "Help:"
+        echo "$help_text"
+        ;;
+    --dry-run)
+        IS_DRY_RUN="true"
+        ;;
+    -s | --single-linux)
+        no_buildx="true"
+        no_cache="true"
+        ;;
+    -n | --no-cache)
+        no_cache="true"
+        ;;
+    -d | --debug)
+        debug="true"
+        ;;
+    --no-latest-tag)
+        NO_LATEST="true"
+        ;;
+    --no-helm)
+        no_helm="true"
+        ;;
+    --no-build)
+        no_build="true"
+        ;;
+    --release)
+        shift
+        if [ "$1" == "true" ]; then
+            release="true"
+        else
+            release="false"
+        fi
+        ;;
+    --base-ref)
+        shift
+        BASE_REF="$1"
+        ;;
+    --platforms)
+        shift
+        PLATFORMS="$1"
+        ;;
+    --event-name)
+        shift
+        EVENT_NAME="$1"
+        ;;
+    --cache-dir)
+        shift
+        cache_dir="$1"
+        ;;
+    *)
+        # Skip, some other commit values.
+        ;;
+    esac
+    shift
+done
+
+: "${BRANCH="$(basename "$BASE_REF")"}"
+
+if [ -z "$release" ] && [ "$EVENT_NAME" == "release" ]; then
+    release="true"
+fi
+
+if [ "$release" == "true" ] && [ "$debug" != "true" ] && [ "$EVENT_NAME" != "release" ]; then
+    release="false"
+fi
+
+if [ -z "$release" ]; then
+    release="false"
+fi
+
+version="$BRANCH"
+if [ "$debug" == "true" ]; then
+    version="${version//"."/"-"}"
+    version="debug-$version"
+fi
+if [ "$EVENT_NAME" == "release" ] && [ "$debug" != "true" ] && [ "$NO_LATEST" != "true" ]; then
+    version="$version latest"
+fi
+
+if [ "$EVENT_NAME" != "release" ]; then
+    no_helm="true"
+fi
+
+cache_key="$REPO-${BRANCH}"
+cache_key_fallback="$REPO-master"
+
+log:sep "Commit message: "
+echo "$COMMIT_MESSAGE"
+
+log:sep "Args:"
+out event_name "$EVENT_NAME"
+out release "$release"
+out BRANCH "$BRANCH"
+out no_buildx "$no_buildx"
+out no_cache "$no_cache"
+out no_helm "$no_helm"
+out no_build "$no_build"
+out debug "$debug"
+out version "$version"
+out cache_key "$cache_key"
+out cache_key_fallback "$cache_key_fallback"
+out platforms "$PLATFORMS"
+out cache_dir "$cache_dir"

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+source "$SCRIPTS_PATH/ci/common.sh"
+
+: "${BRANCH="$(basename "$BASE_REF")"}"
+
+log:sep "Reading message from hash"
+git fetch origin "$BRANCH"
+COMMIT_MESSAGE="$(git log --format=%B -n 1 $COMMIT_HASH)"
+
+log:sep "Last commit message: "
+out message "$COMMIT_MESSAGE"
