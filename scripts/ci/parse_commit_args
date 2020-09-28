@@ -116,6 +116,7 @@ if [ -z "$release" ] && [ "$EVENT_NAME" == "release" ]; then
 fi
 
 if [ "$release" == "true" ] && [ "$debug" != "true" ] && [ "$EVENT_NAME" != "release" ]; then
+    log:warning "Release ignored since debug is not set to true"
     release="false"
 fi
 
