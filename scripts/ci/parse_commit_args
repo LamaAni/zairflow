@@ -109,7 +109,7 @@ done
 
 : "${BRANCH="$(basename "$BASE_REF")"}"
 : "${image_version_tags:="$BRANCH"}"
-: "${version="$BRANCH"}"
+: "${version:="$BRANCH"}"
 
 if [ -z "$release" ] && [ "$EVENT_NAME" == "release" ]; then
     release="true"
