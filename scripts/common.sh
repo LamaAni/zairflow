@@ -170,3 +170,9 @@ function wait_for_airflow_db_ready() {
     sleep "$ZARIFLOW_DB_WAIT_INTERVAL"
   done
 }
+
+function join_by() {
+  local IFS="$1"
+  shift
+  echo "$*"
+}

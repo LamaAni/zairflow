@@ -13,3 +13,34 @@ function out() {
     fi
     echo "::set-output name=$name::${value[*]}"
 }
+
+function split_versions() {
+    local sep="$1"
+    shift
+    local versions=""
+    local parsed_versions=""
+    versions=("$@")
+    parsed_versions=()
+
+    for ver in "${versions[@]}"; do
+        local version_split
+        IFS="$sep" read -ra version_split <<<"$ver"
+
+        local partial_version=""
+        local is_first_split=1
+
+        for part in "${version_split[@]}"; do
+            partial_version="${partial_version}${part}"
+            if [ $is_first_split -eq 1 ] && [ "${#version_split[@]}" -gt 1 ]; then
+                is_first_split=0
+            else
+                parsed_versions+=("$partial_version")
+            fi
+            partial_version="${partial_version}$sep"
+        done
+    done
+
+    for ver in "${parsed_versions[@]}"; do
+        echo "$ver"
+    done
+}

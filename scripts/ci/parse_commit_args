@@ -111,12 +111,13 @@ if [ -z "$release" ]; then
 fi
 
 version="$BRANCH"
+image_version_tags="$BRANCH"
 if [ "$debug" == "true" ]; then
-    version="${version//"."/"-"}"
-    version="debug-$version"
+    image_version_tags="${image_version_tags//"."/"-"}"
+    image_version_tags="debug-$image_version_tags"
 fi
 if [ "$EVENT_NAME" == "release" ] && [ "$debug" != "true" ] && [ "$NO_LATEST" != "true" ]; then
-    version="$version latest"
+    image_version_tags="$image_version_tags latest"
 fi
 
 if [ "$EVENT_NAME" != "release" ]; then
@@ -138,6 +139,7 @@ out no_cache "$no_cache"
 out no_helm "$no_helm"
 out no_build "$no_build"
 out debug "$debug"
+out image_version_tags "$image_version_tags"
 out version "$version"
 out cache_key "$cache_key"
 out cache_key_fallback "$cache_key_fallback"

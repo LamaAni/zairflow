@@ -11,6 +11,7 @@ Args:
     -t | --tag      the release to to use (defaults to local). 
     --version-tag   The version tag. If dose not exist, then skipped. If exists
                     then split by '.' and add each tag. i.e. tag.0.b.3 -> tags: [tag, tag.0, tag.0.b, tag.0.b.3]
+    --version       The image version.
     --hub-username  The docker username to use
     --hub-token     The docker token to use
     --platforms     The os platforms to use with docker buildx
@@ -28,7 +29,8 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${DOCKER_ACCESS_TOKEN:=""}
 : ${DOCKER_USERNAME:=""}
 : ${IMAGE_TAG:="local"}
-: ${VERSION_TAG:=""}
+: ${IMAGE_VERSION_TAGS:=""}
+: ${VERSION="local-build"}
 : ${DO_PUSH:="false"}
 : ${USE_BUILDX:="false"}
 : ${DOCKERFILE:="./docker/Dockerfile"}
@@ -53,7 +55,11 @@ while [ "$#" -gt 0 ]; do
         ;;
     --version-tag)
         shift
-        VERSION_TAG="$1"
+        IMAGE_VERSION_TAGS="$1"
+        ;;
+    --version)
+        shift
+        VERSION="$1"
         ;;
     --tag | -t)
         shift
@@ -102,21 +108,10 @@ function build_image() {
     local push_tags
     push_tags=()
 
-    local version="local-build"
-    if [ -n "$VERSION_TAG" ]; then
-        local versions=($VERSION_TAG)
-        for ver in "${versions[@]}"; do
-            local version_split
-            IFS='.' read -ra version_split <<<"$ver"
-            local partial_tag=""
-            for part in "${version_split[@]}"; do
-                partial_tag="${partial_tag}${part}"
-                push_tags+=("$partial_tag")
-                version="$partial_tag" # the last and logest
-                partial_tag="${partial_tag}."
-            done
-        done
+    if [ -n "$IMAGE_VERSION_TAGS" ]; then
+        push_tags=($(split_versions "." ${IMAGE_VERSION_TAGS}))
     fi
+
     : ${push_tags:="$IMAGE_TAG"}
 
     log:sep "Config"
@@ -125,7 +120,7 @@ function build_image() {
     log "Repo:      " "${ZAIRFLOW_IMAGE_REPOSITORY}"
     log "local tag: " "${IMAGE_TAG}"
     log "push tags: " "${push_tags[@]}"
-    log "version:   " "$version"
+    log "version:   " "${VERSION}"
     log "buildx:    " "$USE_BUILDX"
     log "pushing:   " "$DO_PUSH"
 
@@ -166,7 +161,7 @@ function build_image() {
     docker $DOCKER_COMMAND_PLUGIN build \
         $tag_argument \
         $DOCKER_COMMAND_ARGS \
-        --build-arg "ZAIRFLOW_VERSION=$version" \
+        --build-arg "ZAIRFLOW_VERSION=$VERSION" \
         -f "$DOCKERFILE" .
     assert $? "Docker build failed" || return $?
 
