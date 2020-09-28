@@ -74,7 +74,7 @@ jobs:
           release-tag: '${{steps.commit_args.outputs.version}}'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Build the docker image'
+      - name: 'Build/push the docker image'
         if: ${{steps.commit_args.outputs.no_build!='true'}}
         env:
           VERSION: '${{steps.commit_args.outputs.version}}'
