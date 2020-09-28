@@ -70,7 +70,7 @@ jobs:
         run: ls /tmp
 
       - name: 'Release: Upload files'
-        # if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
+        if: ${{steps.commit_args.outputs.release=='true' && steps.commit_args.outputs.no_helm!='true'}}
         uses: AButler/upload-release-assets@v2.0
         with:
           files: 'helm.tar.gz'
