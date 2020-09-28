@@ -16,6 +16,7 @@ Flags:
     --dry-run               Do not output the echo arg.
     --cache-dir             The buildx cache dir
     --image-version-tags    The image version tags to ve added.
+    --version               The release version (override branch/tag name)
 Args:
     --platforms     A commad separated list of linux platforms.
     --release       (true/false) Push this result to the docker registry. (Allowed only on master or --debug)
@@ -37,6 +38,7 @@ Args:
 : "${no_helm="false"}"
 : "${no_build="false"}"
 : "${cache_dir="/tmp/buildx_cache"}"
+: "${version=""}"
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -94,6 +96,10 @@ while [ "$#" -gt 0 ]; do
         shift
         image_version_tags="$1"
         ;;
+    --version)
+        shift
+        version="$1"
+        ;;
     *)
         # Skip, some other commit values.
         ;;
@@ -103,6 +109,7 @@ done
 
 : "${BRANCH="$(basename "$BASE_REF")"}"
 : "${image_version_tags:="$BRANCH"}"
+: "${version="$BRANCH"}"
 
 if [ -z "$release" ] && [ "$EVENT_NAME" == "release" ]; then
     release="true"
@@ -115,8 +122,6 @@ fi
 if [ -z "$release" ]; then
     release="false"
 fi
-
-version="$BRANCH"
 
 if [ "$debug" == "true" ]; then
     image_version_tags="${image_version_tags//"."/"-"}"
