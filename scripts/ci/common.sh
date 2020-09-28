@@ -39,8 +39,5 @@ function split_versions() {
             partial_version="${partial_version}$sep"
         done
     done
-
-    for ver in "${parsed_versions[@]}"; do
-        echo "$ver"
-    done
+    IFS=" " echo "${parsed_versions[@]}"
 }

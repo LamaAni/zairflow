@@ -106,13 +106,12 @@ function build_image() {
     assert $? "Failed to load envs" || return $?
 
     local push_tags
-    push_tags=()
 
     if [ -n "$IMAGE_VERSION_TAGS" ]; then
-        push_tags=($(split_versions "." ${IMAGE_VERSION_TAGS}))
+        push_tags=("${IMAGE_VERSION_TAGS[@]}")
+    else
+        push_tags=("$IMAGE_TAG")
     fi
-
-    : ${push_tags:="$IMAGE_TAG"}
 
     log:sep "Config"
     log "Build Path:" "$PWD"
