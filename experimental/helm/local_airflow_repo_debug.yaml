@@ -3,7 +3,7 @@
 # Recommended values can be found in README and
 # in the values file in this chart.
 image:
-  tag: debug-debug_3_8_6
+  tag: local
   pullPolicy: Always
 
 envs:
