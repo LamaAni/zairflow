@@ -4,12 +4,12 @@ import os
 import yaml
 from airflow.utils.helpers import parse_template_string
 from airflow.models import TaskInstance
-from sqlalchemy import Column, Integer, String, Text, Index, DateTime
+from sqlalchemy import Column, Integer, String, Text, Index, DateTime, asc, desc
 from airflow.models.base import Base
 from typing import Dict, List
 
 from .log_records import TaskExecutionLogRecord, DagFileProcessingLogRecord
-from .logger_config import Session, DAGS_FOLDER
+from .logger_config import Session, DAGS_FOLDER, DB_LOGGER_SHOW_REVERSE_ORDER
 import logging
 
 
@@ -38,9 +38,7 @@ class DBTaskLogHandler(logging.Handler):
 
     @property
     def task_context_info(self):
-        assert (
-            self._task_context_info is not None
-        ), "Task instance was not defined while attempting to write task log"
+        assert self._task_context_info is not None, "Task instance was not defined while attempting to write task log"
         return self._task_context_info
 
     @property
@@ -53,7 +51,7 @@ class DBTaskLogHandler(logging.Handler):
 
     def set_context(self, task_instance):
         """Initialize the db log configuration.
-        
+
         Arguments:
             task_instance {task instance object} -- The task instace to write for.
         """
@@ -66,7 +64,7 @@ class DBTaskLogHandler(logging.Handler):
 
     def emit(self, record):
         """Emits a log record.
-        
+
         Arguments:
             record {any} -- The logging record.
         """
@@ -85,8 +83,7 @@ class DBTaskLogHandler(logging.Handler):
         self.db_session.commit()
 
     def flush(self):
-        """Waits for any unwritten logs to write to the db.
-        """
+        """Waits for any unwritten logs to write to the db."""
         if not self.has_context:
             return
         if self.db_session is not None:
@@ -108,17 +105,17 @@ class DBTaskLogHandler(logging.Handler):
         metadata: dict = None,
     ):
         """Read logs of given task instance from the database.
-        
+
         Arguments:
             task_instance {TaskInstance} -- The task instance object
-        
+
         Keyword Arguments:
             try_number {int} -- The run try number (default: {None})
             metadata {dict} -- Added metadata (default: {None})
-        
+
         Raises:
             Exception: [description]
-        
+
         Returns:
             List[str] -- A log array.
         """
@@ -126,7 +123,7 @@ class DBTaskLogHandler(logging.Handler):
         # So the log for a particular task try will only show up when
         # try number gets incremented in DB, i.e logs produced the time
         # after cli run and before try_number + 1 in DB will not be displayed.
-        db_session = None
+        db_session: Session = None
         try:
             db_session = Session()
             if try_number is None:
@@ -134,28 +131,38 @@ class DBTaskLogHandler(logging.Handler):
                 try_numbers = list(range(1, next_try))
             elif try_number < 1:
                 logs = [
-                    "Error fetching the logs. Try number {} is invalid.".format(
-                        try_number
-                    ),
+                    "Error fetching the logs. Try number {} is invalid.".format(try_number),
                 ]
                 return logs
             else:
                 try_numbers = [try_number]
 
-            logs_by_try_number = dict()
-            log_records = (
+            logs_by_try_number: Dict[int, List[TaskExecutionLogRecord]] = dict()
+
+            log_records_query = (
                 db_session.query(TaskExecutionLogRecord)
                 .filter(TaskExecutionLogRecord.dag_id == task_instance.dag_id)
                 .filter(TaskExecutionLogRecord.task_id == task_instance.task_id)
-                .filter(
-                    TaskExecutionLogRecord.execution_date
-                    == task_instance.execution_date
-                )
+                .filter(TaskExecutionLogRecord.execution_date == task_instance.execution_date)
                 .filter(TaskExecutionLogRecord.try_number.in_(try_numbers))
-                .all()
             )
+
+            if DB_LOGGER_SHOW_REVERSE_ORDER is True:
+                log_records_query = log_records_query.order_by(desc(TaskExecutionLogRecord.timestamp))
+            else:
+                log_records_query = log_records_query.order_by(asc(TaskExecutionLogRecord.timestamp))
+
+            log_records = log_records_query.all()
+
             db_session.close()
             db_session = None
+
+            log_record: TaskExecutionLogRecord = None
+
+            # pull the records
+            log_records: List[TaskExecutionLogRecord] = [r for r in log_records]
+            # log_records.sort(key=lambda r: r.timestamp.timestamp())
+
             for log_record in log_records:
                 try_number = int(log_record.try_number)
                 if try_number not in logs_by_try_number:
@@ -163,9 +170,7 @@ class DBTaskLogHandler(logging.Handler):
                 logs_by_try_number[try_number].append(str(log_record.text))
 
             for try_number in logs_by_try_number.keys():
-                logs_by_try_number[try_number] = "\n".join(
-                    logs_by_try_number[try_number]
-                )
+                logs_by_try_number[try_number] = "\n".join(logs_by_try_number[try_number])
 
             try_numbers.sort()
             logs = []
@@ -205,9 +210,7 @@ class DBProcessLogHandler(logging.Handler):
 
         self.base_log_folder = base_log_folder
         self.dag_dir = os.path.expanduser(DAGS_FOLDER)
-        self.filename_template, self.filename_jinja_template = parse_template_string(
-            filename_template
-        )
+        self.filename_template, self.filename_jinja_template = parse_template_string(filename_template)
 
         self._dag_filename = None
         self._db_session = None
@@ -222,10 +225,10 @@ class DBProcessLogHandler(logging.Handler):
 
     def _render_filename(self, filename):
         """Renders a display filename for the specific dag.
-        
+
         Arguments:
             filename {str} -- The original filename
-        
+
         Returns:
             str -- The display filename.
         """
@@ -240,7 +243,7 @@ class DBProcessLogHandler(logging.Handler):
 
     def set_context(self, dag_filename):
         """Initialize the db log configuration.
-        
+
         Arguments:
             dag_filename {str} -- The dag filename context
         """
@@ -253,7 +256,7 @@ class DBProcessLogHandler(logging.Handler):
 
     def emit(self, record):
         """Emits a log record.
-        
+
         Arguments:
             record {any} -- The logging record.
         """
@@ -266,8 +269,7 @@ class DBProcessLogHandler(logging.Handler):
         self.db_session.commit()
 
     def flush(self):
-        """Waits for any unwritten logs to write to the db.
-        """
+        """Waits for any unwritten logs to write to the db."""
         if not self.has_context:
             return
         if self.db_session is not None:
@@ -282,4 +284,3 @@ class DBProcessLogHandler(logging.Handler):
         if self.db_session is not None:
             self.db_session.close()
             self._db_session = None
-

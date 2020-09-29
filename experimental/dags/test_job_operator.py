@@ -7,8 +7,27 @@ dag = DAG(
     "job-operator-example", default_args=default_args, description="Test base job operator", schedule_interval=None
 )
 
-KubernetesJobOperator(task_id="test-job-success", body_filepath=__file__ + ".success.yaml")
-KubernetesJobOperator(task_id="test-job-fail", body_filepath=__file__ + ".fail.yaml", dag=dag)
+job_file = __file__ + ".yaml"
+tick_count = 2
+
+KubernetesJobOperator(
+    dag=dag,
+    task_id="test-job-success",
+    body_filepath=job_file,
+    envs={
+        "EXIT_CODE": "0",
+        "TICKS": str(tick_count),
+    },
+)
+KubernetesJobOperator(
+    dag=dag,
+    task_id="test-job-fail",
+    body_filepath=job_file,
+    envs={
+        "EXIT_CODE": "22",
+        "TICKS": str(tick_count),
+    },
+)
 KubernetesJobOperator(
     task_id="test-job-overrides",
     dag=dag,

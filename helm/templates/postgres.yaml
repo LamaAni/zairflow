@@ -40,8 +40,6 @@ spec:
     metadata:
       labels:
         deployment-target: {{ $full_name }}-pg-db
-      annotations:
-        {{- include "zairflow-helm.template_configmap_checksum" . | nindent 8 }}
     spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
@@ -78,10 +76,9 @@ spec:
               value: "{{ .Values.postgres.credentials.password }}"
             - name: MAX_CONNECTIONS
               value: "{{ .Values.postgres.maxConnections }}"
+            - name: ZAIRFLOW_DB_HOST
+              value: "{{ $full_name }}-pg-db-svc"
             {{- tuple .Values.postgres.envs | include "inject-yaml" | nindent 12 }}
-          envFrom:
-            - configMapRef:
-                name: {{ $full_name }}-envs
           resources:
           {{- tuple .Values.postgres.resources | include "inject-yaml" | nindent 12 }}
         {{- tuple .Values.postgres.injectContainerYaml | include "inject-yaml" | nindent 10 }}

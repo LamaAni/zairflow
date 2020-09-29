@@ -4,25 +4,24 @@
 # -------------------------------------
 # Chart general values
 
-nameOverride: ""
-fullnameOverride: ""
-
+nameOverride: ''
+fullnameOverride: ''
 
 # -------------------------------------
 # Airflow settings
 
 executor:
   # Can be any of: SequentialExecutor, LocalExecutor, KubernetesExecutor
-  # NOTE: The celery executor is not yet implemented. 
-  type: "LocalExecutor"
+  # NOTE: The celery executor is not yet implemented.
+  type: 'LocalExecutor'
   # Applies when workers are created (only KubernetesExecutor since celery is not implemented)
-  workerImagePullPolicy: 
+  workerImagePullPolicy:
   workerImageRepository:
   workerImageTag:
 
 image:
-  repository: "lamaani/zairflow"
-  tag: "latest"
+  repository: 'lamaani/zairflow'
+  tag: 'latest'
   pullPolicy: IfNotPresent
 
 logging:
@@ -45,11 +44,11 @@ webserver:
   terminationGracePeriodSeconds: 10
   replicas: 1
   port: 8080
-  envs: 
+  envs:
   resources:
     requests:
-      memory: "1Gi"
-      cpu: "500m"
+      memory: '1Gi'
+      cpu: '500m'
 
 scheduler:
   terminationGracePeriodSeconds: 10
@@ -57,13 +56,13 @@ scheduler:
   envs:
   resources:
     requests:
-      memory: "1.5Gi"
-      cpu: "1"
+      memory: '1.5Gi'
+      cpu: '1'
 
 postgres:
   enabled: true
   terminationGracePeriodSeconds: 20
-  image: "postgres:12.2"
+  image: 'postgres:12.2'
   port: 5432
   maxConnections: 10000
   # if true adds the pvc.
@@ -80,8 +79,10 @@ postgres:
   # defaults.
   resources:
     requests:
-      memory: "200Mi"
-      cpu: "150m"
+      memory: '200Mi'
+      cpu: '150m'
+  # Extra postgres envs.
+  envs: {}
 
 # -------------------------------------
 # Kubernetes settings
@@ -97,11 +98,11 @@ serviceAccount:
 
 ingress:
   enabled: false
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths: []
   tls: []
-

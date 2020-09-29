@@ -6,6 +6,12 @@ metadata:
   name: {{ $full_name }}-initdb
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    # Will try and preform an initdb and than delete the job.
+    "helm.sh/hook": post-install
+    # "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   backoffLimit: 3
   template:

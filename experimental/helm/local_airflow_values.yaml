@@ -12,13 +12,15 @@ envs:
   ZAIRFLOW_GIT_AUTOSYNC_BRANCH: kjo_1_0_1
   # define airflow
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
-  AIRFLOW__CORE__LOG_FORMAT: "[%(asctime)s] %(levelname)7s - %(message)s"
-  AIRFLOW__CORE__COLORED_LOG_FORMAT: "[%(blue)s%(asctime)s%(reset)s] %(log_color)s%(levelname)7s%(reset)s - %(log_color)s%(message)s%(reset)s"
+  AIRFLOW__CORE__LOG_FORMAT: '[%(asctime)s] %(levelname)7s - %(message)s'
+  AIRFLOW__CORE__COLORED_LOG_FORMAT: '[%(blue)s%(asctime)s%(reset)s] %(log_color)s%(levelname)7s%(reset)s - %(log_color)s%(message)s%(reset)s'
 
   # define airflow folders (sync to /app)
   AIRFLOW__CORE__DAGS_FOLDER: /app/experimental/dags
   AIRFLOW__CORE__PLUGINS_FOLDER: /app/experimental/plugins
-  
+
+  # AIRFLOW__DB_LOGGER__SHOW_REVERSE: 'False'
+
 serviceAccount:
   enabled: true
 postgres:

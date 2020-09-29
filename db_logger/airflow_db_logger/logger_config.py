@@ -12,9 +12,8 @@ FAB_LOG_LEVEL = conf.get("core", "FAB_LOGGING_LEVEL").upper()
 LOG_FORMAT = conf.get("core", "log_format")
 
 SQL_ALCHEMY_CONN = conf.get("core", "SQL_ALCHEMY_CONN")
-DB_LOGGER_SQL_ALCHEMY_CONNECTION = conf.get(
-    "db_logger", "SQL_ALCHEMY_CONN", fallback=SQL_ALCHEMY_CONN
-)
+DB_LOGGER_SQL_ALCHEMY_CONNECTION = conf.get("db_logger", "SQL_ALCHEMY_CONN", fallback=SQL_ALCHEMY_CONN)
+DB_LOGGER_SHOW_REVERSE_ORDER = conf.getboolean("db_logger", "show_reverse", fallback=False)
 
 DAGS_FOLDER = os.path.expanduser(conf.get("core", "DAGS_FOLDER"))
 
@@ -55,9 +54,7 @@ if pool_enabled:
     # of some DBAPI-specific method to test the connection for liveness.
     # More information here:
     # https://docs.sqlalchemy.org/en/13/core/pooling.html#disconnect-handling-pessimistic
-    pool_pre_ping = conf.getboolean(
-        "db_logger", "SQL_ALCHEMY_POOL_PRE_PING", fallback=True
-    )
+    pool_pre_ping = conf.getboolean("db_logger", "SQL_ALCHEMY_POOL_PRE_PING", fallback=True)
 
     engine_args["pool_size"] = pool_size
     engine_args["pool_recycle"] = pool_recycle
@@ -76,13 +73,12 @@ engine_args["encoding"] = engine_args["encoding"].__str__()
 
 engine = create_engine(DB_LOGGER_SQL_ALCHEMY_CONNECTION, **engine_args)
 
-Session = scoped_session(
-    sessionmaker(autocommit=False, autoflush=False, bind=engine, expire_on_commit=False)
-)
+Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine, expire_on_commit=False))
 
 
 def init_logger(reset=False):
     from .log_records import LoggerModelBase
+
     logging.info(f"Using {DB_LOGGER_SQL_ALCHEMY_CONNECTION}")
     if reset:
         # NOTE: There is no promp for logs, when you reset, everything will reset always.
@@ -98,4 +94,3 @@ def init_logger(reset=False):
 def check_cli_for_init_db():
     if "initdb" in sys.argv or "upgradedb" in sys.argv or "resetdb" in sys.argv:
         init_logger("resetdb" in sys.argv)
-
