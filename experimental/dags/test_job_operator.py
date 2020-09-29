@@ -15,8 +15,8 @@ KubernetesJobOperator(
     task_id="test-job-success",
     body_filepath=job_file,
     envs={
-        "EXIT_ERROR": "0",
-        "TICKS": tick_count,
+        "EXIT_CODE": "0",
+        "TICKS": str(tick_count),
     },
 )
 KubernetesJobOperator(
@@ -24,8 +24,8 @@ KubernetesJobOperator(
     task_id="test-job-fail",
     body_filepath=job_file,
     envs={
-        "EXIT_ERROR": "22",
-        "TICKS": tick_count,
+        "EXIT_CODE": "22",
+        "TICKS": str(tick_count),
     },
 )
 KubernetesJobOperator(

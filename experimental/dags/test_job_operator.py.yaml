@@ -18,7 +18,7 @@ spec:
             - -c
             - |
               #/usr/bin/env bash
-              echo "Starting"
+              echo "Starting.."
               cur_count=0
               while true; do
                   cur_count=$((cur_count + 1))
@@ -29,10 +29,10 @@ spec:
                   sleep 1
               done
 
-              echo "Force throw error:"
-              exit $EXIT_ERROR
+              echo "Exit code: $EXIT_CODE"
+              exit $EXIT_CODE
           env:
-            - name: EXIT_ERROR
+            - name: EXIT_CODE
               value: '0'
             - name: TICKS
               value: '2'
