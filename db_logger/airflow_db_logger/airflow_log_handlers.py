@@ -4,12 +4,12 @@ import os
 import yaml
 from airflow.utils.helpers import parse_template_string
 from airflow.models import TaskInstance
-from sqlalchemy import Column, Integer, String, Text, Index, DateTime
+from sqlalchemy import Column, Integer, String, Text, Index, DateTime, asc, desc
 from airflow.models.base import Base
 from typing import Dict, List
 
 from .log_records import TaskExecutionLogRecord, DagFileProcessingLogRecord
-from .logger_config import Session, DAGS_FOLDER
+from .logger_config import Session, DAGS_FOLDER, DB_LOGGER_SHOW_REVERSE_ORDER
 import logging
 
 
@@ -123,7 +123,7 @@ class DBTaskLogHandler(logging.Handler):
         # So the log for a particular task try will only show up when
         # try number gets incremented in DB, i.e logs produced the time
         # after cli run and before try_number + 1 in DB will not be displayed.
-        db_session = None
+        db_session: Session = None
         try:
             db_session = Session()
             if try_number is None:
@@ -137,18 +137,32 @@ class DBTaskLogHandler(logging.Handler):
             else:
                 try_numbers = [try_number]
 
-            logs_by_try_number = dict()
-            log_records = (
+            logs_by_try_number: Dict[int, List[TaskExecutionLogRecord]] = dict()
+
+            log_records_query = (
                 db_session.query(TaskExecutionLogRecord)
                 .filter(TaskExecutionLogRecord.dag_id == task_instance.dag_id)
                 .filter(TaskExecutionLogRecord.task_id == task_instance.task_id)
                 .filter(TaskExecutionLogRecord.execution_date == task_instance.execution_date)
                 .filter(TaskExecutionLogRecord.try_number.in_(try_numbers))
-                .order_bu(TaskExecutionLogRecord.timestamp.asc())
-                .all()
             )
+
+            if DB_LOGGER_SHOW_REVERSE_ORDER is True:
+                log_records_query = log_records_query.order_by(desc(TaskExecutionLogRecord.timestamp))
+            else:
+                log_records_query = log_records_query.order_by(asc(TaskExecutionLogRecord.timestamp))
+
+            log_records = log_records_query.all()
+
             db_session.close()
             db_session = None
+
+            log_record: TaskExecutionLogRecord = None
+
+            # pull the records
+            log_records: List[TaskExecutionLogRecord] = [r for r in log_records]
+            # log_records.sort(key=lambda r: r.timestamp.timestamp())
+
             for log_record in log_records:
                 try_number = int(log_record.try_number)
                 if try_number not in logs_by_try_number:
