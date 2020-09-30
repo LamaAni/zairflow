@@ -68,7 +68,7 @@ ARG AIRFLOW_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG PYTHON_DEPS=""
 
 ARG AIRFLOW_VERSION="1.10.12"
-ARG KUBE_JOB_OPERATOR_VERSION='1.0.6'
+ARG KUBE_JOB_OPERATOR_VERSION='1.0.7'
 
 # Copy install dependencies
 COPY ./db_logger ./db_logger
