@@ -67,19 +67,19 @@ ARG AIRFLOW_CORE_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG AIRFLOW_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG PYTHON_DEPS=""
 
-ARG AIRFLOW_VERSION="1.10.12"
-ARG KUBE_JOB_OPERATOR_VERSION='1.0.10'
+ARG AIRFLOW_VERSION="1.10.13"
+ARG KUBE_JOB_OPERATOR_VERSION='1.0.15'
+ARG AIRFLOW_DB_LOGGER_VERSION='1.0.0'
 
 # Copy install dependencies
-COPY ./db_logger ./db_logger
 COPY ./docker/requirements_pip.txt .
 
 # Install python requirements and airflow.
 ARG PIP_INSTALL_COMMAND="pip3 install --no-cache-dir"
 RUN ${PIP_INSTALL_COMMAND} \
    -r ./requirements_pip.txt \
-   ./db_logger\
    ${PYTHON_DEPS}\
+   airflow-db-logger==${AIRFLOW_DB_LOGGER_VERSION}\
    airflow-kubernetes-job-operator==${KUBE_JOB_OPERATOR_VERSION}\
    apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}
 

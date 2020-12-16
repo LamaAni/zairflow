@@ -20,6 +20,7 @@ function prepare_airflow_env() {
 
   # Default postgres
   : "${ZAIRFLOW_DB_HOST:="localhost"}"
+  : "${ZAIRFLOW_SKIP_DB_CHECK:="false"}"
   : "${ZAIRFLOW_DB_PORT:="5432"}"
 
   # default connections.
@@ -56,10 +57,12 @@ function prepare_airflow_env() {
   fi
 
   log:sep "Checking dependencies..."
-  # postgres validate
-  log:info "Waiting for the database to be ready @ $ZAIRFLOW_DB_HOST:$ZAIRFLOW_DB_PORT..."
-  wait_for_connection "$ZAIRFLOW_DB_HOST:$ZAIRFLOW_DB_PORT" || return $?
-  assert $? "Failed to find database. Exiting." || return $?
+  if [ "$ZAIRFLOW_SKIP_DB_CHECK" != "true" ]; then
+    # postgres validate
+    log:info "Waiting for the database to be ready @ $ZAIRFLOW_DB_HOST:$ZAIRFLOW_DB_PORT..."
+    wait_for_connection "$ZAIRFLOW_DB_HOST:$ZAIRFLOW_DB_PORT" || return $?
+    assert $? "Failed to find database. Exiting." || return $?
+  fi
 
   for wait_for_url in "${ZAIRFLOW_WAIT_FOR[@]}"; do
     log:info "Waiting for $wait_for_url to be ready..."

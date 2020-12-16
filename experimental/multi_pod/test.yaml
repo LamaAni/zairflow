@@ -9,7 +9,7 @@ data:
 
   # define airflow
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
-  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG
+  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.LOGGING_CONFIG
   AIRFLOW__CORE__LOG_FORMAT: '[%(asctime)s] %(levelname)7s - %(message)s'
   AIRFLOW__CORE__COLORED_LOG_FORMAT: "[%(blue)s%(asctime)s%(reset)s] %(log_color)s%(levelname)7s%(reset)s - %(log_color)s%(message)s%(reset)s"
   AIRFLOW__CORE__EXECUTOR: KubernetesExecutor
