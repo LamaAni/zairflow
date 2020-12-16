@@ -44,7 +44,7 @@ The image is tagged per release. Version definition,
 
 Changes to the default config:
 
-1. [Core].`logging_config_class` = airflow_db_logger.airflow_log_config.LOGGING_CONFIG - log to database instead of files.
+1. [Core].`logging_config_class` = airflow_db_logger.LOGGING_CONFIG - log to database instead of files.
 1. [Kubernetes].`dags_in_image`= True - Expect kubernetes worker dags in the image.
 1. [Kubernetes].`kube_client_request_args` = "" - a changed due to a `bug` in the core airflow
    config; the json is not parsed properly.
@@ -68,6 +68,7 @@ For more info on setting airflow environment variables see [here](https://airflo
 | ZAIRFLOW_RUN_INITDB          | Run `airflow initdb` before the main container process                                                                                                                                                                                                                                                                              | `boolean`                                             | False                            |
 | ZAIRFLOW_DB_HOST             | the host for the airflow database, this value is required in order to validate the db                                                                                                                                                                                                                                               | `string`                                              | localhost                        |
 | ZAIRFLOW_DB_PORT             | the port for the airflow database                                                                                                                                                                                                                                                                                                   | 1-65535                                               | 5432                             |
+| ZAIRFLOW_SKIP_DB_CHECK       | If `true` then skip the db check.                                                                                                                                                                                                                                                                                                   |
 |                              |                                                                                                                                                                                                                                                                                                                                     |
 | ZAIRFLOW_CONTAINER_TYPE      | The type of the container to execute                                                                                                                                                                                                                                                                                                | scheduler, worker, webserver, flower, initdb, command | None/Empty - will cause an error |
 | `...`ZAIRFLOW_CONTAINER_TYPE | Run `airflow [type]`, after preparing the env                                                                                                                                                                                                                                                                                       | scheduler, worker, webserver, flower, initdb          |
@@ -102,7 +103,7 @@ An internal DB logger package was added that writes all logs to a database inste
 
 ```ini
 [CORE]
-logging_config_class = airflow_db_logger.airflow_log_config.LOGGING_CONFIG
+logging_config_class = airflow_db_logger.LOGGING_CONFIG
 ```
 
 **This package is highly recommended for multi pod implementations**, and was added by default.

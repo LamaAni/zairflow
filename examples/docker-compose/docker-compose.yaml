@@ -5,7 +5,7 @@ x-globalenvs: &globalenvs
   ZAIRFLOW_POST_LOAD_USER_CODE: 'true'
 
   # Airflow args
-  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.airflow_log_config.LOGGING_CONFIG
+  AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.LOGGING_CONFIG
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@postgres:5432/airflow'
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
 
