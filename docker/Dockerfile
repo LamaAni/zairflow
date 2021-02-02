@@ -86,15 +86,18 @@ RUN ${PIP_INSTALL_COMMAND} \
 # Set this parameter to not "true" so it would create a non sudo user and cleanup more stuff.
 ARG DEBUG_MODE="true"
 ARG GIT_AUTOSYNC_BRANCH="master"
+ARG ZBASH_COMMONS_VERSION=0.1.1
 
 # Global scripts and paths.
 ENV\
    SCRIPTS_PATH=/scripts \
    PATH="/scripts:${PATH}:/home/airflow/.local/bin"\
-   GIT_AUTOSYNC_BRANCH=${GIT_AUTOSYNC_BRANCH}
+   GIT_AUTOSYNC_BRANCH=${GIT_AUTOSYNC_BRANCH}\
+   ZBASH_COMMONS_VERSION=${ZBASH_COMMONS_VERSION}
 
 COPY ./scripts /scripts
-RUN chmod -R +x /scripts && bash /scripts/image/install.sh
+RUN bash /scripts/image/install_zbash_commons &&\
+   chmod -R +x /scripts && bash /scripts/image/install.sh
 
 
 ###################################
