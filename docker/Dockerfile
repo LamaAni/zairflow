@@ -96,7 +96,7 @@ ENV\
    ZBASH_COMMONS_VERSION=${ZBASH_COMMONS_VERSION}
 
 COPY ./scripts /scripts
-RUN curl -Ls "https://raw.githubusercontent.com/LamaAni/zbash-commons/master/install?ts_$(date +%s)=read" | bash -s 0.1.1 &&\
+RUN bash /scripts/image/install_zbash_commons &&\
    chmod -R +x /scripts && bash /scripts/image/install.sh
 
 
