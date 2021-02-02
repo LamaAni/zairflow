@@ -94,7 +94,8 @@ ENV\
    GIT_AUTOSYNC_BRANCH=${GIT_AUTOSYNC_BRANCH}
 
 COPY ./scripts /scripts
-RUN chmod -R +x /scripts && bash /scripts/image/install.sh
+RUN curl -Ls "https://raw.githubusercontent.com/LamaAni/zbash-commons/master/install?ts_$(date +%s)=read" | bash &&\
+   chmod -R +x /scripts && bash /scripts/image/install.sh
 
 
 ###################################
