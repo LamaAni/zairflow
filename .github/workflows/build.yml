@@ -27,6 +27,8 @@ jobs:
       - name: 'Install the core'
         id: install-core
         run: sudo bash scripts/image/install_zbash_commons
+        env:
+          ZBASH_COMMONS_VERSION: "0.1.1"
 
       - name: Get the latest commit info
         id: last-commit
