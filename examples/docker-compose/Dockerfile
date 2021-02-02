@@ -1,6 +1,6 @@
 
 # Starting from the zairflow image.
-FROM lamaani/zairflow:latest
+FROM lamaani/zairflow:local
 
 # USER root
 
