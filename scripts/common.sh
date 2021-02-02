@@ -4,8 +4,6 @@ SCRIPTS_PATH="$SCRIPTS_PATH"
 : ${SCRIPTS_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
 : ${ZAIRFLOW_RUN_INITDB:="false"}
 
-source zbash_commons || echo "zbash_commons not found. See https://github.com/LamaAni/zbash-commons for install instructions" && exit 1
-
 ####################################
 # Logger
 
