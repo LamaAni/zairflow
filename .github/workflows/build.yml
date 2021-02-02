@@ -24,6 +24,10 @@ jobs:
       - name: 'Checkout the code'
         uses: actions/checkout@v2
 
+      - name: 'Install the core'
+        id: install-core
+        run: bash scripts/ci/install_core
+
       - name: Get the latest commit info
         id: last-commit
         run: bash scripts/ci/get_last_commit_message
