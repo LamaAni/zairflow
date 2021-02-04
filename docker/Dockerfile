@@ -86,7 +86,7 @@ RUN ${PIP_INSTALL_COMMAND} \
 # Set this parameter to not "true" so it would create a non sudo user and cleanup more stuff.
 ARG DEBUG_MODE="true"
 ARG GIT_AUTOSYNC_BRANCH="master"
-ARG ZBASH_COMMONS_VERSION=0.1.1
+ARG ZBASH_COMMONS_VERSION="0.1.5"
 
 # Global scripts and paths.
 ENV\
