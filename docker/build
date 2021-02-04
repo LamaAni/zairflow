@@ -170,7 +170,7 @@ function build_image() {
         --build-arg "ZAIRFLOW_VERSION=$VERSION" \
         -f "$DOCKERFILE" . \
         "${EXTRA_ARGS[@]}"
-    assert $? "Docker build failed" || return $?
+    assert $? "Docker execution failed" || return $?
 
     if [ "$DO_PUSH" == "true" ] && [ "$USE_BUILDX" != "true" ]; then
         log:sep "Pusing images"
