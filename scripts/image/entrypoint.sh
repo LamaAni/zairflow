@@ -4,6 +4,12 @@
 source "$SCRIPTS_PATH/common.sh"
 
 : ${ZAIRFLOW_RUN_INITDB:="false"}
+: ${ZAIRFLOW_CONTAINER_TYPE:="standalone"}
+
+if [ "$ZAIRFLOW_CONTAINER_TYPE" == "standalone" ]; then
+  export ZAIRFLOW_SKIP_DB_CHECK="true"
+  export ZAIRFLOW_WAIT_FOR=""
+fi
 
 if [ -n "$ZAIRFLOW_ENTRYPOINT_INIT_HOOK" ]; then
   log:sep "Starting init hook: $ZAIRFLOW_ENTRYPOINT_INIT_HOOK"
@@ -71,7 +77,6 @@ function check_for_run_hooks() {
 
 # for the case where user code is loaded after the init.
 prepare_post_load_user_code || exit $?
-: ${ZAIRFLOW_CONTAINER_TYPE:="[None or empty]"}
 case "$ZAIRFLOW_CONTAINER_TYPE" in
 worker)
   # a worker
@@ -104,6 +109,16 @@ flower)
 initdb)
   check_for_run_hooks || exit $?
   invoke_init_db
+  ;;
+standalone)
+  log:info "${cyan}Running as standalone airflow container${end_color}"
+  export AIRFLOW__CORE__EXECUTOR="$AIRFLOW_STANDALONE_EXECUTOR"
+  check_for_run_hooks || exit $?
+  invoke_init_db || exit $?
+  invoke_airflow scheduler &
+  export AIRFLOW_SCHEDULER_PID=$!
+  invoke_airflow webserver
+  kill $AIRFLOW_SCHEDULER_PID
   ;;
 command)
   check_for_db || exit $?

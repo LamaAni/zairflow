@@ -1,5 +1,5 @@
 #!/bin/bash
-: "${ZBASH_COMMONS_VERSION="0.1.1"}"
+: "${ZBASH_COMMONS_VERSION="0.1.5"}"
 curl -Ls "https://raw.githubusercontent.com/LamaAni/zbash-commons/master/install?ts_$(date +%s)=read" | bash -s $ZBASH_COMMONS_VERSION || exit $?
 source zbash_commons || exit $?
 
