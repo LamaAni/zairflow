@@ -123,7 +123,10 @@ RUN groupadd airflow &&\
 USER airflow
 
 # copy the config.
-COPY ./docker/airflow.cfg /airflow/airflow.cfg
+COPY --chown=airflow:airflow ./docker/airflow.cfg /airflow/airflow.cfg
+
+# Control args
+ARG AIRFLOW_STANDALONE_EXECUTOR="SequentialExecutor"
 
 # airflow core config envs.
 ENV FERNET_KEY="${FERNET_KEY}"
@@ -135,6 +138,7 @@ ENV AIRFLOW_HOME=/airflow
 ENV AIRFLOW_CONFIG=/airflow/airflow.cfg
 ENV AIRFLOW__CORE__DAGS_FOLDER=/app/dags
 ENV AIRFLOW__CORE__PLUGINS_FOLDER=/app/plugins
+ENV AIRFLOW_STANDALONE_EXECUTOR="${AIRFLOW_STANDALONE_EXECUTOR}"
 
 EXPOSE 8080 5555 8793
 CMD ["/scripts/image/entrypoint.sh"]
