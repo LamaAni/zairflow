@@ -90,6 +90,6 @@ Create image name
 {{/*
 Configmap checksum
 */}}
-{{- define "zairflow-helm.template_configmap_checksum" -}}
+{{- define "zairflow-helm.metadata_checksums" -}}
 checksum/config: {{ include (print $.Template.BasePath "/envs.yaml") . | sha256sum }}
 {{- end -}}

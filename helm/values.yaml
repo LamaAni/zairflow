@@ -39,6 +39,7 @@ initdb:
   # If enabled will create an initdb job, that will run when
   # the chart is deployed.
   enabled: true
+  auto_delete: false
 
 webserver:
   terminationGracePeriodSeconds: 10

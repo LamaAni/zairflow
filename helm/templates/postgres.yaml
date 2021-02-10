@@ -54,6 +54,7 @@ spec:
           volumeMounts:
             - name: datastore
               mountPath: /var/lib/postgresql/data
+              subPath: pg_data
           {{- end }}
           livenessProbe:
             exec:

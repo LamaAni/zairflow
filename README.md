@@ -74,8 +74,8 @@ For more info on setting airflow environment variables see [here](https://airflo
 | `...`ZAIRFLOW_CONTAINER_TYPE | Run `airflow [type]`, after preparing the env                                                                                                                                                                                                                                                                                       | scheduler, worker, webserver, flower, initdb          |
 | `...`ZAIRFLOW_CONTAINER_TYPE | Run `"$@"`, after preparing the env                                                                                                                                                                                                                                                                                                 | command                                               |
 |                              |                                                                                                                                                                                                                                                                                                                                     |
-| ZAIRFLOW_GIT_AUTOSYNC_URI    | A uri to the git repo to sync. If exists the git sync process will start. If a git repo already exists on the image at the location of the dags folder, use "internal" (remember to set the correct airflow dag folder path). See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync. | `string`                                              | None                             |
-| ZAIRFLOW_GIT_AUTOSYNC_BRANCH | The autosync branch name, if dose not exist uses the default branch. See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync.                                                                                                                                                          | `string`                                              | None                             |
+| GIT_AUTOSYNC_REPO_URL    | A uri to the git repo to sync. If exists the git sync process will start. If a git repo already exists on the image at the location of the dags folder, use "internal" (remember to set the correct airflow dag folder path). See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync. | `string`                                              | None                             |
+| GIT_AUTOSYNC_REPO_BRANCH | The autosync branch name, if dose not exist uses the default branch. See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync.                                                                                                                                                          | `string`                                              | None                             |
 
 #### Advanced
 
@@ -95,7 +95,7 @@ For more info on setting airflow environment variables see [here](https://airflo
 | ZARIFLOW_CONNECTION_WAIT_TIMEOUT  | The connection wait timeout                                                                                                                                                                                     | `int`       | 1       |
 | ZARIFLOW_CONNECTION_WAIT_INTERVAL | The number of seconds to wait between connection attempts                                                                                                                                                       | `int`       | 1       |
 |                                   |                                                                                                                                                                                                                 |
-| ZAIRFLOW_GIT_AUTOSYNC_PATH        | Overrides /app directory. The path where the git repo will sync to (remember to set the correct airflow dags/plugins folder path). See notes below on autosync.                                                 | `string`    | None    |
+| GIT_AUTOSYNC_REPO_LOCAL_PATH        | Overrides /app directory. The path where the git repo will sync to (remember to set the correct airflow dags/plugins folder path). See notes below on autosync.                                                 | `string`    | None    |
 
 ## DB logger
 
@@ -133,8 +133,8 @@ that was detected. See script github reop and details [here](https://github.com/
 Fist we tell zairflow where the repo is, by setting the `environment variables`:
 
 ```yaml
-ZAIRFLOW_GIT_AUTOSYNC_URI: [my-repo-uri]
-ZAIRFLOW_GIT_AUTOSYNC_BRANCH: [my-repo-branch] # Optional, default = default branch.
+GIT_AUTOSYNC_REPO_URL: [my-repo-uri]
+GIT_AUTOSYNC_REPO_BRANCH: [my-repo-branch] # Optional, default = default branch.
 ```
 
 Then, if in your repo the paths to the airflow dags and plugins are:

@@ -78,8 +78,8 @@ function prepare_airflow_env() {
     assert $? "Failed connecting to $wait_for_url"
   done
 
-  if [ -n "$ZAIRFLOW_GIT_AUTOSYNC_URI" ]; then
-    log:sep "Git Auto-Sync"
+  if [ -n "$GIT_AUTOSYNC_REPO_URL" ]; then
+    log:sep "Stating git_autosync"
     "$SCRIPTS_PATH/image/init_git_autosync.sh"
     assert $? "Failed to initialize git auto-sync" || return $?
   fi

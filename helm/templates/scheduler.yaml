@@ -16,7 +16,7 @@ spec:
         deployment-target: {{ include "zairflow-helm.fullname" . }}-sch
         {{- include "zairflow-helm.labels" . | nindent 8 }}
       annotations:
-        {{- include "zairflow-helm.template_configmap_checksum" . | nindent 8 }}
+        {{- include "zairflow-helm.metadata_checksums" . | nindent 8 }}
     spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
