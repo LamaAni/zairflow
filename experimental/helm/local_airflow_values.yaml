@@ -8,8 +8,8 @@ image:
 
 envs:
   # sync to /app
-  ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
-  ZAIRFLOW_GIT_AUTOSYNC_BRANCH: kjo_1_0_1
+  GIT_AUTOSYNC_REPO_URL: 'https://github.com/LamaAni/zairflow.git'
+  GIT_AUTOSYNC_REPO_BRANCH: kjo_1_0_1
   # define airflow
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
   AIRFLOW__CORE__LOG_FORMAT: '[%(asctime)s] %(levelname)7s - %(message)s'
