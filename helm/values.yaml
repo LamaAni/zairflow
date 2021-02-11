@@ -100,6 +100,13 @@ serviceAccount:
   roleBinding:
   roleBindingKind: Role
 
+  # If true add a role and role binding to allow kubernetes access to the airflow.
+  allowKubernetesAccess: true
+  allowKubernetesAccessRules:
+    - apiGroups: ['', 'apps', 'batch', 'networking.k8s.io'] # "" indicates the core API group
+      resources: ['*']
+      verbs: ['*']
+
 ingress:
   enabled: false
   annotations:
