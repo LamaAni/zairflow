@@ -9,6 +9,8 @@ releases:
       - ./airflow_values.yaml
       - image:
           tag: local
+      - executor:
+          type: KubernetesExecutor
       - envs:
           TEST_ENV: "my test env 9"
           GIT_AUTOSYNC_REPO_BRANCH: {{env "GIT_AUTOSYNC_REPO_BRANCH" | default "master"}}
