@@ -18,5 +18,6 @@ releases:
           auto_delete: false
       - serviceAccount:
           enabled: true
+          allowKubernetesAccess: true
         #   roleBinding: allow-all-role
         #   roleBindingKind: ClusterRole
