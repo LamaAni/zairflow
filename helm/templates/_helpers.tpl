@@ -27,6 +27,14 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
+{{- define "zairflow-helm.namespace" -}}
+{{- .Values.namespace | default .Release.Namespace -}}
+{{- end -}}
+
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
 {{- define "zairflow-helm.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -92,4 +100,5 @@ Configmap checksum
 */}}
 {{- define "zairflow-helm.metadata_checksums" -}}
 checksum/config: {{ include (print $.Template.BasePath "/envs.yaml") . | sha256sum }}
+checksum/values: {{ .Values | toJson | sha256sum }}
 {{- end -}}

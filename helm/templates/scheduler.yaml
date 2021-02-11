@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "zairflow-helm.fullname" . }}-sch
+  namespace: {{ include "zairflow-helm.namespace" . }}
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
 spec:

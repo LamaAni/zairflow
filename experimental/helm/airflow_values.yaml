@@ -18,7 +18,5 @@ envs:
   # define airflow folders (sync to /app)
   AIRFLOW__CORE__DAGS_FOLDER: /app/experimental/dags
   AIRFLOW__CORE__PLUGINS_FOLDER: /app/experimental/plugins
-serviceAccount:
-  enabled: true
 postgres:
   presist: false

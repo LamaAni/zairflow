@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ $full_name }}-envs
+  namespace: {{ include "zairflow-helm.namespace" . }}
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
 data:

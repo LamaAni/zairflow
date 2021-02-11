@@ -4,6 +4,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ $full_name }}-initdb-{{ randAlphaNum 5 | lower }}
+  namespace: {{ include "zairflow-helm.namespace" . }}
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
   annotations:
