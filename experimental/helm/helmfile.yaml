@@ -7,8 +7,6 @@ releases:
     chart: ../../helm
     values:
       - ./airflow_values.yaml
-      - image:
-          tag: local
       - executor:
           type: KubernetesExecutor
       - envs:
