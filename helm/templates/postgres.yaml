@@ -4,6 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $full_name }}-pg-db-svc
+  namespace: {{ include "zairflow-helm.namespace" . }}
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
 spec:
@@ -54,6 +55,7 @@ spec:
           volumeMounts:
             - name: datastore
               mountPath: /var/lib/postgresql/data
+              subPath: pg_data
           {{- end }}
           livenessProbe:
             exec:

@@ -4,7 +4,7 @@ metadata:
   name: zairflow-test-config
 data:
   # define airflow sync uri
-  ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
+  GIT_AUTOSYNC_REPO_URL: 'https://github.com/LamaAni/zairflow.git'
   ZAIRFLOW_DB_HOST: zairflow-test-pg-svc
 
   # define airflow

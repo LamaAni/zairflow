@@ -4,6 +4,7 @@
 # -------------------------------------
 # Chart general values
 
+namespace:
 nameOverride: ''
 fullnameOverride: ''
 
@@ -39,6 +40,7 @@ initdb:
   # If enabled will create an initdb job, that will run when
   # the chart is deployed.
   enabled: true
+  auto_delete: false
 
 webserver:
   terminationGracePeriodSeconds: 10
@@ -95,6 +97,15 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
+  roleBinding:
+  roleBindingKind: Role
+
+  # If true add a role and role binding to allow kubernetes access to the airflow.
+  allowKubernetesAccess: true
+  allowKubernetesAccessRules:
+    - apiGroups: ['', 'apps', 'batch', 'networking.k8s.io'] # "" indicates the core API group
+      resources: ['*']
+      verbs: ['*']
 
 ingress:
   enabled: false

@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: zaf-tester-cm-env
 data:
-  ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
+  GIT_AUTOSYNC_REPO_URL: 'https://github.com/LamaAni/zairflow.git'
   ZAIRFLOW_DAGS_SUBFOLDER: 'experimental/dags'
   AIRFLOW__CORE__LOGGING_CONFIG_CLASS: airflow_db_logger.LOGGING_CONFIG
   AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@zairflow-test-pg-svc:5432/airflow

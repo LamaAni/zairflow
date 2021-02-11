@@ -3,15 +3,18 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ $full_name }}-initdb
+  name: {{ $full_name }}-initdb-{{ randAlphaNum 5 | lower }}
+  namespace: {{ include "zairflow-helm.namespace" . }}
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
   annotations:
     # This is what defines this resource as a hook. Without this line, the
     # job is considered part of the release.
     # Will try and preform an initdb and than delete the job.
+    {{- if .Values.initdb.auto_delete }}
     "helm.sh/hook": post-install
     "helm.sh/hook-delete-policy": hook-succeeded
+    {{- end }}
 spec:
   backoffLimit: 3
   template:
@@ -20,7 +23,7 @@ spec:
         deployment-target: {{ $full_name }}-initdb
         {{- include "zairflow-helm.labels" . | nindent 8 }}
       annotations:
-        {{- include "zairflow-helm.template_configmap_checksum" . | nindent 8 }}
+        {{- include "zairflow-helm.metadata_checksums" . | nindent 8 }}
     spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}

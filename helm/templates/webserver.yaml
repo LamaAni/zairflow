@@ -3,6 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $full_name }}-web-svc
+  namespace: {{ include "zairflow-helm.namespace" . }}
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
 spec:
@@ -31,7 +32,7 @@ spec:
         deployment-target: {{ $full_name }}-web
         {{- include "zairflow-helm.labels" . | nindent 8 }}
       annotations:
-        {{- include "zairflow-helm.template_configmap_checksum" . | nindent 8 }}
+        {{- include "zairflow-helm.metadata_checksums" . | nindent 8 }}
     spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}

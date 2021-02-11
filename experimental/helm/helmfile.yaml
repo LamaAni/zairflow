@@ -6,7 +6,20 @@ releases:
     # chart: https://github.com/[....]/version.tar.gz
     chart: ../../helm
     values:
-      - ./local_airflow_values.yaml
+      - ./airflow_values.yaml
+      - image:
+          tag: local
+      - executor:
+          type: KubernetesExecutor
       - envs:
-          TEST_ENV: "my test env 2"
-          ZAIRFLOW_GIT_AUTOSYNC_BRANCH: {{env "BRANCH" | default "master"}}
+          TEST_ENV: "my test env 9"
+          GIT_AUTOSYNC_REPO_BRANCH: {{env "GIT_AUTOSYNC_REPO_BRANCH" | default "master"}}
+          GIT_AUTOSYNC_SSH_KEY: {{ env "GIT_AUTOSYNC_SSH_KEY" | quote }}
+          GIT_AUTOSYNC_REPO_URL: {{ env "GIT_AUTOSYNC_REPO_URL" }}
+      - initdb:
+          auto_delete: false
+      - serviceAccount:
+          enabled: true
+          allowKubernetesAccess: true
+        #   roleBinding: allow-all-role
+        #   roleBindingKind: ClusterRole
