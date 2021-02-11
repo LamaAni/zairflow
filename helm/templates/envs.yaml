@@ -1,4 +1,5 @@
 {{ $full_name := include "zairflow-helm.fullname" . }}
+{{ $running_namespace := include "zairflow-helm.namespace" . }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -19,6 +20,7 @@ data:
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: {{ default .Values.image.tag .Values.executor.workerImageTag }}
   AIRFLOW__KUBERNETES__WORKER_CONTAINER_IMAGE_PULL_POLICY: {{ default .Values.image.pullPolicy .Values.executor.workerImagePullPolicy }}
   AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: "{{ $full_name }}-envs"
+  AIRFLOW__KUBERNETES__NAMESPACE: {{ .Values.executor.namespace | default $running_namespace }}
   {{- if .Values.serviceAccount.enabled }}
   AIRFLOW__KUBERNETES__WORKER_SERVICE_ACCOUNT_NAME: "{{ include "zairflow-helm.serviceAccountName" . }}"
   {{- end }}

@@ -19,6 +19,7 @@ executor:
   workerImagePullPolicy:
   workerImageRepository:
   workerImageTag:
+  namespace:
 
 image:
   repository: 'lamaani/zairflow'
@@ -104,7 +105,7 @@ serviceAccount:
   allowKubernetesAccess: true
   allowKubernetesAccessRules:
     - apiGroups: ['', 'apps', 'batch', 'networking.k8s.io'] # "" indicates the core API group
-      resources: ['*']
+      resources: ['*', 'pods']
       verbs: ['*']
 
 ingress:
