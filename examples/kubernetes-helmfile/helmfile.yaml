@@ -7,3 +7,5 @@ releases:
     chart: ../../helm
     values:
       - ./airflow_values.yaml
+      - envs:
+          GIT_AUTOSYNC_SSH_KEY: {{ requiredEnv "GIT_AUTOSYNC_SSH_KEY" | quote }}

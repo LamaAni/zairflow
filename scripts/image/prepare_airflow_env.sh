@@ -11,10 +11,10 @@ function prepare_airflow_env() {
   # Configuration
 
   # zairflow execution
-  : ${ZAIRFLOW_CONTAINER_TYPE:="worker"}
-  : ${ZAIRFLOW_WAIT_FOR:=""}
-  : ${ZAIRFLOW_AUTO_DETECT_CLUSTER:="true"}
-  : ${ZAIRFLOW_POST_LOAD_USER_CODE:="false"}
+  : "${ZAIRFLOW_CONTAINER_TYPE:="worker"}"
+  : "${ZAIRFLOW_WAIT_FOR:=""}"
+  : "${ZAIRFLOW_AUTO_DETECT_CLUSTER:="true"}"
+  : "${ZAIRFLOW_POST_LOAD_USER_CODE:="false"}"
 
   ZAIRFLOW_WAIT_FOR=($ZAIRFLOW_WAIT_FOR)
 
@@ -24,11 +24,19 @@ function prepare_airflow_env() {
   : "${ZAIRFLOW_DB_PORT:="5432"}"
 
   # default connections.
-  : ${AIRFLOW__CLI__ENDPOINT_URL:="localhost:8080"}
-  : ${AIRFLOW__WEBSERVER__BASE_URL:="localhost:8080"}
-  : ${AIRFLOW__CORE__DAGS_FOLDER:="/app"}
+  : "${AIRFLOW__CLI__ENDPOINT_URL:="localhost:8080"}"
+  : "${AIRFLOW__WEBSERVER__BASE_URL:="localhost:8080"}"
+  : "${AIRFLOW__CORE__DAGS_FOLDER:="/app"}"
+
+  # Prep airfow conf
+  log "Configuring environment and airflow.conf"
+  AIRFLOW_CONFIG_SOURCE="$(cat "$AIRFLOW_CONFIG")"
+  AIRFLOW_CONFIG_SOURCE="${AIRFLOW_CONFIG_SOURCE//\{AIRFLOW_HOME\}/"$AIRFLOW_HOME"}"
+  printf "%s" "$AIRFLOW_CONFIG_SOURCE" >|"$AIRFLOW_CONFIG"
+  assert $? "Failed to prepare airflow config" || exit $?
 
   # kubernetes
+  log:info "Checking for kubernetes.."
   export IS_KUBERNETES=1
   kubectl cluster-info
   assert_warning $? "Could not retrieve cluster info. Continue assuming not running in kuberntes." || IS_KUBERNETES=0
@@ -36,7 +44,7 @@ function prepare_airflow_env() {
   if [ $IS_KUBERNETES -eq 1 ]; then
     if [ "$ZAIRFLOW_AUTO_DETECT_CLUSTER" == "true" ] && [ -n "$KUBERNETES_SERVICE_HOST" ]; then
       log:info "Autodetected airflow kubernetes in cluster"
-      : ${AIRFLOW__KUBERNETES__IN_CLUSTER:="True"}
+      ": ${AIRFLOW__KUBERNETES__IN_CLUSTER:="True"}"
       export AIRFLOW__KUBERNETES__IN_CLUSTER
 
       AIRFLOW__KUBERNETES__NAMESPACE=$(get_airflow_config_vals kubernetes.namespace)
@@ -70,8 +78,8 @@ function prepare_airflow_env() {
     assert $? "Failed connecting to $wait_for_url"
   done
 
-  if [ -n "$ZAIRFLOW_GIT_AUTOSYNC_URI" ]; then
-    log:sep "Git Auto-Sync"
+  if [ -n "$GIT_AUTOSYNC_REPO_URL" ]; then
+    log:sep "Stating git_autosync"
     "$SCRIPTS_PATH/image/init_git_autosync.sh"
     assert $? "Failed to initialize git auto-sync" || return $?
   fi
@@ -83,6 +91,6 @@ if [ "$AIRFLOW_ENV_PREPARED" != "true" ]; then
   assert $? "Error while preparing airflow environment. exiting." || exit $?
   export AIRFLOW__CORE__DAGS_FOLDER
   log:info "Airflow env ready, dags @ $AIRFLOW__CORE__DAGS_FOLDER"
-else
-  log:info "Airflow env has already been prepared."
+  # else
+  # log:info "Airflow env has already been prepared."
 fi

@@ -17,6 +17,7 @@ Args:
     --platforms     The os platforms to use with docker buildx
     --dockerfile    The dockerfile to use.
     --cache-dir     The cache directory for buildx
+    --arg | -a      Append docker args
 Flags:
     -h | --help     Show this help menu.
     --push          If true then push (default to true on master)
@@ -35,6 +36,8 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${USE_BUILDX:="false"}
 : ${DOCKERFILE:="./docker/Dockerfile"}
 : ${PLATFORMS:="linux/amd64,linux/arm64"}
+
+EXTRA_ARGS=()
 
 while [ "$#" -gt 0 ]; do
     case $1 in
@@ -79,6 +82,10 @@ while [ "$#" -gt 0 ]; do
     --cache-dir)
         shift
         CACHE_DIR="$1"
+        ;;
+    --arg | -a)
+        shift
+        EXTRA_ARGS+=($1)
         ;;
     *)
         echo "Error: unknown argument $1"
@@ -161,8 +168,9 @@ function build_image() {
         $tag_argument \
         $DOCKER_COMMAND_ARGS \
         --build-arg "ZAIRFLOW_VERSION=$VERSION" \
-        -f "$DOCKERFILE" .
-    assert $? "Docker build failed" || return $?
+        -f "$DOCKERFILE" . \
+        "${EXTRA_ARGS[@]}"
+    assert $? "Docker execution failed" || return $?
 
     if [ "$DO_PUSH" == "true" ] && [ "$USE_BUILDX" != "true" ]; then
         log:sep "Pusing images"

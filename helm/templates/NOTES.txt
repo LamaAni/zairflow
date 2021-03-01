@@ -2,6 +2,8 @@
 ----------------------------------------------------------
 > Config:
 
+namespace: {{ include "zairflow-helm.namespace" . }}
+
 Airflow database service: {{ $full_name }}-pg-db-svc
 Airflow web-server service: {{ $full_name }}-web-svc
 

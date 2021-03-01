@@ -8,7 +8,7 @@ image:
 
 envs:
   # sync to /app
-  ZAIRFLOW_GIT_AUTOSYNC_URI: 'https://github.com/LamaAni/zairflow.git'
+  GIT_AUTOSYNC_REPO_URL: 'https://github.com/LamaAni/zairflow.git'
 
   # define airflow
   AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
@@ -18,7 +18,5 @@ envs:
   # define airflow folders (sync to /app)
   AIRFLOW__CORE__DAGS_FOLDER: /app/experimental/dags
   AIRFLOW__CORE__PLUGINS_FOLDER: /app/experimental/plugins
-serviceAccount:
-  enabled: true
 postgres:
   presist: false

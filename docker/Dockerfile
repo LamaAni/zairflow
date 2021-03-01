@@ -68,7 +68,7 @@ ARG AIRFLOW_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG PYTHON_DEPS=""
 
 ARG AIRFLOW_VERSION="1.10.14"
-ARG KUBE_JOB_OPERATOR_VERSION='1.0.15'
+ARG KUBE_JOB_OPERATOR_VERSION='1.0.17'
 ARG AIRFLOW_DB_LOGGER_VERSION='1.0.0'
 
 # Copy install dependencies
@@ -84,17 +84,22 @@ RUN ${PIP_INSTALL_COMMAND} \
    apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}
 
 # Set this parameter to not "true" so it would create a non sudo user and cleanup more stuff.
+ARG GIT_AUTOSYNC_VERSION="1.2.5"
 ARG DEBUG_MODE="true"
-ARG GIT_AUTOSYNC_BRANCH="master"
+ARG GIT_AUTOSYNC_REPO_BRANCH="master"
+ARG ZBASH_COMMONS_VERSION="0.1.5"
 
 # Global scripts and paths.
 ENV\
    SCRIPTS_PATH=/scripts \
    PATH="/scripts:${PATH}:/home/airflow/.local/bin"\
-   GIT_AUTOSYNC_BRANCH=${GIT_AUTOSYNC_BRANCH}
+   GIT_AUTOSYNC_REPO_BRANCH=${GIT_AUTOSYNC_REPO_BRANCH}\
+   ZBASH_COMMONS_VERSION=${ZBASH_COMMONS_VERSION}\
+   GIT_AUTOSYNC_VERSION="${GIT_AUTOSYNC_VERSION}"
 
 COPY ./scripts /scripts
-RUN chmod -R +x /scripts && bash /scripts/image/install.sh
+RUN bash /scripts/image/install_zbash_commons &&\
+   chmod -R +x /scripts && bash /scripts/image/install.sh
 
 
 ###################################
@@ -120,7 +125,10 @@ RUN groupadd airflow &&\
 USER airflow
 
 # copy the config.
-COPY ./docker/airflow.cfg /airflow/airflow.cfg
+COPY --chown=airflow:airflow ./docker/airflow.cfg /airflow/airflow.cfg
+
+# Control args
+ARG AIRFLOW_STANDALONE_EXECUTOR="SequentialExecutor"
 
 # airflow core config envs.
 ENV FERNET_KEY="${FERNET_KEY}"
@@ -132,6 +140,7 @@ ENV AIRFLOW_HOME=/airflow
 ENV AIRFLOW_CONFIG=/airflow/airflow.cfg
 ENV AIRFLOW__CORE__DAGS_FOLDER=/app/dags
 ENV AIRFLOW__CORE__PLUGINS_FOLDER=/app/plugins
+ENV AIRFLOW_STANDALONE_EXECUTOR="${AIRFLOW_STANDALONE_EXECUTOR}"
 
 EXPOSE 8080 5555 8793
 CMD ["/scripts/image/entrypoint.sh"]
