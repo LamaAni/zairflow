@@ -40,7 +40,7 @@ The image is tagged per release. Version definition,
 [major].[minor].[patch]
 ```
 
-## Diversions from default airflow config,
+## Diversions from default airflow config
 
 Changes to the default config:
 
@@ -245,6 +245,17 @@ Yaml injection, use with care,
 | `[type].injectSpecYaml`         | yaml inject | `yaml`      | webserver, scheduler, postgres, initdb |
 | `[type].injectYamlMetadata`     | yaml inject | `yaml`      | serviceAccount                         |
 | `[type].injectYaml`             | yaml inject | `yaml`      | serviceAccount                         |
+
+## Creating a derived docker image
+
+If you are creating a derived image, and you are installing airflow using pip,
+or in some way overriding `/usr/local/bin/airflow` or the `airflow` cli with a
+new airflow install. For a KubernetesExecutor deployment you must override the
+cli airflow command as `root` with,
+
+```shell
+ln -sf /scripts/image/invoke_airflow /usr/local/bin/airflow
+```
 
 # Licence
 
