@@ -257,6 +257,8 @@ cli airflow command as `root` with,
 ln -sf /scripts/image/invoke_airflow /usr/local/bin/airflow
 ```
 
+So the remote environment sync would work. 
+
 # Licence
 
 Copyright ©
