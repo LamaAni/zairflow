@@ -259,7 +259,7 @@ ln -sf /scripts/image/invoke_airflow /usr/local/bin/airflow
 
 So the remote environment sync would work. 
 
-#### This issue will be addressed in future implementations of zairflow.
+#### This issue will be addressed in future releases of zairflow.
 
 # Licence
 
