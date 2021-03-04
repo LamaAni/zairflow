@@ -28,12 +28,12 @@ image:
 
 # Tolerations and node selector for all generated pods.
 tolerations:
-  - key: 'NODE_TYPE'
-    operator: 'Equal'
-    value: 'airflow-system'
-    effect: 'NoSchedule'
+  # - key: 'NODE_TYPE'
+  #   operator: 'Equal'
+  #   value: 'airflow-system'
+  #   effect: 'NoSchedule'
 nodeSelector:
-  NODE_TYPE: airflow-system
+  # NODE_TYPE: airflow-system
 logging:
   # If true, uses the zairflow internal logging manager that
   # writes the logs to the postgres database.
