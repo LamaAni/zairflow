@@ -63,14 +63,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Tolerations and node selection
 */}}
 {{- define "zairflow-helm.node_selection_and_toleration" -}}
-{{- if .Values.tolerations -}}
+{{- if .Values.tolerations }}
 tolerations: 
 {{ .Values.tolerations | toYaml | indent 2}}
-{{- end -}}
-{{- if .Values.nodeSelector -}}
+{{- end }}
+{{- if .Values.nodeSelector }}
 nodeSelector:
 {{ .Values.nodeSelector | toYaml | indent 2}}
-{{- end -}}
+{{- end }}
 {{- end -}}
 
 {{/*
