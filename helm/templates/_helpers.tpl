@@ -60,6 +60,20 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
+Tolerations and node selection
+*/}}
+{{- define "zairflow-helm.node_selection_and_toleration" -}}
+{{- if .Values.tolerations -}}
+tolerations: 
+{{ .Values.tolerations | toYaml | indent 2}}
+{{- end -}}
+{{- if .Values.nodeSelector -}}
+nodeSelector:
+{{ .Values.nodeSelector | toYaml | indent 2}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "zairflow-helm.serviceAccountName" -}}

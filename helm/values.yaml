@@ -26,6 +26,10 @@ image:
   tag: 'latest'
   pullPolicy: IfNotPresent
 
+# Tolerations and node selector for all generated pods.
+tolerations:
+nodeSelector:
+
 logging:
   # If true, uses the zairflow internal logging manager that
   # writes the logs to the postgres database.
