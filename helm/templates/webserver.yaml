@@ -60,13 +60,13 @@ spec:
           env:
             - name: ZAIRFLOW_CONTAINER_TYPE
               value: 'webserver'
-            {{- tuple .Values.postgres.envs | include "inject-yaml" | nindent 12 }}
+            {{- tuple .Values.webserver.envs | include "inject-yaml" | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ $full_name }}-envs
           resources:
-          {{- tuple .Values.postgres.resources | include "inject-yaml" | nindent 12 }}
-        {{- tuple .Values.postgres.injectContainerYaml | include "inject-yaml" | nindent 10 }}
-      {{- tuple .Values.postgres.containers | include "inject-yaml" | nindent 8 }}
-    {{- tuple .Values.postgres.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
-  {{- tuple .Values.postgres.injectSpecYaml | include "inject-yaml" | nindent 4 }}
+          {{- tuple .Values.webserver.resources | include "inject-yaml" | nindent 12 }}
+        {{- tuple .Values.webserver.injectContainerYaml | include "inject-yaml" | nindent 10 }}
+      {{- tuple .Values.webserver.containers | include "inject-yaml" | nindent 8 }}
+    {{- tuple .Values.webserver.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
+  {{- tuple .Values.webserver.injectSpecYaml | include "inject-yaml" | nindent 4 }}

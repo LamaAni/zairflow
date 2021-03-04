@@ -12,8 +12,8 @@ releases:
       - envs:
           TEST_ENV: "my test env 9"
           GIT_AUTOSYNC_REPO_BRANCH: {{env "GIT_AUTOSYNC_REPO_BRANCH" | default "master"}}
-          GIT_AUTOSYNC_SSH_KEY: {{ env "GIT_AUTOSYNC_SSH_KEY" | quote }}
-          GIT_AUTOSYNC_REPO_URL: {{ env "GIT_AUTOSYNC_REPO_URL" }}
+          GIT_AUTOSYNC_SSH_KEY: {{ env "GIT_AUTOSYNC_SSH_KEY" | default "" | quote }}
+          GIT_AUTOSYNC_REPO_URL: {{ env "GIT_AUTOSYNC_REPO_URL" | default "" | quote }}
       - initdb:
           auto_delete: false
       - serviceAccount:

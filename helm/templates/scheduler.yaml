@@ -30,13 +30,13 @@ spec:
           env:
             - name: ZAIRFLOW_CONTAINER_TYPE
               value: 'scheduler'
-            {{- tuple .Values.postgres.envs | include "inject-yaml" | nindent 12 }}
+            {{- tuple .Values.scheduler.envs | include "inject-yaml" | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ include "zairflow-helm.fullname" . }}-envs
           resources:
-          {{- tuple .Values.postgres.resources | include "inject-yaml" | nindent 12 }}
-        {{- tuple .Values.postgres.injectContainerYaml | include "inject-yaml" | nindent 10 }}
-      {{- tuple .Values.postgres.containers | include "inject-yaml" | nindent 8 }}
-    {{- tuple .Values.postgres.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
-  {{- tuple .Values.postgres.injectSpecYaml | include "inject-yaml" | nindent 4 }}
+          {{- tuple .Values.scheduler.resources | include "inject-yaml" | nindent 12 }}
+        {{- tuple .Values.scheduler.injectContainerYaml | include "inject-yaml" | nindent 10 }}
+      {{- tuple .Values.scheduler.containers | include "inject-yaml" | nindent 8 }}
+    {{- tuple .Values.scheduler.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
+  {{- tuple .Values.scheduler.injectSpecYaml | include "inject-yaml" | nindent 4 }}
