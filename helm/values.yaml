@@ -10,7 +10,6 @@ fullnameOverride: ''
 
 # -------------------------------------
 # Airflow settings
-
 executor:
   # Can be any of: SequentialExecutor, LocalExecutor, KubernetesExecutor
   # NOTE: The celery executor is not yet implemented.
