@@ -84,10 +84,10 @@ RUN ${PIP_INSTALL_COMMAND} \
    apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}
 
 # Set this parameter to not "true" so it would create a non sudo user and cleanup more stuff.
-ARG GIT_AUTOSYNC_VERSION="1.2.5"
+ARG GIT_AUTOSYNC_VERSION="1.2.6"
 ARG DEBUG_MODE="true"
 ARG GIT_AUTOSYNC_REPO_BRANCH="master"
-ARG ZBASH_COMMONS_VERSION="0.1.5"
+ARG ZBASH_COMMONS_VERSION="0.1.11"
 
 # Global scripts and paths.
 ENV\
