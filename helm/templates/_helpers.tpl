@@ -91,6 +91,13 @@ Create the name of the service account to use
 {{- end -}}
 
 {{/*
+Create the name of the service account to use
+*/}}
+{{- define "zairflow-helm.serviceAccountRoleName" -}}
+{{- include "zairflow-helm.namespace" . }}-n-{{- include "zairflow-helm.fullname" . }}-role
+{{- end -}}
+
+{{/*
 Create image name
 */}}
 {{- define "zairflow-helm.image" -}}
