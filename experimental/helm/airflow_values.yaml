@@ -20,3 +20,8 @@ envs:
   AIRFLOW__CORE__PLUGINS_FOLDER: /app/experimental/plugins
 postgres:
   presist: false
+
+serviceAccount:
+  enabled: true
+  roleBinding: test-cluster-role
+  roleBindingKind: ClusterRole
