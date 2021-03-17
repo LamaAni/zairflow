@@ -24,6 +24,6 @@ postgres:
 
 serviceAccount:
   enabled: true
-  role: test-cluster-role
+  role: airflow-pod-global-role
   roleKind: ClusterRole
   roleBindingKind: ClusterRoleBinding
