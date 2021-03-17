@@ -14,7 +14,7 @@ See examples [here](/examples).
 ## Supports
 
 1. Python 3.8
-1. Airflow 1.10.12
+1. Airflow 1.10.15
 1. Kubernetes/Local executors (celery executor is supported on docker compose only at this time)
 1. [KubernetesJobOperator](https://github.com/LamaAni/KubernetesJobOperator) (built in)
 1. Database Logger (built in) - airflow logs are saved to the database using SQLAlchemy.
