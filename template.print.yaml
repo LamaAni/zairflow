@@ -1,0 +1,382 @@
+---
+# Source: zairflow/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-zairflow-svc-account
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+  
+
+# The cluster role binding if exists
+---
+# Source: zairflow/templates/envs.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-zairflow-envs
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+data:
+  # Added envs. These will not affect the db operation.
+  AIRFLOW__CORE__COLORED_LOG_FORMAT: '[%(blue)s%(asctime)s%(reset)s] %(log_color)s%(levelname)7s%(reset)s - %(log_color)s%(message)s%(reset)s'
+  AIRFLOW__CORE__DAGS_FOLDER: /app/experimental/dags
+  AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+  AIRFLOW__CORE__LOG_FORMAT: '[%(asctime)s] %(levelname)7s - %(message)s'
+  AIRFLOW__CORE__PLUGINS_FOLDER: /app/experimental/plugins
+  GIT_AUTOSYNC_REPO_BRANCH: master
+  GIT_AUTOSYNC_REPO_URL: ""
+  GIT_AUTOSYNC_SSH_KEY: ""
+  TEST_ENV: my test env 9
+  
+  AIRFLOW__CORE__EXECUTOR: "KubernetesExecutor"
+
+  # Configure if the kubernetes executor
+  
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY: lamaani/zairflow
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_TAG: latest
+  AIRFLOW__KUBERNETES__WORKER_CONTAINER_IMAGE_PULL_POLICY: Always
+  AIRFLOW__KUBERNETES__ENV_FROM_CONFIGMAP_REF: "test-zairflow-envs"
+  AIRFLOW__KUBERNETES__NAMESPACE: zav-dev
+  AIRFLOW__KUBERNETES__WORKER_SERVICE_ACCOUNT_NAME: "test-zairflow-svc-account"
+  ZAIRFLOW_DB_HOST: "test-zairflow-pg-db-svc"
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://airflow:airflow@test-zairflow-pg-db-svc:5432/airflow"
+---
+# Source: zairflow/templates/serviceaccount.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zav-dev-test-zairflow-role-user-binding
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+subjects:
+  - kind: ServiceAccount
+    name: test-zairflow-svc-account
+    namespace: zav-dev
+roleRef:
+  kind: ClusterRole
+  name: airflow-pod-global-role
+  apiGroup: rbac.authorization.k8s.io
+# Allow kubernetes access
+---
+# Source: zairflow/templates/serviceaccount.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: zav-dev-test-zairflow-role
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+rules:
+- apiGroups:
+  - ""
+  - apps
+  - batch
+  - networking.k8s.io
+  resources:
+  - '*'
+  - pods
+  verbs:
+  - '*'
+---
+# Source: zairflow/templates/serviceaccount.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: test-zairflow-svc-account-default-binding
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+subjects:
+  - kind: ServiceAccount
+    name: test-zairflow-svc-account
+    namespace: zav-dev
+roleRef:
+  kind: Role
+  name: zav-dev-test-zairflow-role
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: zairflow/templates/postgres.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-zairflow-pg-db-svc
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: db
+  clusterIP: None
+  selector:
+    deployment-target: test-zairflow-pg-db
+---
+# Source: zairflow/templates/webserver.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-zairflow-web-svc
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  clusterIP: None
+  selector:
+    deployment-target: test-zairflow-web
+---
+# Source: zairflow/templates/scheduler.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-zairflow-sch
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment-target: test-zairflow-sch
+  template:
+    metadata:
+      labels:
+        deployment-target: test-zairflow-sch
+        helm.sh/chart: zairflow-0.1.1
+        app.kubernetes.io/name: zairflow
+        app.kubernetes.io/instance: test-zairflow
+        app.kubernetes.io/version: "1.10.9"
+        app.kubernetes.io/managed-by: Helm
+      annotations:
+        checksum/config: 03146645c193743a589c6f2b7bc926e71d242dae88fbcd0c7689c8df417c42d2
+        checksum/values: c479f6ba3045e53750f12cc2f4dcf2ed01f0a047487e88b8c070ab8bfa7edcd3
+    spec:
+      
+      serviceAccountName: test-zairflow-svc-account
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: airflow-scheduler
+          image: lamaani/zairflow:latest
+          imagePullPolicy: Always
+          env:
+            - name: ZAIRFLOW_CONTAINER_TYPE
+              value: 'scheduler'
+            
+          envFrom:
+            - configMapRef:
+                name: test-zairflow-envs
+          resources:
+            requests:
+              cpu: "1"
+              memory: 1.5Gi
+---
+# Source: zairflow/templates/webserver.yaml
+# the webserver
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-zairflow-web
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment-target: test-zairflow-web
+  template:
+    metadata:
+      labels:
+        deployment-target: test-zairflow-web
+        helm.sh/chart: zairflow-0.1.1
+        app.kubernetes.io/name: zairflow
+        app.kubernetes.io/instance: test-zairflow
+        app.kubernetes.io/version: "1.10.9"
+        app.kubernetes.io/managed-by: Helm
+      annotations:
+        checksum/config: 03146645c193743a589c6f2b7bc926e71d242dae88fbcd0c7689c8df417c42d2
+        checksum/values: c479f6ba3045e53750f12cc2f4dcf2ed01f0a047487e88b8c070ab8bfa7edcd3
+    spec:
+      
+      serviceAccountName: test-zairflow-svc-account
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: airflow-webserver
+          image: lamaani/zairflow:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 20
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            timeoutSeconds: 5
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ZAIRFLOW_CONTAINER_TYPE
+              value: 'webserver'
+            
+          envFrom:
+            - configMapRef:
+                name: test-zairflow-envs
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+---
+# Source: zairflow/templates/postgres.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-zairflow-pg-db
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      deployment-target: test-zairflow-pg-db
+  serviceName: test-zairflow-pg-db-svc
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        deployment-target: test-zairflow-pg-db
+    spec:
+      
+      serviceAccountName: test-zairflow-svc-account
+      terminationGracePeriodSeconds: 20
+      containers:
+        - name: airflow-database
+          image: postgres:12.2
+          ports:
+            - containerPort: 5432
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          env:
+            - name: POSTGRES_USER
+              value: "airflow"
+            - name: POSTGRES_DB
+              value: "airflow"
+            - name: POSTGRES_PASSWORD
+              value: "airflow"
+            - name: MAX_CONNECTIONS
+              value: "10000"
+            - name: ZAIRFLOW_DB_HOST
+              value: "test-zairflow-pg-db-svc"
+            
+          resources:
+            requests:
+              cpu: 150m
+              memory: 200Mi
+---
+# Source: zairflow/templates/initdb.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-zairflow-initdb-pe6uc
+  namespace: zav-dev
+  labels:
+    helm.sh/chart: zairflow-0.1.1
+    app.kubernetes.io/name: zairflow
+    app.kubernetes.io/instance: test-zairflow
+    app.kubernetes.io/version: "1.10.9"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    # Will try and preform an initdb and than delete the job.
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        deployment-target: test-zairflow-initdb
+        helm.sh/chart: zairflow-0.1.1
+        app.kubernetes.io/name: zairflow
+        app.kubernetes.io/instance: test-zairflow
+        app.kubernetes.io/version: "1.10.9"
+        app.kubernetes.io/managed-by: Helm
+      annotations:
+        checksum/config: 03146645c193743a589c6f2b7bc926e71d242dae88fbcd0c7689c8df417c42d2
+        checksum/values: c479f6ba3045e53750f12cc2f4dcf2ed01f0a047487e88b8c070ab8bfa7edcd3
+    spec:
+      
+      serviceAccountName: test-zairflow-svc-account
+      terminationGracePeriodSeconds: 10
+      restartPolicy: OnFailure
+      containers:
+        - name: airflow-initdb
+          image: lamaani/zairflow:latest
+          imagePullPolicy: Always
+          env:
+            - name: ZAIRFLOW_CONTAINER_TYPE
+              value: 'initdb'
+            
+          envFrom:
+            - configMapRef:
+                name: test-zairflow-envs
+          resources:
+
