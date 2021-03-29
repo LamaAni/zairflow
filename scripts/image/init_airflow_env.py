@@ -2,7 +2,21 @@ import yaml
 import os
 import logging
 import json
+import sys
 from typing import List
+from airflow.api.common.experimental.pool import get_pool, create_pool
+from sqlalchemy.orm import Session
+from airflow.models import Connection, Pool, Variable
+from airflow.utils.db import provide_session
+from airflow.configuration import conf
+from airflow.utils.log.logging_mixin import LoggingMixin
+
+# logging.basicConfig(level="INFO", handlers=[logging.StreamHandler(sys.__stdout__)])
+log = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.__stdout__)
+handler.formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)7s - %(message)s")
+log.addHandler(logging.StreamHandler(sys.__stdout__))
+log.setLevel("INFO")
 
 
 def get_yaml_from_file_or_none(fpath: str):
@@ -13,8 +27,12 @@ def get_yaml_from_file_or_none(fpath: str):
     with open(fpath, "r") as raw:
         as_yaml = raw.read()
     as_yaml = as_yaml.format(**os.environ)
+
+    logging.info("Loaded yaml defaults from: " + fpath)
     return as_yaml
 
+
+logging.info("Initializing airflow configuration")
 
 # checking airflow env locations
 yamls: List[str] = [
@@ -24,27 +42,23 @@ yamls: List[str] = [
 
 yamls = [v for v in yamls if v is not None]
 if len(yamls) > 0:
-    from airflow.api.common.experimental.pool import get_pool, create_pool
-    from sqlalchemy.orm import Session
-    from airflow.models import Connection, Pool, Variable
-    from airflow.utils.db import provide_session
-    from airflow.configuration import conf
 
     def load_variables(config: dict):
         variables: dict = config.get("variables", None)
         if variables is None or not isinstance(variables, dict):
+            log.info("No variables found, skipping")
             return
 
-        logging.info("Loading variabels from config...")
+        log.info("Loading variabels from config...")
         for key in variables.keys():
             val = variables.get(key)
             if val is None:
                 continue
 
             if Variable.get(key=key, default_var=None) is not None:
-                logging.info(f"Variable exists, skipping: {key}")
+                log.info(f"Variable exists, skipping: {key}")
                 continue
-            logging.info("Setting variable: " + key)
+            log.info("Setting variable: " + key)
             Variable.set(
                 key=key,
                 value=val,
@@ -58,18 +72,19 @@ if len(yamls) > 0:
     ):
         pools: dict = config.get("pools", None)
         if pools is None:
+            log.info("No pools found, skipping")
             return
 
-        logging.info("Loading variabels from config...")
+        log.info("Loading pools from config...")
         for key in pools.keys():
             val = pools.get(key)
 
             pool = session.query(Pool).filter_by(pool=key).first()
             if pool is not None:
-                logging.info(f"Pool exists, skipping: {key}")
+                log.info(f"Pool exists, skipping: {key}")
                 continue
 
-            logging.info("Setting pool: " + key)
+            log.info("Setting pool: " + key)
             pool = Pool(pool=key)
             if isinstance(val, dict):
                 pool.description = val.get("description", "Loaded by zairflow")
@@ -88,20 +103,21 @@ if len(yamls) > 0:
     ):
         connections = config.get("connections", None)
         if connections is None:
+            log.info("No connections found, skipping")
             return
 
-        logging.info("Loading variabels from config...")
+        log.info("Loading variabels from config...")
         for key in connections.keys():
             val: dict = connections.get(key)
             if not isinstance(val, dict):
-                logging.warn(f"Connection {key} skipped. Value must be a dictionary.")
+                log.warn(f"Connection {key} skipped. Value must be a dictionary.")
 
             connection = session.query(Connection).filter_by(conn_id=key).first()
             if connection is not None:
-                logging.info(f"Connection exists, skipping: {key}")
+                log.info(f"Connection exists, skipping: {key}")
                 continue
 
-            logging.info("Setting connection: " + key)
+            log.info("Setting connection: " + key)
             extra = val.get("extra", None)
             if extra is not None and not isinstance(extra, (int, str)):
                 extra = json.dumps(extra)
@@ -126,3 +142,5 @@ if len(yamls) > 0:
     load_variables(config=config)
     load_connections(config=config)
     load_pools(config=config)
+else:
+    logging.info("No yaml configurations found")
