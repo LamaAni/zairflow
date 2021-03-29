@@ -19,6 +19,7 @@ See examples [here](/examples).
 1. [KubernetesJobOperator](https://github.com/LamaAni/KubernetesJobOperator) (built in)
 1. Database Logger (built in) - airflow logs are saved to the database using SQLAlchemy.
 1. dags and plugins synchronization vs a git repo (per branch/tag).
+1. Default configuration for pools, variables and connections.
 1. linux/arm64 devices. (Tested on linux/arm64/v8 [raspberry pi 4](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/specifications/))
 
 ## Resources
@@ -95,6 +96,9 @@ For more info on setting airflow environment variables see [here](https://airflo
 | ZARIFLOW_CONNECTION_WAIT_TIMEOUT | The connection wait timeout | `int` | 1 |
 | ZARIFLOW_CONNECTION_WAIT_INTERVAL | The number of seconds to wait between connection attempts | `int` | 1 |
 | | |
+| ZAIRFLOW_INIT_ENV_YAML | An env enabled yaml configuration for variables, connections and pools to be loaded | `string` | None |
+| ZAIRFLOW_INIT_ENV_YAML_FILEPATH | Am env enabled yaml configuration filepath for variables, connections and pools to be loaded | `string` | None |
+| | |
 | GIT_AUTOSYNC_REPO_LOCAL_PATH | Overrides /app directory. The path where the git repo will sync to (remember to set the correct airflow dags/plugins folder path). See notes below on autosync. | `string` | None |
 
 ## DB logger
@@ -153,6 +157,37 @@ AIRFLOW__CORE__PLUGINS_FOLDER: /app/deployment/airflow/plugins
 
 ##### NOTE: If your image pre-contains dags/plugins, you must copy them into the appropriate paths for dags and plugins
 
+## Configuring default pools, connections and variables
+
+To configure the defaults, you can either use a yaml file or send the yaml directly to the image, via,
+```shell
+ZAIRFLOW_INIT_ENV_YAML_FILEPATH='/my/file/path'
+ZAIRFLOW_INIT_ENV_YAML='raw yaml'
+```
+
+The yamls are env enabled, via the `{{ENV_NAME}}` python format. Example,
+```yaml
+pools:
+  pool1: 30
+  pool2:
+    description: 'nna'
+    slots: 122
+variables:
+  a_string_from_env: '{{VERSION}}'
+  pased_to_json_with_env:
+    this: "is my value"
+    version: '{{VERSION}}'
+connections:
+  testconn:
+    conn_type: test
+    host: ttt.kkk.mmm
+    port: 4242
+    extra:
+      this: val
+      is: extra
+      json: value
+      version: '{{VERSION}}'
+```
 # Helm
 
 A template based deployment chart using helm. To learn more about helm please see [helm](https://helm.sh/) and [helmfile](https://github.com/roboll/helmfile). This [introduction](https://www.digitalocean.com/community/tutorials/an-introduction-to-helm-the-package-manager-for-kubernetes) is also a good read.

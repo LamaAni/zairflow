@@ -12,6 +12,7 @@ def get_yaml_from_file_or_none(fpath: str):
     as_yaml = ""
     with open(fpath, "r") as raw:
         as_yaml = raw.read()
+    as_yaml = as_yaml.format(**os.environ)
     return as_yaml
 
 
