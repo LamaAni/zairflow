@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 : ${REPO_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}
-
 : ${ZAIRFLOW_IMAGE_REPOSITORY:="lamaani/zairflow"}
 : ${ZAIRFLOW_FULL_VERSION:="$ZAIRFLOW_MAJOR_VERSION.$ZAIRFLOW_MINOR_VERSION.$ZAIRFLOW_PATCH_VERSION"}
