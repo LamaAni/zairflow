@@ -55,7 +55,7 @@ if len(yamls) > 0:
         config: dict,
         session: Session = None,
     ):
-        pools:dict = config.get("pools", None)
+        pools: dict = config.get("pools", None)
         if pools is None:
             return
 
@@ -101,22 +101,22 @@ if len(yamls) > 0:
                 continue
 
             logging.info("Setting connection: " + key)
-            connection = Connection()
-            connection.conn_id = key
-            connection.conn_type = val.get("conn_type", None)
-            connection.host = val.get("host", None)
-            connection.schema = val.get("schema", None)
-            connection.login = val.get("login", None)
-            # connection._password=val.get("password", None)
-            if "password" in val:
-                connection.set_password(val.get("password") or "")
-            connection.port = val.get("port", "80")
-            if "extra" in val:
-                extra = val.get("extra") or ""
-                if extra is not None and not isinstance(extra, (int, str)):
-                    extra = json.dumps(extra)
-                connection.set_extra(extra)
+            extra = val.get("extra", None)
+            if extra is not None and not isinstance(extra, (int, str)):
+                extra = json.dumps(extra)
+
+            connection = Connection(
+                conn_id=key,
+                conn_type=val.get("conn_type", None),
+                host=val.get("host", None),
+                login=val.get("login", None),
+                password=val.get("password", None),
+                schema=val.get("schema", None),
+                port=val.get("port", None),
+                extra=extra,
+            )
             session.add(connection)
+        session.commit()
 
     config = {}
     for y in yamls:

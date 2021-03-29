@@ -53,8 +53,11 @@ function attach_post_load_user_code() {
 
 function invoke_init_db() {
   log:sep "Initializing airflow db.."
-  invoke_airflow initdb
+  invoke_airflow db init
   assert $? "Failed to perform init db" || return $?
+  log:sep "Initializing airflow environment"
+  python3 /scripts/image/init_airflow_env.py
+  assert $? "Failed to initialize environment" || return $?
 }
 
 function check_for_db() {
