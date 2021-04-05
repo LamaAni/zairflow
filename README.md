@@ -103,7 +103,7 @@ For more info on setting airflow environment variables see [here](https://airflo
 
 ## DB logger
 
-An internal DB logger package was added that writes all logs to a database instead of files. This package can be enabled by setting the `logging_config_class` in the `airflow config`,
+Write log data to the database instead of files, see [AirflowDBLogger](https://github.com/LamaAni/AirflowDBLogger) pacakge, by applying,
 
 ```ini
 [CORE]
@@ -111,19 +111,6 @@ logging_config_class = airflow_db_logger.LOGGING_CONFIG
 ```
 
 **This package is highly recommended for multi pod implementations**, and was added by default.
-
-Possible package options added to the airflow config,
-
-| section | description | type/values | default |
-| --------------------------------------- | ------------------------------------------- | ----------- | --------------------------- |
-| [db_logger].`SQL_ALCHEMY_CONN` | The sqlalchemy connection string | `string` | [core].`SQL_ALCHEMY_CONN` |
-| [db_logger].`SQL_ALCHEMY_SCHEMA` | The schema where to put the logging tables. | `string` | [core].`SQL_ALCHEMY_SCHEMA` |
-| [db_logger].`SQL_ALCHEMY_POOL_ENABLED` | If true enable sql alchemy pool | `boolean` | True |
-| [db_logger].`SQL_ALCHEMY_POOL_SIZE` | The size of the sqlalchemy pool. | `int` | 5 |
-| [db_logger].`SQL_ALCHEMY_MAX_OVERFLOW` | The max overflow for sqlalchemy | `int` | 1 |
-| [db_logger].`SQL_ALCHEMY_POOL_RECYCLE` | The pool recycle time | `int` | 1800 |
-| [db_logger].`SQL_ALCHEMY_POOL_PRE_PING` | If true, do a ping at the connection start. | `boolean` | true |
-| [db_logger].`SQL_ENGINE_ENCODING` | THe encoding for the sql engine | `string` | utf-8 |
 
 ## Git auto-sync
 
