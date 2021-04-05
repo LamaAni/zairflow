@@ -17,7 +17,7 @@ See examples [here](/examples).
 1. Airflow 1.10.15
 1. Kubernetes/Local executors (celery executor is supported on docker compose only at this time)
 1. [KubernetesJobOperator](https://github.com/LamaAni/KubernetesJobOperator) (built in)
-1. Database Logger (built in) - airflow logs are saved to the database using SQLAlchemy.
+1. Database Logger (built in, [AirflowDBLogger](https://github.com/LamaAni/AirflowDBLogger)) - airflow logs are saved to the database using SQLAlchemy.
 1. dags and plugins synchronization vs a git repo (per branch/tag).
 1. Default configuration for pools, variables and connections.
 1. linux/arm64 devices. (Tested on linux/arm64/v8 [raspberry pi 4](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/specifications/))
