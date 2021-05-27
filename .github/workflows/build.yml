@@ -92,4 +92,5 @@ jobs:
           USE_BUILDX: ${{steps.commit_args.outputs.no_buildx!='true'}}
           DO_PUSH: ${{steps.commit_args.outputs.release=='true'}}
           PLATFORMS: ${{steps.commit_args.outputs.platforms || ''}}
+          ZAIRFLOW_IMAGE_REPOSITORY: ${{secrets.ZAIRFLOW_IMAGE_REPOSITORY || 'lamaani/zairflow' }}
         run: bash docker/build
