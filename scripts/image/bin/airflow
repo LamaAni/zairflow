@@ -3,12 +3,7 @@
 # shellcheck disable=SC1091
 source "$SCRIPTS_PATH/common.sh"
 
-case "$1" in
-webserver | scheduler | worker | initdb | flower | run)
-    # requires prep.
-    source "$SCRIPTS_PATH/image/prepare_airflow_env.sh" || exit $?
-    ;;
-esac
+source "$SCRIPTS_PATH/image/prepare_airflow_env.sh" || exit $?
 
 : "${ZAIRFLOW_AIRFLOW_COMMAND_PATH="/usr/local/bin/airflow"}"
 
