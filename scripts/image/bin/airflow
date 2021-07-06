@@ -3,12 +3,23 @@
 # shellcheck disable=SC1091
 source "$SCRIPTS_PATH/common.sh"
 
-case "$1" in
-webserver | scheduler | worker | initdb | flower | run)
-    # requires prep.
-    source "$SCRIPTS_PATH/image/prepare_airflow_env.sh" || exit $?
-    ;;
-esac
+INIT_OPERATIONS_REQUIRED=(
+    celery
+    config
+    connections
+    dags
+    db
+    jobs
+    kubernetes
+    pools
+    providers
+    roles
+    tasks
+    users
+    variables
+)
+
+source "$SCRIPTS_PATH/image/prepare_airflow_env.sh" || exit $?
 
 : "${ZAIRFLOW_AIRFLOW_COMMAND_PATH="/usr/local/bin/airflow"}"
 
