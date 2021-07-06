@@ -130,7 +130,7 @@ RUN groupadd airflow &&\
 USER airflow
 
 # copy the config.
-COPY --chown=airflow:airflow ./docker/default_webserver_config.py /airflow/webserver_config.default.py
+COPY --chown=airflow:airflow ./docker/default_webserver_config.py /airflow/webserver_config.py
 
 # Control args
 ARG AIRFLOW_STANDALONE_EXECUTOR="SequentialExecutor"
