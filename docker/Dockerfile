@@ -76,8 +76,12 @@ COPY ./docker/requirements.txt .
 
 # Install python requirements and airflow.
 ARG PIP_INSTALL_COMMAND="pip3 install --no-cache-dir"
-RUN ${PIP_INSTALL_COMMAND} \
+RUN \
+   curl -fsSL https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-3.8.txt > ./constraints.txt\
+   &&\
+   ${PIP_INSTALL_COMMAND} \
    -r ./requirements.txt \
+   -c ./constraints.txt \
    ${PYTHON_DEPS}\
    airflow-db-logger==${AIRFLOW_DB_LOGGER_VERSION}\
    airflow-kubernetes-job-operator==${KUBE_JOB_OPERATOR_VERSION}\
