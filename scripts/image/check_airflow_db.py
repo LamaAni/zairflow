@@ -10,7 +10,7 @@ def airflow_is_db_ready():
 
         logging.info("Checking database connection...")
         with db.create_session() as session:
-            db.checkdb(session)
+            db.check(session)
             logging.info("Checking database structure...")
             session.query(Log).limit(0).count()
     except Exception as err:
