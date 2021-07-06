@@ -1,7 +1,5 @@
 # ZAirflow
 
-### `Beta version`
-
 An opinionated docker image and helm chart for a `simple docker/kubernetes` airflow deploy.
 
 ## The repo includes,
@@ -14,13 +12,14 @@ See examples [here](/examples).
 ## Supports
 
 1. Python 3.8
-1. Airflow 1.10.15
+1. Airflow 2.1.1
 1. Kubernetes/Local executors (celery executor is supported on docker compose only at this time)
 1. [KubernetesJobOperator](https://github.com/LamaAni/KubernetesJobOperator) (built in)
 1. Database Logger (built in, [AirflowDBLogger](https://github.com/LamaAni/AirflowDBLogger)) - airflow logs are saved to the database using SQLAlchemy.
 1. dags and plugins synchronization vs a git repo (per branch/tag).
 1. Default configuration for pools, variables and connections.
-1. linux/arm64 devices. (Tested on linux/arm64/v8 [raspberry pi 4](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/specifications/))
+2. Default configuration for airflow webserver (admin allow all).
+3. linux/arm64 devices. (Tested on linux/arm64/v8 [raspberry pi 4](https://www.raspberrypi.org/products/raspberry-pi-4-model-b/specifications/))
 
 ## Resources
 
@@ -77,6 +76,7 @@ For more info on setting airflow environment variables see [here](https://airflo
 | | |
 | GIT_AUTOSYNC_REPO_URL | A uri to the git repo to sync. If exists the git sync process will start. If a git repo already exists on the image at the location of the dags folder, use "internal" (remember to set the correct airflow dag folder path). See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync. | `string` | None |
 | GIT_AUTOSYNC_REPO_BRANCH | The autosync branch name, if dose not exist uses the default branch. See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync. | `string` | None |
+|ZAIRFLOW_WEBSERVER_CONFIG_PATH | The path to the flask_appbuilder webserver_config.py, that allows for the security configuration. Will be auto linked and override the airflow home webserver_confog | `string` | None
 
 #### Advanced
 

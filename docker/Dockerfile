@@ -67,8 +67,8 @@ ARG AIRFLOW_CORE_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG AIRFLOW_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG PYTHON_DEPS=""
 
-ARG AIRFLOW_VERSION="1.10.15"
-ARG KUBE_JOB_OPERATOR_VERSION='1.0.17'
+ARG AIRFLOW_VERSION="2.1.1"
+ARG KUBE_JOB_OPERATOR_VERSION='2.0.0'
 ARG AIRFLOW_DB_LOGGER_VERSION='2.0.0'
 
 # Copy install dependencies
@@ -95,7 +95,8 @@ ENV\
    PATH="/scripts:${PATH}:/home/airflow/.local/bin"\
    GIT_AUTOSYNC_REPO_BRANCH=${GIT_AUTOSYNC_REPO_BRANCH}\
    ZBASH_COMMONS_VERSION=${ZBASH_COMMONS_VERSION}\
-   GIT_AUTOSYNC_VERSION="${GIT_AUTOSYNC_VERSION}"
+   GIT_AUTOSYNC_VERSION="${GIT_AUTOSYNC_VERSION}"\
+   ZAIRFLOW_AIRFLOW_COMMAND_PATH="/usr/local/bin/airflow"
 
 COPY ./scripts /scripts
 RUN bash /scripts/image/install_zbash_commons &&\
@@ -125,7 +126,7 @@ RUN groupadd airflow &&\
 USER airflow
 
 # copy the config.
-COPY --chown=airflow:airflow ./docker/airflow.cfg /airflow/airflow.cfg
+COPY --chown=airflow:airflow ./docker/default_webserver_config.py /airflow/webserver_config.default.py
 
 # Control args
 ARG AIRFLOW_STANDALONE_EXECUTOR="SequentialExecutor"
@@ -136,14 +137,17 @@ ENV FERNET_KEY="${FERNET_KEY}"
 ENV PGHOST=localhost
 ENV PGUSER=airflow
 
-ENV AIRFLOW_HOME=/airflow
-ENV AIRFLOW_CONFIG=/airflow/airflow.cfg
-ENV AIRFLOW__CORE__DAGS_FOLDER=/app/dags
-ENV AIRFLOW__CORE__PLUGINS_FOLDER=/app/plugins
-ENV AIRFLOW_STANDALONE_EXECUTOR="${AIRFLOW_STANDALONE_EXECUTOR}"
+ENV\
+   AIRFLOW_HOME=/airflow \
+   AIRFLOW_CONFIG=/airflow/airflow.cfg \
+   AIRFLOW__CORE__DAGS_FOLDER=/app/dags \
+   AIRFLOW__CORE__PLUGINS_FOLDER=/app/plugins \
+   AIRFLOW_STANDALONE_EXECUTOR="${AIRFLOW_STANDALONE_EXECUTOR}"
 
 EXPOSE 8080 5555 8793
 CMD ["/scripts/image/entrypoint.sh"]
 
 ARG ZAIRFLOW_VERSION="debug"
-ENV ZAIRFLOW_VERSION=${ZAIRFLOW_VERSION}
+ENV\
+   PATH="${SCRIPTS_PATH}/image/bin:${PATH}" \ 
+   ZAIRFLOW_VERSION=${ZAIRFLOW_VERSION}

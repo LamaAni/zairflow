@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+: "${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}"
 # shellcheck disable=SC1091
 source "$SCRIPTS_PATH/common.sh"
 
@@ -10,4 +10,6 @@ webserver | scheduler | worker | initdb | flower | run)
     ;;
 esac
 
-call_airflow "$@" || exit $?
+: "${ZAIRFLOW_AIRFLOW_COMMAND_PATH="/usr/local/bin/airflow"}"
+
+"$ZAIRFLOW_AIRFLOW_COMMAND_PATH" "$@" || exit $?

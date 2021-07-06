@@ -1,0 +1,1 @@
+Overrides the bin directory to add/replace common commands. 
