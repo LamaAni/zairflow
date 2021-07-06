@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-: ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
+: "${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}"
 source "$SCRIPTS_PATH/common.sh"
 
 log "Prepare install enviroment"
@@ -8,7 +8,7 @@ assert $? "Failed to install wget" || exit $?
 
 BUILDX_DIR="$HOME/.docker/cli-plugins"
 mkdir -p "BUILDX_DIR" &&
-    cd $HOME
+    cd "$HOME"
 assert $? "Failed to enter/create $BUILDX_DIR"
 
 log "Downloading buildx.."

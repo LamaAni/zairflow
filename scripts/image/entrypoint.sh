@@ -26,6 +26,21 @@ function invoke_airflow() {
   assert $? "Failed: airflow $@" || exit $?
 }
 
+function attach_webserver_config_file() {
+  [ -n "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" ]
+  warn $? "Webserver config path not defined, skipped" || return 0
+
+  [ -f "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" ]
+  assert $? "Webserver config path not found @ $ZAIRFLOW_WEBSERVER_CONFIG_PATH" || return $?
+
+  ZAIRFLOW_WEBSERVER_CONFIG_PATH="$(realpath "$ZAIRFLOW_WEBSERVER_CONFIG_PATH")"
+  assert $? "Faild to resove webserver config path $ZAIRFLOW_WEBSERVER_CONFIG_PATH" || return $?
+
+  ln -sf "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" "$AIRFLOW_HOME/webserver_config.py"
+  assert $? "Faild to link webserver config path $ZAIRFLOW_WEBSERVER_CONFIG_PATH -> $AIRFLOW_HOME/webserver_config.py"
+  log:info "Webserver config linked: $ZAIRFLOW_WEBSERVER_CONFIG_PATH -> $AIRFLOW_HOME/webserver_config.py "
+}
+
 # post loading of dags and plugins.
 ZAIRFLOW_POST_LOAD_USER_CODE_REVERT_AIRFLOW_DAGS_FOLDER=""
 ZAIRFLOW_POST_LOAD_USER_CODE_REVERT_AIRFLOW_PLUGINS_FOLDER=""
@@ -100,6 +115,7 @@ webserver)
   check_for_db || exit $?
   check_for_run_hooks || exit $?
   attach_post_load_user_code || exit $?
+  attach_webserver_config_file || exit $?
   log:sep "Starting webserver"
   invoke_airflow webserver
   ;;
@@ -116,6 +132,7 @@ initdb)
 standalone)
   log:info "${cyan}Running as standalone airflow container${end_color}"
   export AIRFLOW__CORE__EXECUTOR="$AIRFLOW_STANDALONE_EXECUTOR"
+  attach_webserver_config_file || exit $?
   check_for_run_hooks || exit $?
   invoke_init_db || exit $?
   invoke_airflow scheduler &

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # methods for general purpose use.
-: ${ZARIFLOW_CONNECTION_WAIT_TRIES:="60"}
-: ${ZARIFLOW_CONNECTION_WAIT_TIMEOUT:="1"}
-: ${ZARIFLOW_CONNECTION_WAIT_INTERVAL:="1"}
+: "${ZARIFLOW_CONNECTION_WAIT_TRIES:="60"}"
+: "${ZARIFLOW_CONNECTION_WAIT_TIMEOUT:="1"}"
+: "${ZARIFLOW_CONNECTION_WAIT_INTERVAL:="1"}"
 
 function wait_for_connection() {
   local host=$1
@@ -40,8 +40,8 @@ function wait_for_connection() {
   done
 }
 
-: ${ZARIFLOW_DB_WAIT_TRIES:="60"}
-: ${ZARIFLOW_DB_WAIT_INTERVAL:="1"}
+: "${ZARIFLOW_DB_WAIT_TRIES:="60"}"
+: "${ZARIFLOW_DB_WAIT_INTERVAL:="1"}"
 
 function wait_for_airflow_db_ready() {
   local count=0
