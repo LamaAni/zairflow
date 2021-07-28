@@ -27,19 +27,21 @@ function load_airflow_environment_variables() {
 
 function prepare_airflow_env() {
   # shellcheck disable=SC1091
-  log:sep "Preparing zairflow environment as user '$(whoami)'"
+  log:info "Preparing zairflow environment as user '$(whoami)'"
 
   ###########################
   # Configuration
   if [ -n "$GIT_AUTOSYNC_REPO_URL" ]; then
-    log:sep "Stating git_autosync"
+    log:sep "Checking git autosync"
     "$SCRIPTS_PATH/image/init_git_autosync.sh"
     assert $? "Failed to initialize git auto-sync" || return $?
   fi
 
+  log:sep "Checking database"
   airflow_check_db
   assert $? "Airflow database not ready" || return $?
 
+  log:sep "Finalizing"
   # Mark timestamp
   date >"$ZAIRFLOW_ENV_INITIALIZED_TS_PATH"
   assert $? "Failed to mark airflow env initialized." || return $?

@@ -1,23 +1,12 @@
 import yaml
 import os
-import logging
 import json
-import sys
 from typing import List
 from airflow.api.common.experimental.pool import get_pool, create_pool
 from sqlalchemy.orm import Session
 from airflow.models import Connection, Pool, Variable
 from airflow.utils.db import provide_session
-from airflow.configuration import conf
-from airflow.utils.log.logging_mixin import LoggingMixin
-
-# logging.basicConfig(level="INFO", handlers=[logging.StreamHandler(sys.__stdout__)])
-log = logging.getLogger(__name__)
-handler = logging.StreamHandler(sys.__stdout__)
-handler.formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)7s - %(message)s")
-log.addHandler(logging.StreamHandler(sys.__stdout__))
-log.setLevel("INFO")
-
+from common import log
 
 def get_yaml_from_file_or_none(fpath: str):
     assert fpath is None or isinstance(fpath, str)
@@ -28,11 +17,11 @@ def get_yaml_from_file_or_none(fpath: str):
         as_yaml = raw.read()
     as_yaml = as_yaml.format(**os.environ)
 
-    logging.info("Loaded yaml defaults from: " + fpath)
+    log.info("Loaded yaml defaults from: " + fpath)
     return as_yaml
 
 
-logging.info("Initializing airflow configuration")
+log.info("Initializing airflow configuration")
 
 # checking airflow env locations
 yamls: List[str] = [
@@ -143,4 +132,4 @@ if len(yamls) > 0:
     load_connections(config=config)
     load_pools(config=config)
 else:
-    logging.info("No yaml configurations found")
+    log.info("No yaml configurations found")

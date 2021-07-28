@@ -1,10 +1,5 @@
-import logging
-import os
+from common import log, ZARIFLOW_DB_WAIT_TRIES, ZARIFLOW_DB_WAIT_INTERVAL
 from time import sleep
-
-ZARIFLOW_DB_WAIT_TRIES = int(os.environ.get("ZARIFLOW_DB_WAIT_TRIES", "60"))
-ZARIFLOW_DB_WAIT_INTERVAL = int(os.environ.get("ZARIFLOW_DB_WAIT_INTERVAL", "60"))
-
 
 def airflow_db_ready():
     from sqlalchemy.orm import Session
@@ -15,16 +10,18 @@ def airflow_db_ready():
         with db.create_session() as session:
             db.check(session)
 
-    logging.info("Checking database connection...")
     last_ex = None
     for i in range(ZARIFLOW_DB_WAIT_TRIES):
         try:
             check_db()
-            logging.info("DB ready!")
+            log.info("DB ready!")
             # flush log
             sleep(0.010)
             return True
         except Exception as ex:
+            log.info(
+                f"DB not ready, waiting {ZARIFLOW_DB_WAIT_INTERVAL} [s] before reattempt ({i}/{ZARIFLOW_DB_WAIT_TRIES})"
+            )
             last_ex = ex
             sleep(ZARIFLOW_DB_WAIT_INTERVAL)
 
@@ -32,4 +29,5 @@ def airflow_db_ready():
 
 
 if __name__ == "__main__":
+    log.info("Checking database connection...")
     airflow_db_ready

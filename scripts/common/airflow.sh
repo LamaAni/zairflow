@@ -13,7 +13,7 @@ function airflow_get_config_vals() {
 }
 
 function airflow_check_db() {
-  log:sep "Checking airflow database"
+  log:info "Checking airflow database"
   python3 "$SCRIPTS_PATH/python/airflow_check_db.py"
   assert $? "Airflow database check failed" || return $?
   log:info "Airflow database OK!"

@@ -1,7 +1,8 @@
 import sys
 import io
 import os
-import logging
+
+from common import log, logging
 
 # suppress stdout
 sys.stdout = io.StringIO()
