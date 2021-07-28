@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
+: "${SCRIPTS_PATH:="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"}"
+
+: "${ZAIRFLOW_ENV_INITIALIZED_TS_PATH:="/airflow/zairflow_initialized.ts"}"
+
 function prepare_airflow_env() {
-  : ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
   # shellcheck disable=SC1091
   source "$SCRIPTS_PATH/common.sh"
 
@@ -82,14 +85,32 @@ function prepare_airflow_env() {
     "$SCRIPTS_PATH/image/init_git_autosync.sh"
     assert $? "Failed to initialize git auto-sync" || return $?
   fi
-}
 
-if [ "$AIRFLOW_ENV_PREPARED" != "true" ]; then
+  # Mark timestamp
+  date >"$ZAIRFLOW_ENV_INITIALIZED_TS_PATH"
+  assert $? "Failed to mark airflow env initialized." || return $?
+
   export AIRFLOW_ENV_PREPARED="true"
-  prepare_airflow_env
-  assert $? "Error while preparing airflow environment. exiting." || exit $?
   export AIRFLOW__CORE__DAGS_FOLDER
   log:info "Airflow env ready, dags @ $AIRFLOW__CORE__DAGS_FOLDER"
-  # else
-  # log:info "Airflow env has already been prepared."
-fi
+}
+
+function is_airflow_env_loaded() {
+  if [ "$AIRFLOW_ENV_PREPARED" == "true" ] || [ -f "$ZAIRFLOW_ENV_INITIALIZED_TS_PATH" ]; then
+    return 0
+  fi
+  return 1
+}
+
+is_airflow_env_loaded || prepare_airflow_env
+assert $? "Error while preparing airflow environment. exiting." || exit $?
+
+# if [ "$AIRFLOW_ENV_PREPARED" != "true" ]; then
+#   export AIRFLOW_ENV_PREPARED="true"
+#   prepare_airflow_env
+#   assert $? "Error while preparing airflow environment. exiting." || exit $?
+#   export AIRFLOW__CORE__DAGS_FOLDER
+
+#   # else
+#   # log:info "Airflow env has already been prepared."
+# fi
