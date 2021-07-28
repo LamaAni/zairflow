@@ -132,14 +132,14 @@ COPY --chown=airflow:airflow ./docker/default_webserver_config.py /airflow/webse
 
 # Control args
 ARG AIRFLOW_STANDALONE_EXECUTOR="SequentialExecutor"
+ARG LOG_LEVEL="INFO"
 
-# airflow core config envs.
-ENV FERNET_KEY="${FERNET_KEY}"
-
-ENV PGHOST=localhost
-ENV PGUSER=airflow
-
+# Environment setup
 ENV\
+   LOG_LEVEL="${LOG_LEVEL}"\
+   FERNET_KEY="${FERNET_KEY}"\
+   PGHOST=localhost\
+   PGUSER=airflow\
    AIRFLOW_HOME=/airflow \
    AIRFLOW_CONFIG=/airflow/airflow.cfg \
    AIRFLOW__CORE__DAGS_FOLDER=/app/dags \

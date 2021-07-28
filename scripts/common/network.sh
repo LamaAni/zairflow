@@ -39,3 +39,15 @@ function wait_for_connection() {
     sleep "$ZARIFLOW_CONNECTION_WAIT_INTERVAL"
   done
 }
+
+function wait_for_resource_connections() {
+  local resource_connections=($ZAIRFLOW_WAIT_FOR)
+  if [ "${#resource_connections[@]}" -ne 0 ]; then
+    log:sep "Checking url resource connections"
+    for wait_for_url in "${resource_connections[@]}"; do
+      log:info "Waiting for $wait_for_url to be ready..."
+      wait_for_connection "$wait_for_url" || return $?
+      assert $? "Failed connecting to $wait_for_url"
+    done
+  fi
+}
