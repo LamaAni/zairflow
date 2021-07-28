@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 function prepare_airflow_env() {
   : ${SCRIPTS_PATH:="$(dirname $(dirname $(realpath "$BASH_SOURCE[0]")))"}
   # shellcheck disable=SC1091

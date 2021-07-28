@@ -17,6 +17,7 @@ Args:
     --platforms     The os platforms to use with docker buildx
     --dockerfile    The dockerfile to use.
     --cache-dir     The cache directory for buildx
+    --log-output    Showt the docker log output, plain,tty,auto. See docker docs. Defaults to auto.
     --arg | -a      Append docker args
 Flags:
     -h | --help     Show this help menu.
@@ -36,6 +37,7 @@ export DOCKER_CLI_EXPERIMENTAL="enabled"
 : ${USE_BUILDX:="false"}
 : ${DOCKERFILE:="./docker/Dockerfile"}
 : ${PLATFORMS:="linux/amd64,linux/arm64"}
+: ${DOCKER_LOG_OUTPUT:="auto"}
 
 EXTRA_ARGS=()
 
@@ -47,6 +49,10 @@ while [ "$#" -gt 0 ]; do
         ;;
     --push)
         DO_PUSH="true"
+        ;;
+    --log-output)
+        shift
+        DOCKER_LOG_OUTPUT="$1"
         ;;
     --hub-username)
         shift
@@ -159,6 +165,8 @@ function build_image() {
     else
         log:sep "Building $ZAIRFLOW_IMAGE_REPOSITORY @ $PWD"
     fi
+
+    DOCKER_COMMAND_ARGS="$DOCKER_COMMAND_ARGS --progress $DOCKER_LOG_OUTPUT"
 
     echo docker $DOCKER_COMMAND_PLUGIN build \
         $tag_argument \
