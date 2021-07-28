@@ -49,7 +49,7 @@ function prepare_airflow_env() {
       ": ${AIRFLOW__KUBERNETES__IN_CLUSTER:="True"}"
       export AIRFLOW__KUBERNETES__IN_CLUSTER
 
-      AIRFLOW__KUBERNETES__NAMESPACE=$(get_airflow_config_vals kubernetes.namespace)
+      AIRFLOW__KUBERNETES__NAMESPACE=$(airflow_get_config_vals kubernetes.namespace)
       assert_warning $? "Failed to load kuberntes namespace from config, trying to use current" || AIRFLOW__KUBERNETES__NAMESPACE=""
 
       if [ -z "$AIRFLOW__KUBERNETES__NAMESPACE" ]; then
@@ -66,7 +66,7 @@ function prepare_airflow_env() {
     export AIRFLOW__KUBERNETES__WORKER_CONTAINER_REPOSITORY
   fi
 
-  log:sep "Checking dependencies..."
+  log:sep "Checking database connection"
   if [ "$ZAIRFLOW_SKIP_DB_CHECK" != "true" ]; then
     # postgres validate
     log:info "Waiting for the database to be ready @ $ZAIRFLOW_DB_HOST:$ZAIRFLOW_DB_PORT..."
@@ -74,11 +74,14 @@ function prepare_airflow_env() {
     assert $? "Failed to find database. Exiting." || return $?
   fi
 
-  for wait_for_url in "${ZAIRFLOW_WAIT_FOR[@]}"; do
-    log:info "Waiting for $wait_for_url to be ready..."
-    wait_for_connection "$wait_for_url" || return $?
-    assert $? "Failed connecting to $wait_for_url"
-  done
+  if [ "${#ZAIRFLOW_WAIT_FOR[@]}" -ne 0 ]; then
+    log:sep "Checking url resource dependencies"
+    for wait_for_url in "${ZAIRFLOW_WAIT_FOR[@]}"; do
+      log:info "Waiting for $wait_for_url to be ready..."
+      wait_for_connection "$wait_for_url" || return $?
+      assert $? "Failed connecting to $wait_for_url"
+    done
+  fi
 
   if [ -n "$GIT_AUTOSYNC_REPO_URL" ]; then
     log:sep "Stating git_autosync"
@@ -104,13 +107,3 @@ function is_airflow_env_loaded() {
 
 is_airflow_env_loaded || prepare_airflow_env
 assert $? "Error while preparing airflow environment. exiting." || exit $?
-
-# if [ "$AIRFLOW_ENV_PREPARED" != "true" ]; then
-#   export AIRFLOW_ENV_PREPARED="true"
-#   prepare_airflow_env
-#   assert $? "Error while preparing airflow environment. exiting." || exit $?
-#   export AIRFLOW__CORE__DAGS_FOLDER
-
-#   # else
-#   # log:info "Airflow env has already been prepared."
-# fi

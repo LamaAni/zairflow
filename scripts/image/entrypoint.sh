@@ -75,16 +75,6 @@ function invoke_init_db() {
   assert $? "Failed to initialize environment" || return $?
 }
 
-function check_for_db() {
-  if [ "$ZAIRFLOW_RUN_INITDB" == "true" ]; then
-    invoke_init_db || return $?
-  else
-    log:sep "Waiting for airflow db initialization"
-    wait_for_airflow_db_ready
-    assert $? "Airflow database was not initialized" || return $?
-  fi
-}
-
 function check_for_run_hooks() {
   if [ -n "$ZAIRFLOW_ENTRYPOINT_RUN_HOOK" ]; then
     log:sep "Starting run hook: $ZAIRFLOW_ENTRYPOINT_RUN_HOOK"

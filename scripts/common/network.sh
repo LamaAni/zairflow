@@ -39,25 +39,3 @@ function wait_for_connection() {
     sleep "$ZARIFLOW_CONNECTION_WAIT_INTERVAL"
   done
 }
-
-: "${ZARIFLOW_DB_WAIT_TRIES:="60"}"
-: "${ZARIFLOW_DB_WAIT_INTERVAL:="1"}"
-
-function wait_for_airflow_db_ready() {
-  local count=0
-
-  while true; do
-    last_print=$(python3 "$SCRIPTS_PATH/image/check_airflow_db.py" 2>&1)
-    last_error=$?
-    if [ $last_error -eq 0 ]; then
-      printf "%s\n" "$last_print"
-      break
-    fi
-    count=$((count + 1))
-    if [ "$count" -ge "$ZARIFLOW_DB_WAIT_TRIES" ]; then
-      assert $last_error "$last_print"$'\n'"Timed out while waiting for db to initialize." || return $?
-    fi
-    log:info "Airflow db not ready ($count/$ZARIFLOW_DB_WAIT_TRIES), retry in $ZARIFLOW_DB_WAIT_INTERVAL [s].."
-    sleep "$ZARIFLOW_DB_WAIT_INTERVAL"
-  done
-}
