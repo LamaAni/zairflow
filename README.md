@@ -65,13 +65,13 @@ For more info on setting airflow environment variables see [here](https://airflo
 
 | name | description | type/values | default |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | -------------------------------- |
-| ZAIRFLOW_RUN_INITDB | Run `airflow initdb` before the main container process | `boolean` | False |
+| ZAIRFLOW_RUN_INIT_ENVIRONMENT | Initialize the zairflow environment (Should be called once) | `boolean` | False |
 | ZAIRFLOW_DB_HOST | the host for the airflow database, this value is required in order to validate the db | `string` | localhost |
 | ZAIRFLOW_DB_PORT | the port for the airflow database | 1-65535 | 5432 |
 | ZAIRFLOW_SKIP_DB_CHECK | If `true` then skip the db check. |
 | | |
-| ZAIRFLOW_CONTAINER_TYPE | The type of the container to execute | scheduler, worker, webserver, flower, initdb, command | None/Empty - will cause an error |
-| `...`ZAIRFLOW_CONTAINER_TYPE | Run `airflow [type]`, after preparing the env | scheduler, worker, webserver, flower, initdb |
+| ZAIRFLOW_CONTAINER_TYPE | The type of the container to execute | scheduler, worker, webserver, flower, init_environment, command | None/Empty - will cause an error |
+| `...`ZAIRFLOW_CONTAINER_TYPE | Run `airflow [type]`, after preparing the env | scheduler, worker, webserver, flower, init_environment |
 | `...`ZAIRFLOW_CONTAINER_TYPE | Run `"$@"`, after preparing the env | command |
 | | |
 | GIT_AUTOSYNC_REPO_URL | A uri to the git repo to sync. If exists the git sync process will start. If a git repo already exists on the image at the location of the dags folder, use "internal" (remember to set the correct airflow dag folder path). See [example](/examples/docker-compose/docker-compose-git-autosync.yaml) and notes below on autosync. | `string` | None |
@@ -83,10 +83,10 @@ For more info on setting airflow environment variables see [here](https://airflo
 | name | description | type/values | default |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------- |
 | ZAIRFLOW_WAIT_FOR | a list of uri, including port (example: localhost:8888) to wait until open on TCP. | `string` | None |
-| ZAIRFLOW_ENTRYPOINT_INIT_HOOK | A bash script/command to run before the airflow environment (initdb + command) starts | `string` | None |
-| ZAIRFLOW_ENTRYPOINT_RUN_HOOK | A bash script/command to run before airflow runs (after initdb) | `string` | None |
+| ZAIRFLOW_ENTRYPOINT_INIT_HOOK | A bash script/command to run before the airflow environment (init_environment + command) starts | `string` | None |
+| ZAIRFLOW_ENTRYPOINT_RUN_HOOK | A bash script/command to run before airflow runs (after init_environment) | `string` | None |
 | ZAIRFLOW_ENTRYPOINT_DESTROY_HOOK | A bash script/command to run after the airflow environment exists | `string` | None |
-| ZAIRFLOW_POST_LOAD_USER_CODE | While calling initdb, INIT HOOK and RUN HOOK, points airflow to load dags and plugins from an empty folder. Allows for initialization without plugin/dag errors and proper initialization of airflow variables. | `boolean` | False |
+| ZAIRFLOW_POST_LOAD_USER_CODE | While calling init_environment, INIT HOOK and RUN HOOK, points airflow to load dags and plugins from an empty folder. Allows for initialization without plugin/dag errors and proper initialization of airflow variables. | `boolean` | False |
 | ZAIRFLOW_AUTO_DETECT_CLUSTER | Auto detect the cluster config in running in a kubernetes cluster | `boolean` | true |
 | | |
 | ZARIFLOW_DB_WAIT_TRIES | The number of attempts to run when waiting for db tables to be ready | `int` | 60 |
@@ -222,7 +222,7 @@ a:
 | `executor.workerImageRepository` | The image repo | `string` | `image.repository` |
 | `executor.workerImageTag` | The image tag | `string` | `image.tag` |
 | | |
-| `initdb.enabled` | Enabled the initdb job | `boolean` | true |
+| `init_environment.enabled` | Enabled the init_environment job | `boolean` | true |
 | | |
 | `webserver.port` | The webserver port to use | `int` | 8080 |
 | `webserver.terminationGracePeriodSeconds` | The number of seconds before forced pod termination | `int` | 10 |
@@ -263,9 +263,9 @@ Yaml injection, use with care,
 
 | name | description | type/values | applies to types |
 | ------------------------------- | ----------- | ----------- | -------------------------------------- |
-| `[type].injectContainerYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, initdb |
-| `[type].injectTemplateSpecYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, initdb |
-| `[type].injectSpecYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, initdb |
+| `[type].injectContainerYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, init_environment |
+| `[type].injectTemplateSpecYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, init_environment |
+| `[type].injectSpecYaml` | yaml inject | `yaml` | webserver, scheduler, postgres, init_environment |
 | `[type].injectYamlMetadata` | yaml inject | `yaml` | serviceAccount |
 | `[type].injectYaml` | yaml inject | `yaml` | serviceAccount |
 

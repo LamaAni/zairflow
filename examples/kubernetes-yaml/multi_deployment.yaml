@@ -32,7 +32,7 @@ spec:
           imagePullPolicy: 'Never'
           env:
             - name: ZAIRFLOW_CONTAINER_TYPE
-              value: 'initdb'
+              value: 'init_environment'
           envFrom:
             - configMapRef:
                 name: zairflow-test-cm

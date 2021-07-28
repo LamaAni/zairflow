@@ -3,13 +3,8 @@
 # shellcheck disable=SC1091
 source "$SCRIPTS_PATH/common.sh"
 
-: "${ZAIRFLOW_RUN_INITDB:="false"}"
+: "${ZAIRFLOW_RUN_INIT_ENVIRONMENT:="false"}"
 : "${ZAIRFLOW_CONTAINER_TYPE:="standalone"}"
-
-if [ "$ZAIRFLOW_CONTAINER_TYPE" != "standalone" ]; then
-  export ZAIRFLOW_SKIP_DB_CHECK="true"
-  export ZAIRFLOW_WAIT_FOR=""
-fi
 
 if [ -n "$ZAIRFLOW_ENTRYPOINT_INIT_HOOK" ]; then
   log:sep "Starting init hook: $ZAIRFLOW_ENTRYPOINT_INIT_HOOK"
@@ -53,26 +48,32 @@ function invoke_run_hooks() {
   fi
 }
 
+function check_default_invokes() {
+  if [ "$ZAIRFLOW_RUN_INIT_ENVIRONMENT" == "true" ]; then
+    airflow_init_environment
+  fi
+}
+
 # for the case where user code is loaded after the init.
 prepare_post_load_user_code || exit $?
 case "$ZAIRFLOW_CONTAINER_TYPE" in
 worker)
   # a worker
-  check_for_db || exit $?
+  check_default_invokes || exit $?
   invoke_run_hooks || exit $?
   attach_post_load_user_code || exit $?
   log:sep "Starting worker"
   invoke_airflow worker
   ;;
 scheduler)
-  check_for_db || exit $?
+  check_default_invokes || exit $?
   invoke_run_hooks || exit $?
   attach_post_load_user_code || exit $?
   log:sep "Starting scheduler"
   invoke_airflow scheduler
   ;;
 webserver)
-  check_for_db || exit $?
+  check_default_invokes || exit $?
   invoke_run_hooks || exit $?
   attach_post_load_user_code || exit $?
   attach_webserver_config_file || exit $?
@@ -85,9 +86,9 @@ flower)
   log:sep "Starting flower"
   invoke_airflow flower
   ;;
-initdb)
+init_environment)
   invoke_run_hooks || exit $?
-  invoke_init_db
+  airflow_init_environment || exit $?
   ;;
 standalone)
   log:info "${cyan}Running as standalone airflow container${end_color}"
@@ -101,7 +102,7 @@ standalone)
   kill $AIRFLOW_SCHEDULER_PID
   ;;
 command)
-  check_for_db || exit $?
+  check_default_invokes || exit $?
   invoke_run_hooks || exit $?
   log:sep "Starting external command:"
   attach_post_load_user_code || exit $?

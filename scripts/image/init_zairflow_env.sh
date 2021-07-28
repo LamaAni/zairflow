@@ -37,9 +37,14 @@ function prepare_airflow_env() {
     assert $? "Failed to initialize git auto-sync" || return $?
   fi
 
-  log:sep "Checking database"
-  airflow_check_db
-  assert $? "Airflow database not ready" || return $?
+  if [ "$ZAIRFLOW_SKIP_DB_CHECK" != "true" ]; then
+    log:sep "Checking database"
+    airflow_check_db
+    assert $? "Airflow database not ready" || return $?
+  fi
+
+  wait_for_resource_connections
+  assert $? "Failed waiting for resource connections" || return $?
 
   log:sep "Finalizing"
   # Mark timestamp

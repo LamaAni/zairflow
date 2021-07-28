@@ -14,7 +14,7 @@ releases:
           GIT_AUTOSYNC_REPO_BRANCH: {{env "GIT_AUTOSYNC_REPO_BRANCH" | default "master"}}
           GIT_AUTOSYNC_SSH_KEY: {{ env "GIT_AUTOSYNC_SSH_KEY" | default "" | quote }}
           GIT_AUTOSYNC_REPO_URL: {{ env "GIT_AUTOSYNC_REPO_URL" | default "" | quote }}
-      - initdb:
+      - init_environment:
           auto_delete: false
       - serviceAccount:
           enabled: true

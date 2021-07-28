@@ -38,7 +38,7 @@ spec:
       env:
         - name: ZAIRFLOW_CONTAINER_TYPE
           value: 'webserver'
-        - name: ZAIRFLOW_RUN_INITDB
+        - name: ZAIRFLOW_RUN_INIT_ENVIRONMENT
           value: 'true'
       envFrom:
         - configMapRef:

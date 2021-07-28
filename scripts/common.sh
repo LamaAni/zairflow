@@ -11,7 +11,7 @@ fi
 
 SCRIPTS_PATH="$SCRIPTS_PATH"
 : "${SCRIPTS_PATH:="$(realpath $(dirname $(realpath "$BASH_SOURCE[0]")))"}"
-: "${ZAIRFLOW_RUN_INITDB:="false"}"
+: "${ZAIRFLOW_RUN_INIT_ENVIRONMENT:="false"}"
 
 function load_scripts() {
   for file in $SCRIPTS_PATH/common/*; do
