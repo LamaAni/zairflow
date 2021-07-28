@@ -47,6 +47,8 @@ function prepare_airflow_env() {
   assert $? "Failed waiting for resource connections" || return $?
 
   log:sep "Finalizing"
+  airflow_init_core_files || return $?
+
   # Mark timestamp
   date >"$ZAIRFLOW_ENV_INITIALIZED_TS_PATH"
   assert $? "Failed to mark airflow env initialized." || return $?

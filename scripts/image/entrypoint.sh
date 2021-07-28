@@ -76,7 +76,7 @@ webserver)
   check_default_invokes || exit $?
   invoke_run_hooks || exit $?
   attach_post_load_user_code || exit $?
-  attach_webserver_config_file || exit $?
+  
   log:sep "Starting webserver"
   invoke_airflow webserver
   ;;
@@ -93,9 +93,8 @@ init_environment)
 standalone)
   log:info "${cyan}Running as standalone airflow container${end_color}"
   export AIRFLOW__CORE__EXECUTOR="$AIRFLOW_STANDALONE_EXECUTOR"
-  attach_webserver_config_file || exit $?
   invoke_run_hooks || exit $?
-  invoke_init_db || exit $?
+  airflow_init_environment || exit $?
   invoke_airflow scheduler &
   export AIRFLOW_SCHEDULER_PID=$!
   invoke_airflow webserver
