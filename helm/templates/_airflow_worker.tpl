@@ -26,8 +26,8 @@ spec:
           value: 'worker'
         {{- tuple .Values.worker.envs | include "inject-yaml" | nindent 8 }}
       resources:
-{{ tuple .Values.worker.resources | include "inject-yaml" | nindent 10 }}
-{{ tuple .Values.worker.injectContainerYaml | include "inject-yaml" | nindent 8 }}
-{{ tuple .Values.worker.containers | include "inject-yaml" | nindent 6 }}
+{{ tuple .Values.worker.resources | include "inject-yaml" | nindent 8 }}
+{{ tuple .Values.worker.injectContainerYaml | include "inject-yaml" | nindent 6 }}
+{{ tuple .Values.worker.containers | include "inject-yaml" | nindent 4 }}
 {{ tuple .Values.worker.injectSpecYaml | include "inject-yaml" | nindent 2 }}
 {{- end -}}
