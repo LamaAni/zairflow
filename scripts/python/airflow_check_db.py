@@ -30,4 +30,4 @@ def airflow_db_ready():
 
 if __name__ == "__main__":
     log.info("Checking database connection...")
-    airflow_db_ready
+    airflow_db_ready()
