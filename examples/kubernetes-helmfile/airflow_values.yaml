@@ -43,12 +43,3 @@ worker:
     requests:
       cpu: '500m'
       memory: '1000Mi'
-  injectContainerYaml:
-    some_container_val:
-      val: lama
-  containers:
-    some_container_val:
-      val: lama
-  injectSpecYaml:
-    some_container_val:
-      val: lama
