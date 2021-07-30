@@ -36,3 +36,19 @@ worker:
   envs:
     - name: MY_TEST_ENV
       value: lama
+  resources:
+    limits:
+      cpu: '1'
+      memory: 4Gi
+    requests:
+      cpu: '500m'
+      memory: '1000Mi'
+  injectContainerYaml:
+    some_container_val:
+      val: lama
+  containers:
+    some_container_val:
+      val: lama
+  injectSpecYaml:
+    some_container_val:
+      val: lama
