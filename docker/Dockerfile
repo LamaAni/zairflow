@@ -64,7 +64,7 @@ RUN apt-get update -yqq && apt-get upgrade -yqq \
 ARG AIRFLOW_CORE_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG AIRFLOW_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG PYTHON_DEPS=""
-ARG AIRFLOW_VERSION="2.1.1"
+ARG AIRFLOW_VERSION="2.1.2"
 ARG KUBE_JOB_OPERATOR_VERSION='2.0.0'
 ARG AIRFLOW_DB_LOGGER_VERSION='2.0.1'
 
