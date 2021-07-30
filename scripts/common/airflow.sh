@@ -20,18 +20,27 @@ function airflow_check_db() {
 }
 
 function airflow_init_core_files() {
-  [ -n "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" ]
-  warn $? "Webserver config path not defined, skipped" || return 0
+  if [ -n "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" ]; then
 
-  [ -f "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" ]
-  assert $? "Webserver config path not found @ $ZAIRFLOW_WEBSERVER_CONFIG_PATH" || return $?
+    [ -f "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" ]
+    assert $? "Webserver config path not found @ $ZAIRFLOW_WEBSERVER_CONFIG_PATH" || return $?
 
-  ZAIRFLOW_WEBSERVER_CONFIG_PATH="$(realpath "$ZAIRFLOW_WEBSERVER_CONFIG_PATH")"
-  assert $? "Faild to resove webserver config path $ZAIRFLOW_WEBSERVER_CONFIG_PATH" || return $?
+    ZAIRFLOW_WEBSERVER_CONFIG_PATH="$(realpath "$ZAIRFLOW_WEBSERVER_CONFIG_PATH")"
+    assert $? "Faild to resove webserver config path $ZAIRFLOW_WEBSERVER_CONFIG_PATH" || return $?
 
-  ln -sf "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" "$AIRFLOW_HOME/webserver_config.py"
-  assert $? "Faild to link webserver config path $ZAIRFLOW_WEBSERVER_CONFIG_PATH -> $AIRFLOW_HOME/webserver_config.py"
-  log:info "Webserver config linked: $ZAIRFLOW_WEBSERVER_CONFIG_PATH -> $AIRFLOW_HOME/webserver_config.py "
+    ln -sf "$ZAIRFLOW_WEBSERVER_CONFIG_PATH" "$AIRFLOW_HOME/webserver_config.py"
+    assert $? "Faild to link webserver config path $ZAIRFLOW_WEBSERVER_CONFIG_PATH -> $AIRFLOW_HOME/webserver_config.py" || return $?
+    log:info "Webserver config linked: $ZAIRFLOW_WEBSERVER_CONFIG_PATH -> $AIRFLOW_HOME/webserver_config.py "
+
+  else
+    warn $? "Webserver config path not defined, skipped"
+  fi
+
+  local zairflow_worker_pod_yaml="/airflow/zairflow_worker_pod.yaml"
+
+  echo "$ZAIRFLOW_KUBERNETES_EXECUTOR_WORKER_CONFIG" | base64 -d >|"$zairflow_worker_pod_yaml"
+  assert $? "Failed to create kuberntes executor worker default configuration @ $zairflow_worker_pod_yaml" || return $?
+  log:info "Kuberntes worker configuration created @ $zairflow_worker_pod_yaml"
 }
 
 function airflow_init_environment() {

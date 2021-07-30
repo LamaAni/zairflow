@@ -8,6 +8,11 @@ metadata:
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
 data:
+  {{- if eq .Values.executor.type "KubernetesExecutor" }}
+  AIRFLOW__KUBERNETES__POD_TEMPLATE_FILE: "/airflow/zairflow_worker_pod.yaml"
+  ZAIRFLOW_KUBERNETES_EXECUTOR_WORKER_CONFIG: {{ include "zairflow.kubernetes.worker" . | b64enc | quote }}
+  {{- end }}
+
   # Added envs. These will not affect the db operation.
   {{- tuple .Values.envs | include "inject-yaml" | nindent 2 }}
   
@@ -32,3 +37,19 @@ data:
   {{- end }}
 
   {{- tuple .Values.overrideEnvs | include "inject-yaml" | nindent 2 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $full_name }}-kube-worker-envs
+  namespace: {{ include "zairflow-helm.namespace" . }}
+  labels:
+    {{- include "zairflow-helm.labels" . | nindent 4 }}
+data:
+  GIT_AUTOSYNC_MAX_SYNC_RUN_COUNT: "0"
+  AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
+  AIRFLOW__CORE__SQL_ALCHEMY_MAX_OVERFLOW: "1"
+  AIRFLOW__CORE__SQL_ALCHEMY_POOL_SIZE: "3"
+  AIRFLOW__DB_LOGGER__WRITE_TO_SHELL: "true"
+  AIRFLOW__DB_LOGGER__PROCESSER_LOG_LEVEL: INFO

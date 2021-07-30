@@ -69,6 +69,10 @@ scheduler:
       memory: '1.5Gi'
       cpu: '1'
 
+worker:
+  terminationGracePeriodSeconds: 10
+  resources: {}
+
 postgres:
   enabled: true
   terminationGracePeriodSeconds: 20
