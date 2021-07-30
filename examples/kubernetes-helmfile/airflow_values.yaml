@@ -31,3 +31,8 @@ logging:
 executor:
   # type: LocalExecutor
   type: KubernetesExecutor
+
+worker:
+  envs:
+    - name: MY_TEST_ENV
+      value: lama
