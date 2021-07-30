@@ -8,7 +8,7 @@ envs:
   ZAIRFLOW_POST_LOAD_USER_CODE: 'true'
 
   # Airflow args
-  AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+  AIRFLOW__CORE__LOAD_EXAMPLES: 'True'
 
   # Git auto-sync
   GIT_AUTOSYNC_REPO_URL: 'https://github.com/LamaAni/zairflow.git'
@@ -16,6 +16,7 @@ envs:
   AIRFLOW__CORE__PLUGINS_FOLDER: '/app/examples/docker-compose/plugins'
 
 image:
+  tag: test_new_image
   pullPolicy: Always
 
 serviceAccount:
@@ -25,4 +26,5 @@ logging:
   useDbLogger: true
 
 executor:
-  type: LocalExecutor
+  # type: LocalExecutor
+  type: KubernetesExecutor
