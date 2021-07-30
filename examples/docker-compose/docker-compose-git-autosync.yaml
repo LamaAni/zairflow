@@ -29,7 +29,7 @@ services:
       - '8080:8080'
     environment:
       ZAIRFLOW_CONTAINER_TYPE: 'webserver'
-      ZAIRFLOW_RUN_INITDB: 'true'
+      ZAIRFLOW_RUN_INIT_ENVIRONMENT: 'true'
       <<: *globalenvs
 
   airflow-scheduler:

@@ -1,9 +1,14 @@
 [[source]]
+name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-name = "pypi"
 
 [packages]
+airflow-db-logger = "==2.0.1"
+airflow-kubernetes-job-operator = "*"
+apache-airflow = "==2.1.2"
+kubernetes = "*"
+zthreading = "*"
 
 [dev-packages]
 

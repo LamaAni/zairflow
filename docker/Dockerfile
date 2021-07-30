@@ -8,14 +8,15 @@ USER root
 WORKDIR /image_install
 
 # core install command
-ARG APT_GET_INSTALL="apt-get install -yqq --no-install-recommends "
+ARG APT_GET_INSTALL="apt-get install -yq --no-install-recommends"
 ARG APT_GET_DEPS=""
 
 # prepare ubuntu version.
-RUN apt-get update -yqq && apt-get upgrade -yqq 
-# Prepare environment and core tools
-# &&\
-RUN ${APT_GET_INSTALL}\
+RUN apt-get update -yqq && apt-get upgrade -yqq \
+   # Prepare environment and core tools
+   &&\
+   ${APT_GET_INSTALL}\
+   bash\
    apt-utils\
    locales\
    apt-transport-https\
@@ -58,16 +59,12 @@ RUN ${APT_GET_INSTALL}\
    # Cleanup
    &&\
    apt-get clean
-# &&\
-# pip3 install --upgrade pip
 
 # Configure for airflow installation.
-ENV SLUGIFY_USES_TEXT_UNIDECODE="yes"
 ARG AIRFLOW_CORE_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG AIRFLOW_DEPS="crypto,celery,postgres,ssh,kubernetes"
 ARG PYTHON_DEPS=""
-
-ARG AIRFLOW_VERSION="2.1.1"
+ARG AIRFLOW_VERSION="2.1.2"
 ARG KUBE_JOB_OPERATOR_VERSION='2.0.0'
 ARG AIRFLOW_DB_LOGGER_VERSION='2.0.1'
 
@@ -75,6 +72,7 @@ ARG AIRFLOW_DB_LOGGER_VERSION='2.0.1'
 COPY ./docker/requirements.txt .
 
 # Install python requirements and airflow.
+ENV SLUGIFY_USES_TEXT_UNIDECODE="yes"
 ARG PIP_INSTALL_COMMAND="pip3 install --no-cache-dir"
 RUN \
    curl -fsSL https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-3.8.txt > ./constraints.txt\
@@ -87,9 +85,7 @@ RUN \
    airflow-kubernetes-job-operator==${KUBE_JOB_OPERATOR_VERSION}\
    apache-airflow[${AIRFLOW_CORE_DEPS},${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}
 
-# Set this parameter to not "true" so it would create a non sudo user and cleanup more stuff.
 ARG GIT_AUTOSYNC_VERSION="1.2.6"
-ARG DEBUG_MODE="true"
 ARG GIT_AUTOSYNC_REPO_BRANCH="master"
 ARG ZBASH_COMMONS_VERSION="0.1.11"
 
@@ -103,9 +99,8 @@ ENV\
    ZAIRFLOW_AIRFLOW_COMMAND_PATH="/usr/local/bin/airflow"
 
 COPY ./scripts /scripts
-RUN bash /scripts/image/install_zbash_commons &&\
-   chmod -R +x /scripts && bash /scripts/image/install.sh
-
+RUN chmod -R +x /scripts && \
+   bash /scripts/image/install.sh
 
 ###################################
 # Work environment
@@ -119,10 +114,13 @@ WORKDIR /app/dags
 WORKDIR /app/plugins
 WORKDIR /app
 
+ARG ZAIRFLOW_AIRFLOW_IS_ROOT="false"
+
 # airflow user
 RUN groupadd airflow &&\
    useradd -s /bin/bash -m -g airflow airflow &&\
-   bash -c "if [ "$DEBUG_MODE" == "true" ]; then usermod -a -G sudo airflow; fi" &&\
+   bash -c "if [ "${ZAIRFLOW_AIRFLOW_IS_ROOT}" == "true" ]; then usermod -a -G sudo airflow; fi" \
+   &&\
    # set permissions
    chown -R airflow /airflow /app && chmod -R 0777 /airflow
 
@@ -134,14 +132,14 @@ COPY --chown=airflow:airflow ./docker/default_webserver_config.py /airflow/webse
 
 # Control args
 ARG AIRFLOW_STANDALONE_EXECUTOR="SequentialExecutor"
+ARG LOG_LEVEL="INFO"
 
-# airflow core config envs.
-ENV FERNET_KEY="${FERNET_KEY}"
-
-ENV PGHOST=localhost
-ENV PGUSER=airflow
-
+# Environment setup
 ENV\
+   LOG_LEVEL="${LOG_LEVEL}"\
+   FERNET_KEY="${FERNET_KEY}"\
+   PGHOST=localhost\
+   PGUSER=airflow\
    AIRFLOW_HOME=/airflow \
    AIRFLOW_CONFIG=/airflow/airflow.cfg \
    AIRFLOW__CORE__DAGS_FOLDER=/app/dags \

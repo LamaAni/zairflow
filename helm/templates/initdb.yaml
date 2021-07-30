@@ -1,17 +1,17 @@
-{{- if .Values.initdb.enabled }}
+{{- if .Values.init_environment.enabled }}
 {{ $full_name := include "zairflow-helm.fullname" . }}
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ $full_name }}-initdb-{{ randAlphaNum 5 | lower }}
+  name: {{ $full_name }}-init-{{ randAlphaNum 5 | lower }}
   namespace: {{ include "zairflow-helm.namespace" . }}
   labels:
     {{- include "zairflow-helm.labels" . | nindent 4 }}
   annotations:
     # This is what defines this resource as a hook. Without this line, the
     # job is considered part of the release.
-    # Will try and preform an initdb and than delete the job.
-    {{- if .Values.initdb.auto_delete }}
+    # Will try and preform an init_environment and than delete the job.
+    {{- if .Values.init_environment.auto_delete }}
     "helm.sh/hook": post-install
     "helm.sh/hook-delete-policy": hook-succeeded
     {{- end }}
@@ -20,7 +20,7 @@ spec:
   template:
     metadata:
       labels:
-        deployment-target: {{ $full_name }}-initdb
+        deployment-target: {{ $full_name }}-init_environment
         {{- include "zairflow-helm.labels" . | nindent 8 }}
       annotations:
         {{- include "zairflow-helm.metadata_checksums" . | nindent 8 }}
@@ -29,23 +29,23 @@ spec:
       {{- if .Values.serviceAccount.enabled }}
       serviceAccountName: {{ include "zairflow-helm.serviceAccountName" . }}
       {{- end}}
-      terminationGracePeriodSeconds: {{ default 10 .Values.initdb.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ default 10 .Values.init_environment.terminationGracePeriodSeconds }}
       restartPolicy: OnFailure
       containers:
-        - name: airflow-initdb
+        - name: airflow-init
           image: {{ include "zairflow-helm.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: ZAIRFLOW_CONTAINER_TYPE
-              value: 'initdb'
-            {{- tuple .Values.initdb.envs | include "inject-yaml" | nindent 12 }}
+              value: 'init_environment'
+            {{- tuple .Values.init_environment.envs | include "inject-yaml" | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ $full_name }}-envs
           resources:
-          {{- tuple .Values.initdb.resources | include "inject-yaml" | nindent 12 }}
-        {{- tuple .Values.initdb.injectContainerYaml | include "inject-yaml" | nindent 10 }}
-      {{- tuple .Values.initdb.containers | include "inject-yaml" | nindent 8 }}
-    {{- tuple .Values.initdb.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
-  {{- tuple .Values.initdb.injectSpecYaml | include "inject-yaml" | nindent 4 }}
+          {{- tuple .Values.init_environment.resources | include "inject-yaml" | nindent 12 }}
+        {{- tuple .Values.init_environment.injectContainerYaml | include "inject-yaml" | nindent 10 }}
+      {{- tuple .Values.init_environment.containers | include "inject-yaml" | nindent 8 }}
+    {{- tuple .Values.init_environment.injectTemplateSpecYaml | include "inject-yaml" | nindent 6 }}
+  {{- tuple .Values.init_environment.injectSpecYaml | include "inject-yaml" | nindent 4 }}
 {{- end }}

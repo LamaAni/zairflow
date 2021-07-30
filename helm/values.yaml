@@ -44,8 +44,8 @@ overrideEnvs:
   # Global override envs collection, allows overriding the envs
   # produced by the chart. Use with caution.
 
-initdb:
-  # If enabled will create an initdb job, that will run when
+init_environment:
+  # If enabled will create an init_environment job, that will run when
   # the chart is deployed.
   enabled: true
   auto_delete: false
@@ -68,6 +68,10 @@ scheduler:
     requests:
       memory: '1.5Gi'
       cpu: '1'
+
+worker:
+  terminationGracePeriodSeconds: 10
+  resources: {}
 
 postgres:
   enabled: true
