@@ -61,7 +61,7 @@ function airflow_load_kubernetes_configuration() {
   if [ $IS_KUBERNETES -eq 1 ]; then
     if [ "$ZAIRFLOW_AUTO_DETECT_CLUSTER" == "true" ] && [ -n "$KUBERNETES_SERVICE_HOST" ]; then
       log:info "Autodetected airflow kubernetes in cluster"
-      ": ${AIRFLOW__KUBERNETES__IN_CLUSTER:="True"}"
+      : "${AIRFLOW__KUBERNETES__IN_CLUSTER:="True"}"
 
       AIRFLOW__KUBERNETES__NAMESPACE=$(airflow_get_config_vals kubernetes.namespace)
       assert_warning $? "Failed to load kuberntes namespace from config, trying to use current" || AIRFLOW__KUBERNETES__NAMESPACE=""
