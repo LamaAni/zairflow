@@ -31,6 +31,9 @@ function prepare_airflow_env() {
 
   ###########################
   # Configuration
+  log:sep "Prepare airflow core files"
+  airflow_init_core_files || return $?
+
   if [ -n "$GIT_AUTOSYNC_REPO_URL" ]; then
     log:sep "Checking git autosync"
     "$SCRIPTS_PATH/image/init_git_autosync.sh"
@@ -47,8 +50,6 @@ function prepare_airflow_env() {
   assert $? "Failed waiting for resource connections" || return $?
 
   log:sep "Finalizing"
-  airflow_init_core_files || return $?
-
   # Mark timestamp
   date >"$ZAIRFLOW_ENV_INITIALIZED_TS_PATH"
   assert $? "Failed to mark airflow env initialized." || return $?
