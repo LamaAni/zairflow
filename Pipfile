@@ -6,7 +6,7 @@ verify_ssl = true
 [packages]
 airflow-db-logger = "==2.0.1"
 airflow-kubernetes-job-operator = "*"
-apache-airflow = "==2.1.2"
+apache-airflow = "==2.5.2"
 kubernetes = "*"
 zthreading = "*"
 
